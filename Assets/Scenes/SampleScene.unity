@@ -480,6 +480,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d5565fe0675e484e8f3c1662542b5ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  current_img: 0
+  n_imgs: 0
   rawImagePrefab: {fileID: 3225365108092269047, guid: 6f96ae6d536260346ba6d43e0db5f085, type: 3}
   images: []
 --- !u!114 &1646500095

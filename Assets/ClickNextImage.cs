@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class ClickNextImage : MonoBehaviour
 {
-    public int current_img = 0;
     //public XRGrabInteractable interactable;
     // Start is called before the first frame update
+    
     private RectTransform myRectTransform;
     private BoxCollider myBoxCollider;
     private InteractableImageStack stackable;
@@ -29,8 +29,14 @@ public class ClickNextImage : MonoBehaviour
    
     }
     public void changeimage()
-    {   current_img += 1;
-        stackable.makemain(current_img);
+    {   if (stackable.current_img < (stackable.n_imgs-1)){
+        stackable.current_img += 1;}
+
+        else {
+            stackable.current_img = 0; 
+        }
+        
+        stackable.display_img(stackable.current_img);
     }
 
     public void message()
