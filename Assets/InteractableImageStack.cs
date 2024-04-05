@@ -85,17 +85,19 @@ public class InteractableImageStack : MonoBehaviour
 
     }
 
-    public void create_trash()
+    public void dispose()
 
     { 
-        // Create a new RawImage GameObject from the prefab
-        //Transform childgameobject = transform.GetChild(0);
-        //float imageheight = childgameobject.GetComponent<RectTransform>().rect.height;
-        //Vector3 trashposition = childgameobject.position - new Vector3(0 , imageheight , 0) ;
-        
-        //GameObject main_object = Instantiate(trash, transform, true);
 
-        //main_object.transform.SetParent(transform);
+        
+         if (current_img < (n_imgs-1)){
+        current_img += 1;}
+
+        else {
+            current_img = 0; 
+        }
+        
+        display_img(stackable.current_img);
     }
 
 
