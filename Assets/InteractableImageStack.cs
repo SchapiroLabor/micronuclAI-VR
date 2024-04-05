@@ -13,13 +13,23 @@ public class InteractableImageStack : MonoBehaviour
     public int current_img = 0;
     public int n_imgs;
     public GameObject rawImagePrefab; // Prefab for the RawImage UI element
-    public List<Texture2D> images = new List<Texture2D>();
+    public GameObject trash;
     private Vector3 initialPosition;
+    public List<Texture2D> images = new List<Texture2D>();
     private List<string> imagePaths;
     
     private void Start()
     {   
-        initialPosition = Camera.main.transform.position;
+
+        float scaledWidth = GetComponent<RectTransform>().rect.width;
+        float scaledHeight = GetComponent<RectTransform>().rect.height;
+        float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(scaledWidth, 2) + Mathf.Pow(scaledHeight, 2)), 25);
+        transform.position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
+        
+        Debug.Log(string.Format("Z distance: {0}", viewingDistance));
+
+
+
         var ext = new List<string> { "jpg", "gif", "png" };
         imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/test_imgs", "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path => {string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(); return ext.Contains(extension);}).ToList();
@@ -43,53 +53,57 @@ public class InteractableImageStack : MonoBehaviour
         Debug.Log(string.Format("Number of images {0}", n_imgs));
 
                 // Loop through each interactable
-        for (int i = 0; i < n_imgs; i++)
-        {
-            create_imgs(i);
-        }
 
         display_img(current_img);
 
+        create_trash();
+
     }
+
+
+    float CalculateViewingDistance(float objectSize, float visualAngle)
+    {
+        // Convert visual angle from degrees to radians
+        float thetaRadians = visualAngle * Mathf.Deg2Rad;
+
+        // Calculate viewing distance using the rearranged formula
+        float viewingDistance = objectSize / (2f * Mathf.Tan(thetaRadians / 2f));
+
+        return viewingDistance;
+    }
+
 
         //private int currentImageIndex; // Index of the currently displayed image
-    public void create_imgs(int indx)
+    public void create_img(int indx)
     {   
-        Debug.Log(string.Format("Image count: {0}", current_img));
-        Vector3 main_position = initialPosition + new Vector3(0 , 0, 0.5f);
-
         // Create a new RawImage GameObject from the prefab
-        GameObject main_object = Instantiate(rawImagePrefab, main_position, Quaternion.identity);
+        GameObject main_object = Instantiate(rawImagePrefab,  transform, true);
 
-        // Set parent
-        main_object.transform.SetParent(transform);
-        main_object.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
-
-        Debug.Log(string.Format("Position of image is: {0}", main_position));
         main_object.GetComponent<RawImage>().texture = images[indx];
-        main_object.GetComponent<RawImage>().enabled = false;
-        main_object.GetComponent<BoxCollider>().enabled = false;
+
+        main_object.transform.position = transform.position;
+
     }
+
+    public void create_trash()
+
+    { 
+        // Create a new RawImage GameObject from the prefab
+        //Transform childgameobject = transform.GetChild(0);
+        //float imageheight = childgameobject.GetComponent<RectTransform>().rect.height;
+        //Vector3 trashposition = childgameobject.position - new Vector3(0 , imageheight , 0) ;
+        
+        //GameObject main_object = Instantiate(trash, transform, true);
+
+        //main_object.transform.SetParent(transform);
+    }
+
 
     public void display_img(int indx)
 
-    {   int previous_indx;
-        //Set previous off regardless of state
-        if (indx == 0){
-        previous_indx = n_imgs-1;}
-
-        else {
-            previous_indx = indx - 1; 
-        }
-        Transform previous_object = transform.GetChild(previous_indx);
-        previous_object.GetComponent<RawImage>().enabled = false;
-        previous_object.GetComponent<BoxCollider>().enabled = false;
-
-
-        // Get the child GameObject at the specified index
-        Transform main_object = transform.GetChild(indx);
-        main_object.GetComponent<RawImage>().enabled = true;
-        main_object.GetComponent<BoxCollider>().enabled = true;
+    {   
+        Transform childTransform = transform.Find("RawImage");
+        childTransform.GetComponent<RawImage>().texture = images[indx];
 
     }
 

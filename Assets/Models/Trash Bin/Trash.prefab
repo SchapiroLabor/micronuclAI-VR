@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4539135129340528}
   - component: {fileID: 33199414810408772}
   - component: {fileID: 23415060382919336}
-  - component: {fileID: 65820338247890050}
+  - component: {fileID: 3736211207961069559}
   m_Layer: 0
   m_Name: Trash
   m_TagString: Untagged
@@ -30,7 +30,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -84,8 +84,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &65820338247890050
-BoxCollider:
+--- !u!135 &3736211207961069559
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -99,9 +99,9 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 0.326398, y: 0.3575017, z: 0.32639807}
+  m_Radius: 0.17875084
   m_Center: {x: 0.000000014901161, y: 0.17875084, z: -0.000000022351742}
