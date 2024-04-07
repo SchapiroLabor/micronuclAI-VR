@@ -2,43 +2,55 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO; // Add this line to include the System.IO namespace
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 
 
+
 public class InteractableImageStack : MonoBehaviour
 {
     //public RawImage[] imageDisplays; // Array to store image displays
-    public int current_img = 0;
-    public int n_imgs;
-    public GameObject rawImagePrefab; // Prefab for the RawImage UI element
+    private int current_img = 0;
+    private int n_imgs;
+    public GameObject rawImagecurrent;
+    private GameObject  rawImagesubsequent;
+    public GameObject rawImageprefab;
     public GameObject trash;
-    private Vector3 initialPosition;
     public List<Texture2D> images = new List<Texture2D>();
     private List<string> imagePaths;
+
+    private Vector3 canvas_position;
+
+    public XRInteractionManager interactionManager;
     
     private void Start()
     {   
 
-        float scaledWidth = GetComponent<RectTransform>().rect.width;
-        float scaledHeight = GetComponent<RectTransform>().rect.height;
-        float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(scaledWidth, 2) + Mathf.Pow(scaledHeight, 2)), 25);
-        transform.position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
+        rawImagecurrent = transform.Find("RawImage").gameObject; // Prefab for the RawImage UI element
+
+        // Set Canvas at acceptable viewing position
+        setCanvasPosition();
+
+        // Populate the list dedicated to image textures
+        getImageTextures();
         
-        Debug.Log(string.Format("Z distance: {0}", viewingDistance));
 
+        initialize_images(current_img);
 
+    }
 
+    private void getImageTextures()
+    {
         var ext = new List<string> { "jpg", "gif", "png" };
         imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/test_imgs", "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path => {string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(); return ext.Contains(extension);}).ToList();
 
+        Debug.Log(string.Format("Image paths are {0}", imagePaths));
+        n_imgs = imagePaths.Count;
+        Debug.Log(string.Format("Number of images {0}", n_imgs));
 
-        //imagePaths = System.IO.Directory.GetFiles(Application.dataPath + "/Resources/test_imgs");
-        
-        Debug.Log(string.Format("Images are {0}", imagePaths));
-        Debug.Log(string.Format("Current position: {0}", initialPosition));
        // float radius = 0.5f; // Adjust radius based on desired size
         foreach  (string imagePath in imagePaths) //Application.dataPath is a built-in Unity variable that provides the path to the main folder of your project on the device where it's running.
         {   
@@ -49,14 +61,17 @@ public class InteractableImageStack : MonoBehaviour
             //Resources.Load is a Unity function that allows you to load assets like textures directly from the Resources folder at runtime.
         }
 
-        n_imgs = imagePaths.Count;
-        Debug.Log(string.Format("Number of images {0}", n_imgs));
+    }
 
-                // Loop through each interactable
 
-        display_img(current_img);
-
-        create_trash();
+    private void setCanvasPosition()
+    {
+        float Width = GetComponent<RectTransform>().rect.width;
+        float Height = GetComponent<RectTransform>().rect.height;
+        float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(Width, 2) + Mathf.Pow(Height, 2)), 25);
+        canvas_position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
+        transform.position = canvas_position;
+        Debug.Log(string.Format("Z distance: {0}", viewingDistance));
 
     }
 
@@ -74,17 +89,58 @@ public class InteractableImageStack : MonoBehaviour
 
 
         //private int currentImageIndex; // Index of the currently displayed image
-    public void create_img(int indx)
+
+
+    private void initialize_images(int indx)
+
     {   
-        // Create a new RawImage GameObject from the prefab
-        GameObject main_object = Instantiate(rawImagePrefab,  transform, true);
+        rawImagecurrent.GetComponent<RawImage>().texture = images[indx];
 
-        main_object.GetComponent<RawImage>().texture = images[indx];
+        if (n_imgs > 1){
+            create_subsequent_img();
+        }
 
-        main_object.transform.position = transform.position;
 
     }
 
+
+    private  GameObject create_subsequent_img()
+    {   
+        // Create a new RawImage GameObject from the prefab
+        rawImagesubsequent = Instantiate(rawImageprefab,  transform, true);
+
+        rawImagesubsequent.transform.position = rawImagecurrent.transform.position;
+
+        rawImagesubsequent.SetActive(false);
+
+        return rawImagesubsequent;
+    }
+
+// This is only executed whilst the object is selected
+    public void displaysecondimg()
+    {   
+
+        Debug.Log("Next image displayed");
+        if (rawImagecurrent.transform.position != canvas_position && rawImagesubsequent != null){
+
+        int indx = current_img;
+
+        if (indx < (n_imgs-1)){
+        indx += 1;}
+
+        else {
+            indx = 0; 
+        }
+        
+        rawImagesubsequent.GetComponent<RawImage>().texture = images[indx];
+        rawImagesubsequent.SetActive(true);
+
+
+        }
+    }
+
+
+// This is executed once the trash object collider is triggered
     public void dispose()
 
     { 
@@ -97,19 +153,25 @@ public class InteractableImageStack : MonoBehaviour
             current_img = 0; 
         }
         
-        display_img(stackable.current_img);
+        interactionManager.CancelInteractableSelection(rawImagecurrent.GetComponent<IXRSelectInteractable>());
+        rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
+        rawImagecurrent.transform.position = canvas_position;
+        
+
+
+
+        if (rawImagesubsequent != null){
+        
+        rawImagesubsequent.GetComponent<RawImage>().texture = null;
+        rawImagesubsequent.SetActive(false);
+
+
+        }
+
+
     }
 
-
-    public void display_img(int indx)
-
-    {   
-        Transform childTransform = transform.Find("RawImage");
-        childTransform.GetComponent<RawImage>().texture = images[indx];
-
-    }
-
-
+    
 
 
 }

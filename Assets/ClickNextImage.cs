@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.XR.Interaction.Toolkit;
 
 
 public class ClickNextImage : MonoBehaviour
@@ -27,16 +27,6 @@ public class ClickNextImage : MonoBehaviour
         Debug.Log(string.Format("Size of 3D Collider {0}", myBoxCollider.size));
 
    
-    }
-    public void changeimage()
-    {   if (stackable.current_img < (stackable.n_imgs-1)){
-        stackable.current_img += 1;}
-
-        else {
-            stackable.current_img = 0; 
-        }
-        
-        stackable.display_img(stackable.current_img);
     }
 
     public void message()
