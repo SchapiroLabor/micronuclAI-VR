@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Trash : MonoBehaviour
 {
-
+    public ClickNextImage rawImagecurrent_script;
     // Start is called before the first frame update
     void Start()
     {
@@ -22,9 +22,9 @@ public class Trash : MonoBehaviour
     {   
         Debug.Log(string.Format("Collison noted by trash {0}", "YES !"));
         // Check if the collision involves the other GameObject you are interested in
-        if (collision.gameObject == transform.parent.GetComponent<InteractableImageStack>().rawImagecurrent)
+        if (collision.gameObject == rawImagecurrent_script.gameObject)
         {Debug.Log(string.Format("Collison noted by GO {0}", "YES !"));
-            transform.parent.GetComponent<InteractableImageStack>().dispose();
+            rawImagecurrent_script.dispose();
         }
     }
 }

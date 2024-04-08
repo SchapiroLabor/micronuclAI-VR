@@ -12,33 +12,26 @@ using UnityEngine.XR.Interaction.Toolkit;
 public class InteractableImageStack : MonoBehaviour
 {
     //public RawImage[] imageDisplays; // Array to store image displays
-    private int current_img = 0;
-    private int n_imgs;
-    public GameObject rawImagecurrent;
-    private GameObject  rawImagesubsequent;
-    public GameObject rawImageprefab;
-    public GameObject trash;
+    public int current_img = 0;
+    public int n_imgs;
     public List<Texture2D> images = new List<Texture2D>();
     private List<string> imagePaths;
+    public Vector3 canvas_position;
 
-    private Vector3 canvas_position;
 
-    public XRInteractionManager interactionManager;
-    
     private void Start()
     {   
 
-        rawImagecurrent = transform.Find("RawImage").gameObject; // Prefab for the RawImage UI element
 
-        // Set Canvas at acceptable viewing position
-        setCanvasPosition();
+    // Set Canvas at acceptable viewing position
+    setCanvasPosition();
 
-        // Populate the list dedicated to image textures
-        getImageTextures();
-        
+    // Populate the list dedicated to image textures
+    getImageTextures();
 
-        initialize_images(current_img);
 
+
+    
     }
 
     private void getImageTextures()
@@ -91,85 +84,7 @@ public class InteractableImageStack : MonoBehaviour
         //private int currentImageIndex; // Index of the currently displayed image
 
 
-    private void initialize_images(int indx)
-
-    {   
-        rawImagecurrent.GetComponent<RawImage>().texture = images[indx];
-
-        if (n_imgs > 1){
-            create_subsequent_img();
-        }
-
-
-    }
-
-
-    private  GameObject create_subsequent_img()
-    {   
-        // Create a new RawImage GameObject from the prefab
-        rawImagesubsequent = Instantiate(rawImageprefab,  transform, true);
-
-        rawImagesubsequent.transform.position = rawImagecurrent.transform.position;
-
-        rawImagesubsequent.SetActive(false);
-
-        return rawImagesubsequent;
-    }
-
-// This is only executed whilst the object is selected
-    public void displaysecondimg()
-    {   
-
-        Debug.Log("Next image displayed");
-        if (rawImagecurrent.transform.position != canvas_position && rawImagesubsequent != null){
-
-        int indx = current_img;
-
-        if (indx < (n_imgs-1)){
-        indx += 1;}
-
-        else {
-            indx = 0; 
-        }
-        
-        rawImagesubsequent.GetComponent<RawImage>().texture = images[indx];
-        rawImagesubsequent.SetActive(true);
-
-
-        }
-    }
-
-
-// This is executed once the trash object collider is triggered
-    public void dispose()
-
-    { 
-
-        
-         if (current_img < (n_imgs-1)){
-        current_img += 1;}
-
-        else {
-            current_img = 0; 
-        }
-        
-        interactionManager.CancelInteractableSelection(rawImagecurrent.GetComponent<IXRSelectInteractable>());
-        rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
-        rawImagecurrent.transform.position = canvas_position;
-        
-
-
-
-        if (rawImagesubsequent != null){
-        
-        rawImagesubsequent.GetComponent<RawImage>().texture = null;
-        rawImagesubsequent.SetActive(false);
-
-
-        }
-
-
-    }
+ 
 
     
 
