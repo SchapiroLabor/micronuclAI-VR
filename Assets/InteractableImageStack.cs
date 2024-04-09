@@ -13,11 +13,14 @@ public class InteractableImageStack : MonoBehaviour
 {
     //public RawImage[] imageDisplays; // Array to store image displays
     public int current_img = 0;
+    public int subsequent_img;
     public int n_imgs;
     public List<Texture2D> images = new List<Texture2D>();
     private List<string> imagePaths;
     public Vector3 canvas_position;
-
+    public GameObject rawImagecurrent;
+    public GameObject rawImagesubsequentprefab;
+    private GameObject rawImagesubsequent;
 
     private void Start()
     {   
@@ -29,10 +32,77 @@ public class InteractableImageStack : MonoBehaviour
     // Populate the list dedicated to image textures
     getImageTextures();
 
+    init_current_img();
 
+    create_subsequent_img();
 
     
     }
+
+    private void init_current_img()
+    {
+        
+        float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
+        float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
+        rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
+        Debug.Log(string.Format("Size of 3D Collider {0}", rawImagecurrent.GetComponent<BoxCollider>().size));
+
+        rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
+
+    }
+
+
+    private  void create_subsequent_img()
+    {   
+        if (n_imgs > 1){
+
+        // Create a new RawImage GameObject from the prefab
+        rawImagesubsequent = Instantiate(rawImagesubsequentprefab,  transform, true);
+
+        rawImagesubsequent.transform.position = rawImagecurrent.transform.position;
+        rawImagesubsequent.SetActive(false);
+
+
+        }
+    }
+
+
+    void Update()
+    {
+
+    displaysecondimg();
+        
+    }
+
+
+
+    public void displaysecondimg()
+    {   
+
+        if (rawImagecurrent != null)
+
+        {
+
+        // Display the second image only when current image has moved and rawimage has spwned
+        if (rawImagecurrent.transform.position != transform.position){
+
+        subsequent_img = current_img;
+
+        if (subsequent_img < (n_imgs-1)){
+        subsequent_img += 1;}
+
+        else {
+            subsequent_img = 0; 
+        }
+        
+        rawImagesubsequent.GetComponent<RawImage>().texture = images[subsequent_img];
+        rawImagesubsequent.SetActive(true);
+
+        }
+        }
+
+    }
+
 
     private void getImageTextures()
     {

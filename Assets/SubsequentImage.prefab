@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: -1216153205071003861}
   - component: {fileID: -57712055644590487}
   - component: {fileID: 8374299764077052792}
-  - component: {fileID: -7558665734951322907}
   m_Layer: 0
   m_Name: SubsequentImage
   m_TagString: Untagged
@@ -290,18 +289,6 @@ MonoBehaviour:
   m_StartingSingleGrabTransformers: []
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
---- !u!114 &-7558665734951322907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3225365108092269047}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a33ddf39df68fb498630c55adf11cac, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &5063087034300732813
 GameObject:
   m_ObjectHideFlags: 0
