@@ -7,35 +7,43 @@ using UnityEngine.UI;
 
 public class Trash : MonoBehaviour
 {
-    public ClickNextImage rawImagecurrent_script;
+
     public InteractableImageStack Canvas_script;
-    public XRInteractionManager interactionManager;
-     public GameObject rawImagesubsequent;
     
+
     
         // Start is called before the first frame update
 
     // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
 
     void OnCollisionEnter(Collision collision)
-    {   
-        if (rawImagecurrent_script != null && Canvas_script != null)
+
+
+    {
+
+        Debug.Log(string.Format("Collision with {0}", collision.contacts));
+
+        if (Canvas_script.rawImagecurrent != null)
 
         {
 
         // Check if the collision involves the other GameObject you are interested in
-        if (collision.gameObject.name == rawImagecurrent_script.gameObject.name)
+        if (collision.gameObject.name == Canvas_script.rawImagecurrent.name)
         {Debug.Log(string.Format("Objected collided {0}", "YES !"));
             dispose();
         }
 
 
+        else {
+             Debug.Log(string.Format("No collision as if statement is not satisfied {0}", Canvas_script.rawImagecurrent.name));
+        }
 
+
+
+        }
+
+        else {
+             Debug.Log(string.Format("No collision as current object is missing {0}", Canvas_script.rawImagecurrent.name));
         }
 
     }
@@ -55,13 +63,26 @@ public class Trash : MonoBehaviour
             Canvas_script.current_img = 0; 
         }
         
+    if (Canvas_script != null)
+        {
 
-        interactionManager.CancelInteractableSelection(GetComponent<IXRSelectInteractable>());
-        GetComponent<RawImage>().texture = Canvas_script.images[Canvas_script.current_img];
-        transform.position = Canvas_script.canvas_position;
+        Destroy(Canvas_script.rawImagecurrent);
+
+
         
+        Canvas_script.init_current_img(Canvas_script.rawImagecurrentprefab);
+        //interactionManager.CancelInteractableSelection(GetComponent<IXRSelectInteractable>());
+        closedisplaysecondimg();}
 
-        closedisplaysecondimg();
+        else
+        {
+            Debug.Log(string.Format("This object appears to be missing {0}", Canvas_script));
+
+
+        }
+
+
+
 
 
 
@@ -72,10 +93,9 @@ public class Trash : MonoBehaviour
 
 {
 
-        if (rawImagesubsequent != null){
+        if (Canvas_script.rawImagesubsequent != null){
         
-        rawImagesubsequent.GetComponent<RawImage>().texture = null;
-        rawImagesubsequent.SetActive(false);
+        Destroy(Canvas_script.rawImagesubsequent);
 
 
         }

@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 8992275303530312077}
   - component: {fileID: 4690562464659281421}
   - component: {fileID: 1547008875790184987}
-  - component: {fileID: 5263862459679044694}
   - component: {fileID: 4800883209500689138}
   - component: {fileID: 7545554556145067232}
   - component: {fileID: 5473591731291356083}
+  - component: {fileID: 3360462988809692247}
   m_Layer: 0
   m_Name: RawImage
   m_TagString: Untagged
@@ -78,18 +78,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 90819630969103367}
   m_CullTransparentMesh: 0
---- !u!114 &5263862459679044694
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 90819630969103367}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 392ee7e05a1110841ab6185b3fb15f5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!65 &4800883209500689138
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -119,9 +107,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 90819630969103367}
   serializedVersion: 4
-  m_Mass: 1
+  m_Mass: 0.0000001
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -132,11 +120,11 @@ Rigidbody:
     serializedVersion: 2
     m_Bits: 0
   m_ImplicitCom: 1
-  m_ImplicitTensor: 1
+  m_ImplicitTensor: 0
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 112
   m_CollisionDetection: 1
 --- !u!114 &5473591731291356083
 MonoBehaviour:
@@ -189,9 +177,9 @@ MonoBehaviour:
   m_SelectEntered:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: InteractableImageStack, Assembly-CSharp
-        m_MethodName: displaysecondimg
+      - m_Target: {fileID: 3360462988809692247}
+        m_TargetAssemblyTypeName: ClickNextImage, Assembly-CSharp
+        m_MethodName: onSelectEnter
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -260,7 +248,7 @@ MonoBehaviour:
   m_SnapToColliderVolume: 1
   m_ReinitializeDynamicAttachEverySingleGrab: 1
   m_AttachEaseInTime: 0.15
-  m_MovementType: 1
+  m_MovementType: 2
   m_VelocityDamping: 1
   m_VelocityScale: 1
   m_AngularVelocityDamping: 1
@@ -302,6 +290,19 @@ MonoBehaviour:
   m_StartingSingleGrabTransformers: []
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
+--- !u!114 &3360462988809692247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 90819630969103367}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 392ee7e05a1110841ab6185b3fb15f5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boxCollider: {fileID: 4800883209500689138}
 --- !u!1 &3768332985026527471
 GameObject:
   m_ObjectHideFlags: 0
@@ -313,6 +314,7 @@ GameObject:
   - component: {fileID: 2034674633012220571}
   - component: {fileID: 353529692135208618}
   - component: {fileID: 4462927813328828895}
+  - component: {fileID: 6807033614435281010}
   m_Layer: 0
   m_Name: CIN_counter
   m_TagString: Untagged
@@ -436,6 +438,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6807033614435281010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3768332985026527471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65aa4d5f3d17fa099b9a39b79de87299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6925141213062562161
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,6 +461,7 @@ GameObject:
   - component: {fileID: 5270618234355877281}
   - component: {fileID: 5548472999903541907}
   - component: {fileID: 3686293378751693829}
+  - component: {fileID: 7678296413135364914}
   m_Layer: 0
   m_Name: Image_ID
   m_TagString: Untagged
@@ -570,3 +585,15 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7678296413135364914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6925141213062562161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a603808d8c1b7437a358529dd105ca0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

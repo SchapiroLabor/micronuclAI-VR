@@ -18,9 +18,11 @@ public class InteractableImageStack : MonoBehaviour
     public List<Texture2D> images = new List<Texture2D>();
     private List<string> imagePaths;
     public Vector3 canvas_position;
+    public Quaternion canvas_rotation;
+    public GameObject rawImagecurrentprefab;
     public GameObject rawImagecurrent;
     public GameObject rawImagesubsequentprefab;
-    private GameObject rawImagesubsequent;
+    public GameObject rawImagesubsequent;
 
     private void Start()
     {   
@@ -32,19 +34,21 @@ public class InteractableImageStack : MonoBehaviour
     // Populate the list dedicated to image textures
     getImageTextures();
 
-    init_current_img();
+    init_current_img(rawImagecurrentprefab);
 
-    create_subsequent_img();
+    
 
     
     }
 
-    private void init_current_img()
+    public void init_current_img(GameObject rawImagecurrentprefab)
     {
-        
+        rawImagecurrent = Instantiate(rawImagecurrentprefab, transform);
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
         float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
         rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
+        //rawImagecurrent.transform.rotation = canvas_rotation;
+        //rawImagecurrent.transform.position = canvas_position;
         Debug.Log(string.Format("Size of 3D Collider {0}", rawImagecurrent.GetComponent<BoxCollider>().size));
 
         rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
@@ -52,7 +56,7 @@ public class InteractableImageStack : MonoBehaviour
     }
 
 
-    private  void create_subsequent_img()
+    private  void create_subsequent_img(GameObject rawImagesubsequentprefab)
     {   
         if (n_imgs > 1){
 
@@ -70,13 +74,13 @@ public class InteractableImageStack : MonoBehaviour
     void Update()
     {
 
-    displaysecondimg();
+    
         
     }
 
 
 
-    public void displaysecondimg()
+    public void displaysecondimg(GameObject rawImagesubsequentprefab)
     {   
 
         if (rawImagecurrent != null)
@@ -85,6 +89,9 @@ public class InteractableImageStack : MonoBehaviour
 
         // Display the second image only when current image has moved and rawimage has spwned
         if (rawImagecurrent.transform.position != transform.position){
+
+
+        create_subsequent_img(rawImagesubsequentprefab);
 
         subsequent_img = current_img;
 
@@ -96,7 +103,6 @@ public class InteractableImageStack : MonoBehaviour
         }
         
         rawImagesubsequent.GetComponent<RawImage>().texture = images[subsequent_img];
-        rawImagesubsequent.SetActive(true);
 
         }
         }
@@ -134,6 +140,7 @@ public class InteractableImageStack : MonoBehaviour
         float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(Width, 2) + Mathf.Pow(Height, 2)), 25);
         canvas_position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
         transform.position = canvas_position;
+        canvas_rotation = transform.rotation;
         Debug.Log(string.Format("Z distance: {0}", viewingDistance));
 
     }
