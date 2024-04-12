@@ -55,8 +55,6 @@ public class InteractableImageStack : MonoBehaviour
 
         assign_bleb_id(rawImagecurrent, current_img, blebs);
         
-
-
     }
 
     private void assign_bleb_id(GameObject image, int imgid, int blebid)
