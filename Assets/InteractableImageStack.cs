@@ -6,13 +6,14 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
-
+using TMPro;
 
 
 public class InteractableImageStack : MonoBehaviour
 {
     //public RawImage[] imageDisplays; // Array to store image displays
     public int current_img = 0;
+    public int blebs = 0;
     public int subsequent_img;
     public int n_imgs;
     public List<Texture2D> images = new List<Texture2D>();
@@ -41,17 +42,36 @@ public class InteractableImageStack : MonoBehaviour
     
     }
 
+    //Blebs should be counted using activation and be cuncurrent with current_img
+
     public void init_current_img(GameObject rawImagecurrentprefab)
     {
         rawImagecurrent = Instantiate(rawImagecurrentprefab, transform);
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
         float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
         rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
-        //rawImagecurrent.transform.rotation = canvas_rotation;
-        //rawImagecurrent.transform.position = canvas_position;
-        Debug.Log(string.Format("Size of 3D Collider {0}", rawImagecurrent.GetComponent<BoxCollider>().size));
 
         rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
+
+        assign_bleb_id(rawImagecurrent, current_img, blebs);
+        
+
+
+    }
+
+    private void assign_bleb_id(GameObject image, int imgid, int blebid)
+
+    {
+        TextMeshProUGUI imageid = image.transform.Find("Image_ID").gameObject.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI bleb = image.transform.Find("CIN_counter").gameObject.GetComponent<TextMeshProUGUI>();
+
+        // Get child objects to set bleb count and ID
+
+
+        imageid.text = string.Format("Image ID: {0}", imgid);
+        bleb.text = string.Format("N blebs: {0}", blebid);
+
+
 
     }
 
@@ -61,10 +81,8 @@ public class InteractableImageStack : MonoBehaviour
         if (n_imgs > 1){
 
         // Create a new RawImage GameObject from the prefab
-        rawImagesubsequent = Instantiate(rawImagesubsequentprefab,  transform, true);
-
-        rawImagesubsequent.transform.position = rawImagecurrent.transform.position;
-        rawImagesubsequent.SetActive(false);
+        rawImagesubsequent = Instantiate(rawImagesubsequentprefab,  transform);
+        rawImagesubsequent.SetActive(true);
 
 
         }
@@ -83,12 +101,12 @@ public class InteractableImageStack : MonoBehaviour
     public void displaysecondimg(GameObject rawImagesubsequentprefab)
     {   
 
-        if (rawImagecurrent != null)
+        if (rawImagecurrent != null && rawImagesubsequent == null)
 
         {
 
         // Display the second image only when current image has moved and rawimage has spwned
-        if (rawImagecurrent.transform.position != transform.position){
+        //if (rawImagecurrent.transform.position != transform.position){
 
 
         create_subsequent_img(rawImagesubsequentprefab);
@@ -103,9 +121,11 @@ public class InteractableImageStack : MonoBehaviour
         }
         
         rawImagesubsequent.GetComponent<RawImage>().texture = images[subsequent_img];
+        assign_bleb_id(rawImagesubsequent, subsequent_img, blebs);
+        
+        }
 
-        }
-        }
+        
 
     }
 

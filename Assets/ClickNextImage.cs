@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
-using TMPro;
+
 using Unity.VisualScripting;
 
 public class ClickNextImage : MonoBehaviour
@@ -11,16 +11,14 @@ public class ClickNextImage : MonoBehaviour
     //public XRGrabInteractable interactable;
     // Start is called before the first frame update
     
-    public BoxCollider boxCollider;
-    public GameObject Canvas;
+    private InteractableImageStack Canvas_script;
+
     
    void Start()
 
    {
-    if (boxCollider == true)
-    Debug.Log(string.Format("Collision with {0}", "exists"));
-    else
-    {Debug.Log(string.Format("Collision with {0}", "does not exists"));}
+    
+    Canvas_script = transform.parent.GetComponent<InteractableImageStack>();
 
    }
 
@@ -35,14 +33,18 @@ public class ClickNextImage : MonoBehaviour
 
 
     }
+
+
+
     public void onSelectEnter()
 
 
-    { Canvas.GetComponent<InteractableImageStack>().displaysecondimg(Canvas.GetComponent<InteractableImageStack>().rawImagesubsequentprefab);
+    {  
+       Debug.Log(string.Format("Function was executed {0}", "Yes"));
         
-
+        Canvas_script.displaysecondimg(Canvas_script.rawImagesubsequentprefab);
+        
     }
-
 
 
 }

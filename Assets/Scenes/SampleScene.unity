@@ -781,6 +781,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   current_img: 0
+  blebs: 0
   subsequent_img: 0
   n_imgs: 0
   images: []
