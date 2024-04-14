@@ -430,6 +430,32 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4588071436008337126, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 2800000, guid: 44a33d6d50dd3f64686e126d111cf6b1, type: 3}
+    - target: {fileID: 4721789747449865430, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_fontSize
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 4721789747449865430, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_overflowMode
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4721789747449865430, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4721789747449865430, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_enableWordWrapping
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7113593995643210911, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_text
+      value: 'Enter folder path
+
+'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
