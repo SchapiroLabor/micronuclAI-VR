@@ -21,7 +21,7 @@ public class Trash : MonoBehaviour
 
     {
 
-        Debug.Log(string.Format("Collision with {0}", collision.contacts));
+
 
         if (Canvas_script.rawImagecurrent != null)
 
@@ -29,7 +29,7 @@ public class Trash : MonoBehaviour
 
         // Check if the collision involves the other GameObject you are interested in
         if (collision.gameObject.name == Canvas_script.rawImagecurrent.name)
-        {Debug.Log(string.Format("Objected collided {0}", "YES !"));
+        {
             dispose();
         }
 

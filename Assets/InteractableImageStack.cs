@@ -13,10 +13,11 @@ public class InteractableImageStack : MonoBehaviour
 {
     //public RawImage[] imageDisplays; // Array to store image displays
     public int current_img = 0;
-    public int blebs = 0;
+    
     public int subsequent_img;
     public int n_imgs;
     public List<Texture2D> images = new List<Texture2D>();
+    public List<int> blebs;
     private List<string> imagePaths;
     public Vector3 canvas_position;
     public Quaternion canvas_rotation;
@@ -53,11 +54,11 @@ public class InteractableImageStack : MonoBehaviour
 
         rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
 
-        assign_bleb_id(rawImagecurrent, current_img, blebs);
+        assign_bleb_id(rawImagecurrent, current_img, blebs[current_img]);
         
     }
 
-    private void assign_bleb_id(GameObject image, int imgid, int blebid)
+    public void assign_bleb_id(GameObject image, int imgid, int blebid)
 
     {
         TextMeshProUGUI imageid = image.transform.Find("Image_ID").gameObject.GetComponent<TextMeshProUGUI>();
@@ -119,7 +120,7 @@ public class InteractableImageStack : MonoBehaviour
         }
         
         rawImagesubsequent.GetComponent<RawImage>().texture = images[subsequent_img];
-        assign_bleb_id(rawImagesubsequent, subsequent_img, blebs);
+        assign_bleb_id(rawImagesubsequent, subsequent_img, blebs[subsequent_img]);
         
         }
 
@@ -134,7 +135,6 @@ public class InteractableImageStack : MonoBehaviour
         imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/test_imgs", "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path => {string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(); return ext.Contains(extension);}).ToList();
 
-        Debug.Log(string.Format("Image paths are {0}", imagePaths));
         n_imgs = imagePaths.Count;
         Debug.Log(string.Format("Number of images {0}", n_imgs));
 
@@ -143,6 +143,7 @@ public class InteractableImageStack : MonoBehaviour
         {   
             //if (Path.GetExtension(imagePath).Equals(".png", System.StringComparison.OrdinalIgnoreCase))
             images.Add(Resources.Load<Texture2D>("test_imgs/" + Path.GetFileNameWithoutExtension(imagePath)));
+            blebs.Add(0);
 
             //This part extracts a substring from the imagePath. It removes the part of the path that matches the project's data path.
             //Resources.Load is a Unity function that allows you to load assets like textures directly from the Resources folder at runtime.
@@ -159,7 +160,6 @@ public class InteractableImageStack : MonoBehaviour
         canvas_position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
         transform.position = canvas_position;
         canvas_rotation = transform.rotation;
-        Debug.Log(string.Format("Z distance: {0}", viewingDistance));
 
     }
 

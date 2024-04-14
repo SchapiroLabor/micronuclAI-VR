@@ -72,9 +72,9 @@ public class MultiplexedImage : MonoBehaviour
 
     { 
 
-        Size imageSize = Image.FromFile(filePath).Size;
+       // Size imageSize = Image.FromFile(filePath).Size;
         //TextureFormat.RGB565
-        Debug.Log(string.Format("What size is this {}", imageSize));
+       // Debug.Log(string.Format("What size is this {}", imageSize));
         //Texture2D tex = new Texture2D(16, 16, TextureFormat.PVRTC_RGBA4, false);
         
 

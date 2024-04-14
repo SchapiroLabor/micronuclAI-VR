@@ -39,7 +39,7 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Primary Button",
@@ -303,7 +303,7 @@
                 {
                     "name": "",
                     "id": "4f6dfc4a-38d9-455d-9364-3a188b0e9326",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/m",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
