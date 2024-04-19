@@ -66,6 +66,7 @@ public class InteractableImageStack : MonoBehaviour
 
         // Get child objects to set bleb count and ID
 
+        //Debug.Log("")
 
         imageid.text = string.Format("Image ID: {0}", imgid);
         bleb.text = string.Format("N blebs: {0}", blebid);
