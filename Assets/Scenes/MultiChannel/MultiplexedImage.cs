@@ -9,6 +9,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
 using System;
 using System.Drawing;
+using UnityEditor.Scripting.Python;
 
 public class MultiplexedImage : MonoBehaviour
 {   public List<Texture2D> images = new List<Texture2D>();
@@ -18,9 +19,9 @@ public class MultiplexedImage : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
+
+
     {
-        getImageTextures();
-        init_current_img(Channelprefab);
         
     }
 
@@ -28,6 +29,17 @@ public class MultiplexedImage : MonoBehaviour
     void Update()
     {
         
+    }
+
+   private Texture2D Init_tif_texture()
+   {
+
+    tex = UE.Texture2D(*shape[:2], UE.TextureFormat.RGB48)
+    tex.LoadRawTextureData(array)
+    tex.Apply()
+    class_ = UE.Object.FindObjectsOfType(UE.RawImage)
+    class_.RawImage.tex = tex
+
     }
 
 
