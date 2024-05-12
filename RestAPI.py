@@ -1,13 +1,15 @@
-from flask import Flask, request
 import python_codes.unity_functions as uf
+from flask import Flask, request
 
 app = Flask(__name__)
 
 tiff = {}
 
+
 @app.route("/v1")
 def hello_world():
     return "<p>Hello, World!</p>"
+
 
 @app.route('/v1/tiff_img', methods=['POST', 'GET'])
 def get_tiff():
@@ -15,15 +17,16 @@ def get_tiff():
         tiff["path"] = request.form["path"]
         return {"Value": "Success"}
     else:
-        img, metadata, name = uf.read_tiff(tiff["path"])[0]
-        tiff["img"] = img.tolist()
-        tiff["metadata"] = metadata
-        return tiff
-
-
-
-
-
+        try:
+            array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
+            tiff["img"] = array.tolist()  # Integrity is kept intact
+            tiff["metadata"] = kwargs
+            tiff["shape"] = shape
+            tiff["dtype"] = dtype_string
+            return tiff
+        except Exception as e:
+            print("Got a problem here: {}".format(e))
+            return e
 
 
 if __name__ == '__main__':
