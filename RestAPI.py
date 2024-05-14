@@ -8,22 +8,28 @@ tiff = {}
 
 @app.route("/v1")
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return {"Value": "Success"}
 
 
 @app.route('/v1/tiff_img', methods=['POST', 'GET'])
 def get_tiff():
     if request.method == "POST":
-        tiff["path"] = request.form["path"]
-        return {"Value": "Success"}
+        try:
+            tiff["path"] = request.form["path"]
+            return {"Value": "Success"}
+        except Exception as e:
+            print("Got a problem: {} \n Caused by: {}".format(e, request.endpoint))
+            return e
+
+
     else:
         try:
-            array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
-            tiff["img"] = array.tolist()  # Integrity is kept intact
-            tiff["metadata"] = kwargs
-            tiff["shape"] = shape
-            tiff["dtype"] = dtype_string
-            return tiff
+            # array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
+            # tiff["img"] = array.tolist()  # Integrity is kept intact
+            # tiff["metadata"] = kwargs
+            # tiff["shape"] = shape
+            # tiff["dtype"] = dtype_string
+            return {"Value": "Success"} #tiff
         except Exception as e:
             print("Got a problem here: {}".format(e))
             return e

@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using System.IO; // Add this line to include the System.IO namespace
@@ -12,16 +13,22 @@ using System.Drawing;
 using UnityEditor.Scripting.Python;
 
 public class MultiplexedImage : MonoBehaviour
-{   public List<Texture2D> images = new List<Texture2D>();
-    private List<string> imagePaths;
-    public int n_imgs;
-    public GameObject Channelprefab;
+{      public void init_current_img()
+    {
+        
+        float width = GetComponent<RectTransform>().rect.width;
+        float height = GetComponent<RectTransform>().rect.height;
+        GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
+        
+    }
+
 
     // Start is called before the first frame update
     void Start()
 
 
     {
+         init_current_img();
         
     }
 
@@ -30,7 +37,7 @@ public class MultiplexedImage : MonoBehaviour
     {
         
     }
-
+/*
    private Texture2D Init_tif_texture()
    {
 
@@ -65,22 +72,7 @@ public class MultiplexedImage : MonoBehaviour
 
     }
 
-
-    public void init_current_img(GameObject Channelprefab)
-    {
-        GameObject rawImagecurrent = Instantiate(Channelprefab, transform);
-        float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
-        float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
-        rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
-
-        rawImagecurrent.GetComponent<RawImage>().texture = images[0];
-
-        //assign_bleb_id(rawImagecurrent, current_img, blebs);
-        
-    }
-
-
-    private void tiffimg(string filePath)
+        private void tiffimg(string filePath)
 
     { 
 
@@ -96,6 +88,12 @@ public class MultiplexedImage : MonoBehaviour
 
 
     }
+    */
+
+
+
+
+
 
 
 
