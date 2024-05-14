@@ -1,7 +1,9 @@
 import python_codes.unity_functions as uf
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+
+
 
 tiff = {}
 
@@ -15,21 +17,21 @@ def hello_world():
 def get_tiff():
     if request.method == "POST":
         try:
-            tiff["path"] = request.form["path"]
+            tiff["path"] = request.json["path"]
             return {"Value": "Success"}
         except Exception as e:
-            print("Got a problem: {} \n Caused by: {}".format(e, request.endpoint))
+            print("Got a problem: {} \n Caused by: {}".format(e, request.data))
             return e
 
 
     else:
         try:
-            # array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
-            # tiff["img"] = array.tolist()  # Integrity is kept intact
-            # tiff["metadata"] = kwargs
-            # tiff["shape"] = shape
-            # tiff["dtype"] = dtype_string
-            return {"Value": "Success"} #tiff
+            array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
+            tiff["img"] = array.tolist()  # Integrity is kept intact
+            tiff["metadata"] = kwargs
+            tiff["shape"] = shape
+            tiff["dtype"] = dtype_string
+            return tiff #tiff
         except Exception as e:
             print("Got a problem here: {}".format(e))
             return e

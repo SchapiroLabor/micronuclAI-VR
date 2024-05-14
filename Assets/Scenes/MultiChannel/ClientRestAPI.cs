@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using System.Text;
 using UnityEngine;
 using System.Collections.Generic;
-
+using System.IO;
+using Palmmedia.ReportGenerator.Core.Common;
+using System.Runtime.Serialization.Json;
+using Unity.VisualScripting;
+using System.Linq;
 
 public class ClientRestAPI : MonoBehaviour
 
@@ -13,7 +17,7 @@ public class ClientRestAPI : MonoBehaviour
     
 public static string start_endpoint = "http://127.0.0.1:5000//v1";
 
-public static HttpClient client = new();
+public static HttpClient client = new();                          
 
     private void setCanvasPosition()
     {
@@ -55,24 +59,37 @@ public static HttpClient client = new();
         
     }
 
-static async Task GetRequest(string uri)
+    private static async Task<Dictionary<string, object>> GetRequest(string uri)
 { //How to return json file ?? 
     try
     {
         //Send the GET request
         //Always catch network exceptions for async methods
         //Send the GET request asynchronously and retrieve the response as a string.
-        HttpResponseMessage httpResponse = await client.GetAsync(uri);
-        httpResponse.EnsureSuccessStatusCode();
 
-        var jsonResponse = await httpResponse.Content.ReadAsStringAsync(); //Deserilisation is automated
-        Debug.Log($"{jsonResponse}\n");
+         HttpResponseMessage response = await client.GetAsync(uri);
+         Debug.Log("Response: " + response.EnsureSuccessStatusCode().ToString());
+         //Debug.Log("Content: " + response.Content.ReadAsStringAsync());
+
+         // TODO How do I get json output and treat it as dictionary?????????
+        
+        Dictionary<string, object> content = JsonUtility.FromJson<Dictionary<string, object>>(response.Content.Serialize().json);
+            foreach (string key in content.Keys)
+    {
+        Debug.Log("Message: " + key.ToString());
+    }
+
+
+        
+
+        return content;
 
 
     }
     catch (Exception ex)
     {
         Debug.Log("Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message);
+        return null;
     }
 }
 
@@ -100,20 +117,27 @@ static async Task PutRequest(string uri, StringContent content)
 
 static async Task GetImgs(string tiff_path)
 {
-    // Construct the JSON to post.
+        // Construct the JSON to post.
 
-    var dict = new Dictionary<string, string>();
-    dict.Add("path", tiff_path);
-    
-    string jsonData = "{\"path\": \"$"{tiff_path}"\", \"age\": 30}";
 
-    StringContent content = new StringContent (jsonData, Encoding.UTF8, "application/json");
 
-    Debug.Log($"{content}\n");
+
+        //string jsonData ="{\"path\":\"/media/ibrahim/Extended Storage/cloud/Internship/IPBM/Dataset/LHA3_R5_tiny/input1/LHA3_R5_tiny_V01_Z-0.tif\"}";
+
+
+
+        //StringContent content = new(JsonSerializer.ToJsonString(dict));
+
+    StringContent content = new( JsonSerializer.ToJsonString(new{path = tiff_path}), Encoding.UTF8, "application/json");
 
     string endpoint = $"{start_endpoint}/tiff_img";
 
     await PutRequest(endpoint, content);
+
+    await GetRequest(endpoint); //Works like a charm
+
+
+
 
 }
 
@@ -121,12 +145,11 @@ public async void Execute()
 {
 
     // Construct the JSON to post.
-    await GetImgs("cell_tinder//Assets//Images//dataset//image_34.tif");
+    await GetImgs("/media/ibrahim/Extended Storage/cloud/Internship/IPBM/Dataset/LHA3_R5_tiny/input1/LHA3_R5_tiny_V01_Z-0.tif");
 
     
-   //await GetRequest($"{start_endpoint}/tiff_img"); //Works like a charm
+
 
 }
 
 }
-
