@@ -10,7 +10,6 @@ using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
 using System;
 using System.Drawing;
-using UnityEditor.Scripting.Python;
 
 public class MultiplexedImage : MonoBehaviour
 {      public void init_current_img()
@@ -99,4 +98,3 @@ public class MultiplexedImage : MonoBehaviour
 
 
 }
-*/

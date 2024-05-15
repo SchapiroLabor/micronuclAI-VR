@@ -18,7 +18,7 @@ def get_tiff():
     if request.method == "POST":
         try:
             tiff["path"] = request.json["path"]
-            return {"Value": "Success"}
+            return tiff
         except Exception as e:
             print("Got a problem: {} \n Caused by: {}".format(e, request.data))
             return e
@@ -27,7 +27,7 @@ def get_tiff():
     else:
         try:
             array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
-            tiff["img"] = array.tolist()  # Integrity is kept intact
+            #tiff["img"] = array.tolist()  # Integrity is kept intact
             tiff["metadata"] = kwargs
             tiff["shape"] = shape
             tiff["dtype"] = dtype_string

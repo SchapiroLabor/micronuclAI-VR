@@ -1,0 +1,30 @@
+Notes:
+
+HTTPS requests are sent as Netzwerk-E/A- bound work.
+HTTPS Text methods require HTTPcontent parameter. One can access the content of Text responses using .Content
+
+C# Create .Net project with template. However, Unity appears to have its own .Net execution mechanism.
+Unity has library for HTTPS requests but has no mention of sending and recieving json data.
+Will have to work with available functions in System
+
+(50 MB oder mehr) most be streamed in c# as recommended by microsoft. The stream return object can then state the status of the download.
+The stream can then be read into objects - Do i Really need streaming considering it is a rest api on the same computer ?
+
+COnfigure Siocket handler so it only works on a single response at a time.
+
+If loading inot buffer then we load into ram
+
+Unity severely restricts use of Http package by systems
+
+In unity, global response instance must be created from scratch
+ït needs am upload and download hnadler
+
+For the upoad handler, this subclass copies input data into a native-code memory buffer at construction time, and transmits that data verbatim as HTTP request body data.
+
+The static methods of get and post already create an instance with handlers
+
+The Unity allows post and return for post method but requires time for get method. We need to add status bar to know whether download occurs or not.
+
+The data in postData will be interpreted into a byte stream via System.Text.Encoding.UTF8. The resulting byte stream will be stored in an UploadHandlerRaw and the Upload Handler will be attached to this UnityWebRequest. Requires IENumerator and how does it allow the executing.If we remove IE nuemrator then no Data is returned
+
+The event handler function does not appear to work for AsyncOperation.completed.
