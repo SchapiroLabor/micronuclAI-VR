@@ -8,6 +8,6 @@ def fluorescent_channel2rgb(tiff_path=None):
     shape = array.shape
     # TODO automate rgb img creation for fluorescent channel
     #if kwargs["colormap"] == "#0000FF":
-    array = np.stack([np.zeros(shape), np.zeros(shape), array], axis=-1).astype(array.dtype)
-    shape = array.shape
+    #array = np.stack([np.zeros(shape), np.zeros(shape), array], axis=-1).astype(array.dtype)
+    #shape = array.shape
     return array, kwargs, shape, str(array.dtype)

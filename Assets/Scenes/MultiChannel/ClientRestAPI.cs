@@ -1,15 +1,13 @@
 // See https://aka.ms/new-console-template for more information
 using System;
-using System.Text;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using Palmmedia.ReportGenerator.Core.Common;
-using System.Runtime.Serialization.Json;
-using Unity.VisualScripting;
-using System.Linq;
 using UnityEngine.Networking;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Unity.VisualScripting;
+using UnityEngine.UI;
 
 
 
@@ -19,9 +17,24 @@ public class ClientRestAPI : MonoBehaviour
 
 {
     public static string start_endpoint = "http://127.0.0.1:5000//v1";
+    GameObject child;
+
+   
+    
+    //public Dictionary<string, object> data;
 
 
     //public static HttpClient client =  createHTTP();
+
+    [Serializable]
+    public class Data
+    {
+    public string dtype;
+    public string path;
+    public List<int> shape;
+    public List<int> img;
+    public List<string> metadata;
+    }
 
 
 
@@ -74,6 +87,8 @@ public class ClientRestAPI : MonoBehaviour
 
 
     { setCanvasPosition();
+
+      child = transform.GetChild(0).gameObject;
         
     }
 
@@ -83,7 +98,11 @@ public class ClientRestAPI : MonoBehaviour
         
     }
 
- IEnumerator GetRequest()
+
+
+
+
+ IEnumerator  GetRequest()
 { //How to return json file ?? 
     //try
     //{
@@ -122,10 +141,26 @@ public class ClientRestAPI : MonoBehaviour
         }
         else {
             // Show results as text
-            Debug.Log(www.downloadHandler.text);
+            Debug.Log("Worked");
 
             // Or retrieve results as binary data
-            byte[] results = www.downloadHandler.data;
+            var data = JObject.Parse(www.downloadHandler.text); //Should return UTF string of Byte Data. Only reads into serialised objects
+            //Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(www.downloadHandler.text);
+            //var data = JsonConvert.DeserializeObject<Dictionary<int, int>>(json)
+            //Debug.Log(data.shape);
+            //data.metadata.ForEach(Debug.Log);
+            int h = ((int)data["shape"][0]);
+            int w = ((int)data["shape"][1]);
+            int[] data2 = data.SelectToken("img").ToObject<int[]>();
+            Debug.Log(string.Format("H {0} and W {0}", h, w));
+            var tex = new Texture2D(h, w, TextureFormat.RGB48, true);
+            tex.SetPixelData(data2, 0, 0);
+            tex.Apply();
+
+            child.GetComponent<RawImage>().texture=tex;
+
+            
+
         }
             
             
@@ -177,7 +212,7 @@ IEnumerator PutRequest()
     // Sends header: "Content-Type: custom/content-type";
     uploader.contentType = "application/json";
     client.uploadHandler = uploader;*/
-    string content = JsonSerializer.ToJsonString(new{path = "C:\\Schapiro Lab\\ibrahim_hiwi\\VRproject\\VR Demo dataset\\image_34.tif"});
+    string content = JsonConvert.SerializeObject(new{path = "/media/ibrahim/Extended Storage/cloud/Internship/IPBM/Dataset/LHA3_R5_tiny/input1/LHA3_R5_tiny_V01_Z-0.tif"});
     using (UnityWebRequest www = UnityWebRequest.Post($"{start_endpoint}/tiff_img", content, "application/json"))
         {
             yield return www.SendWebRequest();
@@ -237,7 +272,7 @@ void GetImgs(string tiff_path)
 
     //StringContent content = new( JsonSerializer.ToJsonString(new{path = tiff_path}), Encoding.UTF8, "application/json");
 
-    string content = JsonSerializer.ToJsonString(new{path = tiff_path});
+    string content = JsonConvert.SerializeObject(new{path = tiff_path});
 
     string endpoint = $"{start_endpoint}/tiff_img";
 
@@ -255,7 +290,7 @@ public  void Execute()
 {
 
     // Construct the JSON to post.
-    GetImgs("C:\\Schapiro Lab\\ibrahim_hiwi\\VRproject\\VR Demo dataset\\image_34.tif");
+    GetImgs("/media/ibrahim/Extended Storage/cloud/Internship/shapiro/greentest.tif");
 
     
 

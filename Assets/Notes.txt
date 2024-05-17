@@ -28,3 +28,16 @@ The Unity allows post and return for post method but requires time for get metho
 The data in postData will be interpreted into a byte stream via System.Text.Encoding.UTF8. The resulting byte stream will be stored in an UploadHandlerRaw and the Upload Handler will be attached to this UnityWebRequest. Requires IENumerator and how does it allow the executing.If we remove IE nuemrator then no Data is returned
 
 The event handler function does not appear to work for AsyncOperation.completed.
+
+When text is called we are adding UTF8 serialisation to the data
+
+Appears that JsunUtility only reads for objects with Unity serialisation. For this I need to know the exatt types of the elements.
+
+Newton Json thankfully has a parser. This gives me the types of the element. Do I need to know how it works ?
+
+Instead of the corountine method, which does not allow me to return values. I can also 
+
+
+Image appears to load but no image. Need to confirm.
+
+
