@@ -27,7 +27,7 @@ def get_tiff():
     else:
         try:
             array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
-            tiff["img"] = array.flatten().tolist()  # Integrity is kept intact
+            tiff["img"] = [x.flatten().tolist() for x in array]  # Integrity is kept intact
             tiff["metadata"] = kwargs
             tiff["shape"] = shape
             tiff["dtype"] = dtype_string
