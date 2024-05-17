@@ -14,9 +14,13 @@ def fluorescent_channel2rgb(tiff_path=None):
 
     if axes[0] > 3:
         array = np.split(array, np.arange(3, axes[0], 3), axis=-1)[0]
+    elif axes[0] < 3:
+        array = [np.concatenate([array] + [np.zeros(array.shape[:2] + (1,)) for x in range(3-axes[0])], axis=-1).astype(np.uint16)]
     else:
-        [array] = array
+        array = [array]
     shape = array[0].shape
+    print("Shape: {}".format(shape))
+    print("Length {}". format(len(array)))
     # TODO automate rgb img creation for fluorescent channel
     #if kwargs["colormap"] == "#0000FF":
     #array = np.stack([np.zeros(shape), np.zeros(shape), array], axis=-1).astype(array.dtype)

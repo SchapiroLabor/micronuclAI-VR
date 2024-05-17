@@ -149,16 +149,16 @@ public class ClientRestAPI : MonoBehaviour
             //var data = JsonConvert.DeserializeObject<Dictionary<int, int>>(json)
             //Debug.Log(data.shape);
             //data.metadata.ForEach(Debug.Log);
-            int h = ((int)data["shape"][0]);
-            int w = ((int)data["shape"][1]);
+            int h = (int)data["shape"][0];
+            int w = (int)data["shape"][1];
             int length = h*w;
-            Range implicitRange = 0..^length;
-            int [][] data2 = (int [3][length] data["img"]); //.SelectToken("img").ToObject<byte [][]>();
+            int [][] data2 =  data.SelectToken("img").ToObject<int [][]>();
+            int [] img_array = data2[0];
             Debug.Log(string.Format("H {0} and W {0}", h, w));
             int output = data2[0].Length;
-            //Debug.Log(string.Format("Length {0}", length));
+            Debug.Log(string.Format("Length {0}", length));
             var tex = new Texture2D(h, w, TextureFormat.RGB48, true);
-            tex.SetPixelData(data2[0], 0, 0);
+            tex.SetPixelData(img_array, 0, 0);
             tex.Apply();
 
             child.GetComponent<RawImage>().texture=tex;
@@ -216,7 +216,7 @@ IEnumerator PutRequest()
     // Sends header: "Content-Type: custom/content-type";
     uploader.contentType = "application/json";
     client.uploadHandler = uploader;*/
-    string content = JsonConvert.SerializeObject(new{path = "image_34.tif"});
+    string content = JsonConvert.SerializeObject(new{path = "/media/ibrahim/Extended Storage/cloud/Internship/IPBM/well_G_1_hela_gfp_hoechst.tif"});
     using (UnityWebRequest www = UnityWebRequest.Post($"{start_endpoint}/tiff_img", content, "application/json"))
         {
             yield return www.SendWebRequest();
