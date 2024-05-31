@@ -91,8 +91,11 @@ public class ClientRestAPI : MonoBehaviour
     { setCanvasPosition();
 
         Channel1 = transform.GetChild(0).gameObject;
-        Channel2 = transform.GetChild(1).gameObject;
-        Channel2.transform.position = Channel1.transform.position;
+        //Channel2 = transform.GetChild(1).gameObject;
+        //Channel2.transform.position = Channel1.transform.position;
+
+        napari();
+
         
     }
 
@@ -102,8 +105,87 @@ public class ClientRestAPI : MonoBehaviour
         
     }
 
+private void napari()
+{
+StartCoroutine(NapariTest());
+}
 
 
+ IEnumerator  NapariTest()
+{ //How to return json file ?? 
+    //try
+    //{
+        //Send the GET request
+        //Always catch network exceptions for async methods
+        //Send the GET request asynchronously and retrieve the response as a string.
+
+/*
+        using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
+        {
+            // Request and wait for the desired page.
+            yield return www.SendWebRequest();
+            
+            if (www.result != UnityWebRequest.Result.Success) {
+            Debug.Log(www.error);
+        }
+        else {
+            // Show results as text
+            Debug.Log(www.downloadHandler.text);
+
+            // Or retrieve results as binary data
+            byte[] results = www.downloadHandler.data;
+        }
+            
+            
+            }
+            */
+
+        using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/napari_test"))
+        {
+            // Request and wait for the desired page.
+            yield return www.SendWebRequest();
+            
+            if (www.result != UnityWebRequest.Result.Success) {
+            Debug.Log(www.error);
+        }
+        else {
+            // Show results as text
+            Debug.Log("Worked");
+
+            // Or retrieve results as binary data
+            var json = JObject.Parse(www.downloadHandler.text); //Should return UTF string of Byte Data. Only reads into serialised objects
+            //Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(www.downloadHandler.text);
+            //var data = JsonConvert.DeserializeObject<Dictionary<int, int>>(json)
+            //Debug.Log(data.shape);
+            //data.metadata.ForEach(Debug.Log);
+            int h = (int)json["shape"][0];
+            int w = (int)json["shape"][1];
+            int length = h*w;
+            //JArray pixelArray = (JArray)data["img"][0];
+
+            //texture.SetPixel(0, 0, new Color(1.0f, 1.0f, 1.0f, 0.5f));
+
+
+
+            byte [] img =  json.SelectToken("img").ToObject<byte []>();
+            Debug.Log(string.Format("Data length: {0}", img.Length)); 
+
+
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.SetPixelData(img, 0);
+        tex.Apply();
+        Channel1.GetComponent<RawImage>().texture=tex; 
+
+
+
+
+
+            
+
+        }
+            
+            
+            }
 
 
  IEnumerator  GetRequest()
@@ -361,15 +443,20 @@ void GetImgs(string tiff_path)
 
 }
 
-public  void Execute()
+
+
+ void Execute()
 {
 
     // Construct the JSON to post.
-    GetImgs("/media/ibrahim/Extended Storage/cloud/Internship/shapiro/greentest.tif");
-
+    //GetImgs("/media/ibrahim/Extended Storage/cloud/Internship/shapiro/greentest.tif");
+    napari();
     
 
 
 }
 
-}
+
+
+
+} }
