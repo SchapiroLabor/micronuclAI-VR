@@ -28,9 +28,12 @@ def get_tiff():
         try:
             array, kwargs, shape, dtype_string = uf.fluorescent_channel2rgb(tiff["path"])
             tiff["img"] = [x.flatten().tolist() for x in array]  # Integrity is kept intact
+            print(len(tiff["img"]))
             tiff["metadata"] = kwargs
             tiff["shape"] = shape
+            print(tiff["shape"])
             tiff["dtype"] = dtype_string
+            #print("First array of RGB uint16 image: {}".format(tiff["img"][0][:6]))
             return tiff #tiff
         except Exception as e:
             print("Got a problem here: {}".format(e))

@@ -13,11 +13,13 @@ using System.Linq;
 
 
 
+
 public class ClientRestAPI : MonoBehaviour
 
 {
     public static string start_endpoint = "http://127.0.0.1:5000//v1";
-    GameObject child;
+    GameObject Channel1;
+    GameObject Channel2;
 
    
     
@@ -88,7 +90,9 @@ public class ClientRestAPI : MonoBehaviour
 
     { setCanvasPosition();
 
-      child = transform.GetChild(0).gameObject;
+        Channel1 = transform.GetChild(0).gameObject;
+        Channel2 = transform.GetChild(1).gameObject;
+        Channel2.transform.position = Channel1.transform.position;
         
     }
 
@@ -152,16 +156,83 @@ public class ClientRestAPI : MonoBehaviour
             int h = (int)data["shape"][0];
             int w = (int)data["shape"][1];
             int length = h*w;
-            int [][] data2 =  data.SelectToken("img").ToObject<int [][]>();
+            //JArray pixelArray = (JArray)data["img"][0];
+
+            //texture.SetPixel(0, 0, new Color(1.0f, 1.0f, 1.0f, 0.5f));
+
+            List<byte> channel1_byte = new List<byte>();
+            List<byte> channel2_byte = new List<byte>();
+
+
+            ushort [][] data2 =  data.SelectToken("img").ToObject<ushort [][]>();
+            ushort [] channel1 = data2[0];
+            ushort [] channel2 = data2[1];
+
+
+        Debug.Log(string.Format("Data lengths: {0}, {0}", channel1.Length, channel2.Length)); 
+        foreach (ushort value1 in channel1)
+        {
+            channel1_byte.AddRange(BitConverter.GetBytes(value1));
+        }
+
+                foreach (ushort value2 in channel2)
+        {
+            channel2_byte.AddRange(BitConverter.GetBytes(value2));
+        }
+
+        Debug.Log(string.Format("Data lengths: {0}, {0}", channel1_byte.Count, channel2_byte.Count)); 
+/*
+        int numValuesToShow = Mathf.Min(6, pixelArray.Length);
+        for (int i = 0; i < numValuesToShow; i++)
+        {
+            Debug.Log(pixelArray[i]);
+        }
+                    int [][] data2 =  data.SelectToken("img").ToObject<int [][]>();
             int [] img_array = data2[0];
             Debug.Log(string.Format("H {0} and W {0}", h, w));
             int output = data2[0].Length;
-            Debug.Log(string.Format("Length {0}", length));
-            var tex = new Texture2D(h, w, TextureFormat.RGB48, true);
-            tex.SetPixelData(img_array, 0, 0);
-            tex.Apply();
+            Debug.Log(string.Format("Length {0}", length)); 
+            //Debug.Log(string.Format("Data: {0}", pixelArray)); 
 
-            child.GetComponent<RawImage>().texture=tex;
+    /*
+            // Deserialize nested list into a 2D array
+            Color[] pixelData = new Color[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                JArray row = (JArray)pixelArray[y];
+                for (int x = 0; x < w; x++)
+                {
+                    JArray rgb = (JArray)row[x];
+                    //Debug.Log(string.Format("For row {0} and column {0}: {0}", y, x, rgb));
+                    int r = rgb[2].Value<int>();
+                    int g = rgb[1].Value<int>();
+                    int b = rgb[0].Value<int>();
+                    pixelData[y * w + x] = new Color(r, g, b);
+                }
+            }*/
+
+ /*
+
+                byte[][] pixelData = int byte[pixelArray.Length];
+                for (int i = 0; i < pixelArray.Length; i++)
+                {
+                    pixelData[i] = BitConverter.GetBytes(pixelArray[i]); 
+                }*/
+
+            var tex2 = new Texture2D(w, h, TextureFormat.RGB48, false);
+            tex2.SetPixelData(channel2_byte.ToArray(), 0);
+            tex2.Apply();
+            Channel2.GetComponent<RawImage>().texture=tex2; 
+
+            var tex1 = new Texture2D(w, h, TextureFormat.RGB48, false);
+            tex1.SetPixelData(channel1_byte.ToArray(), 0);
+            Debug.Log(string.Format("Byte array 1 lengths: {0}",channel1_byte.ToArray().Length)); 
+            Debug.Log(string.Format("Byte array 2 lengths: {0}", channel2_byte.ToArray().Length)); 
+            tex1.Apply();
+            Channel1.GetComponent<RawImage>().texture=tex1; 
+
+
+
 
             
 

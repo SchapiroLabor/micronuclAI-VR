@@ -14,9 +14,9 @@ using System.Drawing;
 public class MultiplexedImage : MonoBehaviour
 {      public void init_current_img()
     {
-        
-        float width = GetComponent<RectTransform>().rect.width;
-        float height = GetComponent<RectTransform>().rect.height;
+        // Cannot change child object size with this. Maybe sparingly
+        float width = GetComponent<RectTransform>().rect.width; 
+        float height = GetComponent<RectTransform>().rect.height; 
         GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
         
     }
