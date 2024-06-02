@@ -140,7 +140,7 @@ StartCoroutine(NapariTest());
             }
             */
 
-        using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/napari_test"))
+        using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
         {
             // Request and wait for the desired page.
             yield return www.SendWebRequest();
