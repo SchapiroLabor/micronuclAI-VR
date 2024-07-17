@@ -21,10 +21,10 @@ public class InteractableImageStack : MonoBehaviour
     private List<string> imagePaths;
     public Vector3 canvas_position;
     public Quaternion canvas_rotation;
-    public GameObject rawImagecurrentprefab;
     public GameObject rawImagecurrent;
     public GameObject rawImagesubsequentprefab;
     public GameObject rawImagesubsequent;
+
 
     private void Start()
     {   
@@ -36,18 +36,31 @@ public class InteractableImageStack : MonoBehaviour
     // Populate the list dedicated to image textures
     getImageTextures();
 
-    init_current_img(rawImagecurrentprefab);
+    rawImagecurrent = transform.Find("Image").gameObject;
 
-    
+    init_current_img(rawImagecurrent);
 
-    
+
     }
 
     //Blebs should be counted using activation and be cuncurrent with current_img
 
-    public void init_current_img(GameObject rawImagecurrentprefab)
-    {
-        rawImagecurrent = Instantiate(rawImagecurrentprefab, transform);
+    public void init_current_img(GameObject rawImagecurrent)
+    {   
+        if (rawImagecurrent == null)
+
+        {
+        rawImagecurrent = Instantiate(rawImagecurrent, transform);
+        float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
+        float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
+        rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
+
+        rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
+
+        assign_bleb_id(rawImagecurrent, current_img, blebs[current_img]);}
+
+        else
+        {
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
         float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
         rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
@@ -55,6 +68,7 @@ public class InteractableImageStack : MonoBehaviour
         rawImagecurrent.GetComponent<RawImage>().texture = images[current_img];
 
         assign_bleb_id(rawImagecurrent, current_img, blebs[current_img]);
+        }
         
     }
 
@@ -154,14 +168,13 @@ public class InteractableImageStack : MonoBehaviour
 
 
     private void setCanvasPosition()
-    {
-        float Width = GetComponent<RectTransform>().rect.width;
+
+    {   float Width = GetComponent<RectTransform>().rect.width;
         float Height = GetComponent<RectTransform>().rect.height;
         float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(Width, 2) + Mathf.Pow(Height, 2)), 25);
         canvas_position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
         transform.position = canvas_position;
         canvas_rotation = transform.rotation;
-
     }
 
 

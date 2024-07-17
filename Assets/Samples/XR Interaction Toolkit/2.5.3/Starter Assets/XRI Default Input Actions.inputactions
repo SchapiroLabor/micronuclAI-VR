@@ -853,7 +853,7 @@
                 {
                     "name": "",
                     "id": "b34c79c1-ab5e-4851-87ac-abc43705eae0",
-                    "path": "<XRController>{LeftHand}/{TriggerButton}",
+                    "path": "<XRSimulatedController>{LeftHand}/gripButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",
@@ -1649,7 +1649,7 @@
                 {
                     "name": "",
                     "id": "92bb5b8f-bf48-4dab-af05-50a865773895",
-                    "path": "<XRController>{RightHand}/{TriggerButton}",
+                    "path": "<XRSimulatedController>{RightHand}/gripButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",
@@ -1962,7 +1962,7 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "ScrollWheel",
@@ -2029,10 +2029,10 @@
                 {
                     "name": "",
                     "id": "57909bb4-1088-4975-9227-ecc87a305257",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<XRSimulatedController>{RightHand}/gripButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": "Generic XR Controller",
                     "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": false

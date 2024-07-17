@@ -1,22 +1,91 @@
-
-using System.Collections;
-using System.Collections.Generic;
-using System.IO; // Add this line to include the System.IO namespace
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
-using TMPro;
+using UnityEngine.XR.Interaction.Toolkit.UI;
 using System;
-using System.Drawing;
 
 public class MultiplexedImage : MonoBehaviour
-{      public void init_current_img()
+
+{
+
+    public GameObject leftRayInteractor;
+    public GameObject rightRayInteractor;
+
+
+
+    public void CheckRaycastHitBoth()
+    {
+        CheckRaycastHit(leftRayInteractor.GetComponent<XRRayInteractor>());
+        CheckRaycastHit(rightRayInteractor.GetComponent<XRRayInteractor>());
+    }
+
+
+    private void CheckRaycastHit(XRRayInteractor rayInteractor)
+    {
+        if (rayInteractor && rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        {
+            // Log the name of the hit GameObject
+            Debug.Log("Hit " + hit.collider.gameObject.name);
+            Debug.Log("World coords: " + hit.point.x.ToString() + ", " + hit.point.y.ToString());
+
+            // Convert the world position of the hit to screen point
+                    Vector3 screenPoint = Camera.main.WorldToScreenPoint(hit.point);
+
+                        // Convert world position to local position
+            Vector2 localHitPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                GetComponent<RawImage>().rectTransform,
+                screenPoint,
+                Camera.main,
+                out localHitPoint
+            );
+
+            Debug.Log("localHitPoint coords: " + localHitPoint.x.ToString() + ", " + localHitPoint.y.ToString());
+
+            // Convert local position to pixel coordinates
+            Rect rect = GetComponent<RawImage>().rectTransform.rect;
+   
+            //float u = Mathf.InverseLerp(rect.xMin, rect.xMax, localHitPoint.x);
+            //float v = Mathf.InverseLerp(rect.yMin, rect.yMax, localHitPoint.y);
+
+
+            double x = (localHitPoint.x - rect.x) * GetComponent<RawImage>().texture.width / rect.width;
+            double y = (localHitPoint.y - rect.y) * GetComponent<RawImage>().texture.height / rect.height;
+
+
+            //Vector2 pixelCoordinate = new Vector2(, Math.Round(y));
+
+            Debug.Log("Pixel Coordinates: " + Math.Round(x).ToString() + " " + Math.Round(y).ToString());
+
+            getpixelIntensity( GetComponent<RawImage>().texture,  (int)Math.Floor(x), (int)Math.Floor(y));
+        }
+
+
+        
+    }
+
+
+
+    
+    private  Vector3 c_p;
+
+
+    public Camera cam;
+
+
+
+
+
+
+    
+    public void init_current_img()
     {
         // Cannot change child object size with this. Maybe sparingly
-        float width = GetComponent<RectTransform>().rect.width; 
-        float height = GetComponent<RectTransform>().rect.height; 
+
+         GetComponent<RawImage>().SetNativeSize();
+                 float width = GetComponent<RectTransform>().rect.width; 
+        float height = GetComponent<RectTransform>().rect.height;
         GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
         
     }
@@ -26,8 +95,10 @@ public class MultiplexedImage : MonoBehaviour
     void Start()
 
 
-    {
+    {     
          init_current_img();
+
+
         
     }
 
@@ -35,63 +106,44 @@ public class MultiplexedImage : MonoBehaviour
     void Update()
     {
         
-    }
-/*
-   private Texture2D Init_tif_texture()
-   {
-
-    tex = UE.Texture2D(*shape[:2], UE.TextureFormat.RGB48)
-    tex.LoadRawTextureData(array)
-    tex.Apply()
-    class_ = UE.Object.FindObjectsOfType(UE.RawImage)
-    class_.RawImage.tex = tex
-
+    
     }
 
 
-    private void getImageTextures()
+
+
+    void getpixelIntensity(Texture texture, int x, int y)
     {
-        var ext = new List<string> { "tif"};
-        imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/tiff_imgs", "*", SearchOption.AllDirectories).ToList();
-        imagePaths = imagePaths.Where(path => {string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant(); return ext.Contains(extension);}).ToList();
+        // Get the color of a specific pixel
+        UnityEngine.Color pixelColor = ((Texture2D)texture).GetPixel(x, y);
 
-        Debug.Log(string.Format("Image paths are {0}", imagePaths));
-        n_imgs = imagePaths.Count;
-        Debug.Log(string.Format("Number of images {0}", n_imgs));
+        //Debug.Log("Pixel coords: " + x.ToString() + ", " + y.ToString());
 
-       // float radius = 0.5f; // Adjust radius based on desired size
-        foreach  (string imagePath in imagePaths) //Application.dataPath is a built-in Unity variable that provides the path to the main folder of your project on the device where it's running.
-        {   
-            //if (Path.GetExtension(imagePath).Equals(".png", System.StringComparison.OrdinalIgnoreCase))
-            images.Add(Resources.Load<Texture2D>("tiff_imgs/" + Path.GetFileNameWithoutExtension(imagePath)));
-            tiffimg(imagePath);
-            //This part extracts a substring from the imagePath. It removes the part of the path that matches the project's data path.
-            //Resources.Load is a Unity function that allows you to load assets like textures directly from the Resources folder at runtime.
-        }
+        // Perform pixel tracking logic here
+
+        // Example: Print the RGB values of the pixel
+        Debug.Log("Pixel Color: R=" + pixelColor.r + ", G=" + pixelColor.g + ", B=" + pixelColor.b);
+
+
 
     }
 
-        private void tiffimg(string filePath)
 
-    { 
+    private void GetPixelCoordinate()
+    {
+        RawImage rawImage = GetComponent<RawImage>();
 
-       // Size imageSize = Image.FromFile(filePath).Size;
-        //TextureFormat.RGB565
-       // Debug.Log(string.Format("What size is this {}", imageSize));
-        //Texture2D tex = new Texture2D(16, 16, TextureFormat.PVRTC_RGBA4, false);
+        GameObject CANVAS = transform.parent.gameObject;
+
+        XRRayInteractor ray = CANVAS.GetComponent<XRRayInteractor>();
         
-
-
-
-
-
-
+        RaycastHit hit;
+        if (ray.TryGetCurrent3DRaycastHit(out hit))
+        {
+            Debug.Log("Local coords: " + hit.textureCoord.x.ToString() + ", " + hit.textureCoord.y.ToString());
+        }
     }
-    */
-
-
-
-
+ 
 
 
 

@@ -25,6 +25,7 @@ def get_tiff():
             tiff["img"] = request.json["img"]
             tiff["shape"] = request.json["shape"]
             tiff["dtype"] = request.json["dtype"] #dtype_string
+            tiff["channel_sizes"] = request.json["channel_sizes"]  # dtype_string
             return tiff
         except Exception as e:
             print("Got a problem: {} \n Caused by: {}".format(e, request.data))

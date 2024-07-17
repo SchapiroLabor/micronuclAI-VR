@@ -1,14 +1,16 @@
 // See https://aka.ms/new-console-template for more information
 using System;
+using System.Threading;
+using System.Collections.Concurrent;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Unity.VisualScripting;
 using UnityEngine.UI;
-using System.Linq;
+using System.Threading.Tasks;
+using UnityEngine.XR.Interaction.Toolkit;
 
 
 
@@ -17,109 +19,16 @@ using System.Linq;
 public class ClientRestAPI : MonoBehaviour
 
 {
+
     public static string start_endpoint = "http://127.0.0.1:5000//v1";
-    GameObject Channel1;
-    GameObject Channel2;
-
-   
-    
-    //public Dictionary<string, object> data;
-
-
-    //public static HttpClient client =  createHTTP();
-
-    [Serializable]
-    public class Data
-    {
-    public string dtype;
-    public string path;
-    public List<int> shape;
-    public List<int> img;
-    public List<string> metadata;
-    }
+    public GameObject Channel1;
+    public List<Texture> Textures;
+    private List<GameObject> Channels = new List<GameObject>();
 
 
 
-    private static void createHTTP()
-    { 
-        
-        /* var socketHandler = new SocketsHttpHandler
-{
-    MaxConnectionsPerServer =1
-};
-    return new (socketHandler);
-    */
-    UnityWebRequest client =  new UnityWebRequest();
-    
-    
-
-
-    }
-
-    
-
-    private void setCanvasPosition()
-    {
-        float Width = GetComponent<RectTransform>().rect.width;
-        float Height = GetComponent<RectTransform>().rect.height;
-        float viewingDistance = CalculateViewingDistance(Mathf.Sqrt(Mathf.Pow(Width, 2) + Mathf.Pow(Height, 2)), 25);
-        var canvas_position = Camera.main.transform.TransformPoint(Vector3.forward * viewingDistance);
-        transform.position = canvas_position;
-
-    }
-
-
-    float CalculateViewingDistance(float objectSize, float visualAngle)
-    {
-        // Convert visual angle from degrees to radians
-        float thetaRadians = visualAngle * Mathf.Deg2Rad;
-
-        // Calculate viewing distance using the rearranged formula
-        float viewingDistance = objectSize / (2f * Mathf.Tan(thetaRadians / 2f));
-
-        return viewingDistance;
-    }
-    // Start is called before the first frame update
-
-
-
-
-    // Start is called before the first frame update
-    void Start()
-
-
-    { setCanvasPosition();
-
-        Channel1 = transform.GetChild(0).gameObject;
-        //Channel2 = transform.GetChild(1).gameObject;
-        //Channel2.transform.position = Channel1.transform.position;
-
-        napari();
-
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-private void napari()
-{
-StartCoroutine(NapariTest());
-}
-
-
- IEnumerator  NapariTest()
-{ //How to return json file ?? 
-    //try
-    //{
-        //Send the GET request
-        //Always catch network exceptions for async methods
-        //Send the GET request asynchronously and retrieve the response as a string.
-
-/*
+ IEnumerator  GetImgs()
+{ 
         using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
         {
             // Request and wait for the desired page.
@@ -130,16 +39,109 @@ StartCoroutine(NapariTest());
         }
         else {
             // Show results as text
-            Debug.Log(www.downloadHandler.text);
+            Debug.Log("Worked");
 
             // Or retrieve results as binary data
-            byte[] results = www.downloadHandler.data;
-        }
-            
-            
-            }
-            */
+            var json = www.downloadHandler.text; //Should return UTF string of Byte Data. Only reads into serialised objects
+            LoadImages( json, Textures, Channels);
+        }}
+}
 
+    private void LoadImages(string jsonData, List<Texture> Textures, List<GameObject> Channels)
+    {
+
+
+        // Or retrieve results as binary data
+        var json = JObject.Parse(jsonData); //Should return UTF string of Byte Data. Only reads into serialised objects
+        //Dictionary<string, object> data = JsonConvert.DeserializeObject<Dictionary<string, object>>(www.downloadHandler.text);
+        //var data = JsonConvert.DeserializeObject<Dictionary<int, int>>(json)
+        //Debug.Log(data.shape);
+        //data.metadata.ForEach(Debug.Log);
+        int h = (int)json["shape"][0];
+        int w = (int)json["shape"][1];
+        int length = h*w;
+        //JArray pixelArray = (JArray)data["img"][0];
+
+        //texture.SetPixel(0, 0, new Color(1.0f, 1.0f, 1.0f, 0.5f));
+
+        List<int> channel_sizes = json.SelectToken("channel_sizes").ToObject<List<int>>();
+
+        byte [][] imgs =  json.SelectToken("img").ToObject<byte [][]>();
+
+        int count = imgs.Length;
+
+        Work(channel_sizes, imgs, w, h, count, Textures, Channels);
+
+
+
+
+    }
+
+    public static IEnumerable<Texture> Work(List<int> channel_sizes, byte[][] imgs, int w, int h, int count,
+    List<Texture> Textures, List<GameObject> Channels)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            var n_channels = channel_sizes[count];
+            byte[] channel = imgs[i];
+            Texture tex = LoadTextures(n_channels, w, h, channel);
+            Textures.Add(tex);
+            CreateRawImage(tex, Channels);
+            yield return tex;
+        }
+    }
+
+
+    private static Texture LoadTextures(int n_channels, int w, int h, byte[] row)
+    {
+        if (n_channels == 1)
+        {
+            Texture2D tex = new Texture2D(w, h, TextureFormat.Alpha8, false);
+            tex.SetPixelData(row, 0);
+            tex.Apply();
+            return tex;
+
+        }
+        else
+        {
+            Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.SetPixelData(row, 0);
+            tex.Apply();
+            return tex;
+
+        }
+
+        
+    }
+
+    private static void CreateRawImage(Texture tex, List<GameObject> Channels)
+    {
+        Channels.Add(new GameObject("RawImage"));
+        RawImage rawImage = Channels[-1].AddComponent<RawImage>();
+        rawImage.texture = tex;
+    }
+    void Start()
+
+
+    { 
+
+StartCoroutine(NapariTest());
+
+
+
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+
+
+ IEnumerator  NapariTest()
+{ 
         using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
         {
             // Request and wait for the desired page.
@@ -165,57 +167,49 @@ StartCoroutine(NapariTest());
 
             //texture.SetPixel(0, 0, new Color(1.0f, 1.0f, 1.0f, 0.5f));
 
+            List<int> channel_sizes = json.SelectToken("channel_sizes").ToObject<List<int>>();
 
+  
 
-            byte [] img =  json.SelectToken("img").ToObject<byte []>();
-            Debug.Log(string.Format("Data length: {0}", img.Length)); 
+            byte [][] img =  json.SelectToken("img").ToObject<byte [][]>();
 
+            int count = 0;
+            foreach (byte[] row in img)
+            {
+                    
+                    var n_channels = channel_sizes[count];
+                     Debug.Log(string.Format("Data length: {0}", n_channels)); 
+                    if (n_channels == 1)
+                    {
+                        Texture2D tex = new Texture2D(w, h, TextureFormat.R8, false);
+                        tex.SetPixelData(row, 0);
+                        tex.Apply();
+                        Channel1.GetComponent<RawImage>().texture=tex; 
 
-        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
-        tex.SetPixelData(img, 0);
-        tex.Apply();
-        Channel1.GetComponent<RawImage>().texture=tex; 
+                    }
+                    else
+                    {
+                        Texture2D tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                        tex.SetPixelData(row, 0);
+                        tex.Apply();
+                        Channel1.GetComponent<RawImage>().texture=tex; 
 
+                    }
 
+                    
+
+                }
 
 
 
             
 
-        }
-            
-            
             }
+
 
 
  IEnumerator  GetRequest()
-{ //How to return json file ?? 
-    //try
-    //{
-        //Send the GET request
-        //Always catch network exceptions for async methods
-        //Send the GET request asynchronously and retrieve the response as a string.
-
-/*
-        using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
-        {
-            // Request and wait for the desired page.
-            yield return www.SendWebRequest();
-            
-            if (www.result != UnityWebRequest.Result.Success) {
-            Debug.Log(www.error);
-        }
-        else {
-            // Show results as text
-            Debug.Log(www.downloadHandler.text);
-
-            // Or retrieve results as binary data
-            byte[] results = www.downloadHandler.data;
-        }
-            
-            
-            }
-            */
+{ 
 
         using (UnityWebRequest www = UnityWebRequest.Get($"{start_endpoint}/tiff_img"))
         {
@@ -263,100 +257,20 @@ StartCoroutine(NapariTest());
         }
 
         Debug.Log(string.Format("Data lengths: {0}, {0}", channel1_byte.Count, channel2_byte.Count)); 
-/*
-        int numValuesToShow = Mathf.Min(6, pixelArray.Length);
-        for (int i = 0; i < numValuesToShow; i++)
-        {
-            Debug.Log(pixelArray[i]);
-        }
-                    int [][] data2 =  data.SelectToken("img").ToObject<int [][]>();
-            int [] img_array = data2[0];
-            Debug.Log(string.Format("H {0} and W {0}", h, w));
-            int output = data2[0].Length;
-            Debug.Log(string.Format("Length {0}", length)); 
-            //Debug.Log(string.Format("Data: {0}", pixelArray)); 
-
-    /*
-            // Deserialize nested list into a 2D array
-            Color[] pixelData = new Color[w * h];
-            for (int y = 0; y < h; y++)
-            {
-                JArray row = (JArray)pixelArray[y];
-                for (int x = 0; x < w; x++)
-                {
-                    JArray rgb = (JArray)row[x];
-                    //Debug.Log(string.Format("For row {0} and column {0}: {0}", y, x, rgb));
-                    int r = rgb[2].Value<int>();
-                    int g = rgb[1].Value<int>();
-                    int b = rgb[0].Value<int>();
-                    pixelData[y * w + x] = new Color(r, g, b);
-                }
-            }*/
-
- /*
-
-                byte[][] pixelData = int byte[pixelArray.Length];
-                for (int i = 0; i < pixelArray.Length; i++)
-                {
-                    pixelData[i] = BitConverter.GetBytes(pixelArray[i]); 
-                }*/
-
             var tex2 = new Texture2D(w, h, TextureFormat.RGB48, false);
             tex2.SetPixelData(channel2_byte.ToArray(), 0);
             tex2.Apply();
-            Channel2.GetComponent<RawImage>().texture=tex2; 
+            GetComponent<RawImage>().texture=tex2; 
 
             var tex1 = new Texture2D(w, h, TextureFormat.RGB48, false);
             tex1.SetPixelData(channel1_byte.ToArray(), 0);
             Debug.Log(string.Format("Byte array 1 lengths: {0}",channel1_byte.ToArray().Length)); 
             Debug.Log(string.Format("Byte array 2 lengths: {0}", channel2_byte.ToArray().Length)); 
             tex1.Apply();
-            Channel1.GetComponent<RawImage>().texture=tex1; 
-
-
-
-
-            
-
+            GetComponent<RawImage>().texture=tex1; 
         }
-            
-            
             }
 
-       /* UnityWebRequest client =  new UnityWebRequest();
-        client.downloadHandler = new DownloadHandlerBuffer(uri); // Download handler
-
-        yield return www.SendWebRequest(); */
-
-        
-
-/*
-         HttpResponseMessage response = await client.GetAsync(uri); //#Straemed object
-         //Debug.Log(string.Format("Response: {0}", response.Status));
-         Debug.Log("Response: " + response.EnsureSuccessStatusCode().ToString());
-         var output = await response.Content.ReadFromJsonAsync();
-         Debug.Log(string.Format("Content: {0}" ,   output)); */
-         
-
-         // TODO How do I get json output and treat it as dictionary?????????
-       /* 
-        Dictionary<string, object> content = JsonUtility.FromJson<Dictionary<string, object>>(output);
-            foreach (string key in content.Keys)
-    {
-        Debug.Log("Message: " + key.ToString());
-    } */
-    
-
-
-        //return null;
-
-/*
-    }
-    catch (Exception ex)
-    {
-        Debug.Log("Error: " + ex.HResult.ToString("X") + " Message: " + ex.Message);
-        return null;
-    } */
 }
 
 IEnumerator PutRequest()
@@ -445,18 +359,50 @@ void GetImgs(string tiff_path)
 
 
 
- void Execute()
-{
-
-    // Construct the JSON to post.
-    //GetImgs("/media/ibrahim/Extended Storage/cloud/Internship/shapiro/greentest.tif");
-    napari();
-    
 
 
+
+
+} 
 }
 
+    public bool IsSelectableBy(IXRSelectInteractor interactor)
+    {
+        throw new NotImplementedException();
+    }
 
+    public Pose GetAttachPoseOnSelect(IXRSelectInteractor interactor)
+    {
+        throw new NotImplementedException();
+    }
 
+    public Pose GetLocalAttachPoseOnSelect(IXRSelectInteractor interactor)
+    {
+        throw new NotImplementedException();
+    }
 
-} }
+    public Transform GetAttachTransform(IXRInteractor interactor)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnRegistered(InteractableRegisteredEventArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void OnUnregistered(InteractableUnregisteredEventArgs args)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void ProcessInteractable(XRInteractionUpdateOrder.UpdatePhase updatePhase)
+    {
+        throw new NotImplementedException();
+    }
+
+    public float GetDistanceSqrToInteractor(IXRInteractor interactor)
+    {
+        throw new NotImplementedException();
+    }
+}
