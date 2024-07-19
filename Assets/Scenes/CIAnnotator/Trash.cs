@@ -17,92 +17,50 @@ public class Trash : MonoBehaviour
     public GameObject trashPrefab;
 
 
-
-    // Start is called before the first frame update
-
-    // Update is called once per frame
-
-    void OnCollisionEnter(Collision collision)
-
-
-    {
-
-
-
-        if (Canvas_script.rawImagecurrent != null)
-
-        {
-
-        // Check if the collision involves the other GameObject you are interested in
-        if (collision.gameObject.name == Canvas_script.rawImagecurrent.name)
-        {
-            dispose();
-        }
-
-
-        else {
-             Debug.Log(string.Format("No collision as if statement is not satisfied {0}", Canvas_script.rawImagecurrent.name));
-        }
-
-
-
-        }
-
-        else {
-             Debug.Log(string.Format("No collision as current object is missing {0}", Canvas_script.rawImagecurrent.name));
-        }
-
-    }
-
-
-
 // This is executed once the trash object collider is triggered
     public void dispose()
 
     { 
-
         
-         if (Canvas_script.current_img < (Canvas_script.n_imgs-1)){
-        Canvas_script.current_img += 1;}
 
-        else {
-            Canvas_script.current_img = 0; 
+        // Get current image index
+         if (Canvas_script.current_img_indx < (Canvas_script.N_image-1))
+         {
+            Canvas_script.current_img_indx += 1;
+            }
+
+        else 
+        {
+            Canvas_script.current_img_indx = 0; 
         }
         
-    if (Canvas_script != null)
-        {
+        GameObject ImageCurrent = Canvas_script.transform.Find("Image").gameObject;
 
-        Destroy(Canvas_script.rawImagecurrent);
+        if (ImageCurrent != null)
+            {
+            Destroy(ImageCurrent);
+            Canvas_script.init_current_img(ImageCurrent, Canvas_script.current_img_indx);
+            //interactionManager.CancelInteractableSelection(GetComponent<IXRSelectInteractable>());
+            closedisplaysecondimg();
+            }
 
+            else
+            {
+                Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
 
-        
-        Canvas_script.init_current_img(Canvas_script.rawImagecurrent);
-        //interactionManager.CancelInteractableSelection(GetComponent<IXRSelectInteractable>());
-        closedisplaysecondimg();}
-
-        else
-        {
-            Debug.Log(string.Format("This object appears to be missing {0}", Canvas_script));
-
-
-        }
-
-
-
-
-
+            }
 
     }
 
 
     public void closedisplaysecondimg()
 
-{
-
-        if (Canvas_script.rawImagesubsequent != null){
+    {
+        GameObject rawImagesubsequent = Canvas_script.transform.Find("SubsequentImage").gameObject;
+        if (rawImagesubsequent != null)
+        {
         
-        Destroy(Canvas_script.rawImagesubsequent);
-
+        Destroy(rawImagesubsequent);
 
         }
 
@@ -148,7 +106,7 @@ public class Trash : MonoBehaviour
             
             trashList.Add(trashinstance);
         }
-        
+
         // Create Title
         GameObject title = new GameObject("Title");
         title.transform.parent = transform;
@@ -172,6 +130,22 @@ public class Trash : MonoBehaviour
         createBuckets();
     }
 
+    public void assign_bleb_id(GameObject image, int imgid, int blebid)
+
+    {
+        TextMeshProUGUI imageid = image.transform.Find("Image_ID").gameObject.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI bleb = image.transform.Find("CIN_counter").gameObject.GetComponent<TextMeshProUGUI>();
+
+        // Get child objects to set bleb count and ID
+
+        //Debug.Log("")
+
+        imageid.text = string.Format("Image ID: {0}", imgid);
+        bleb.text = string.Format("N blebs: {0}", blebid);
+
+
+
+    }
 
 
 
