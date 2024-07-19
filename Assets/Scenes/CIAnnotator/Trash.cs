@@ -7,6 +7,7 @@ using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
 using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using TMPro;
+using Unity.XR.CoreUtils;
 
 
 public class Trash : MonoBehaviour
@@ -119,7 +120,8 @@ public class Trash : MonoBehaviour
         GameObject trashInstance = Instantiate(trashPrefab, position, Quaternion.identity, parent: transform);
         trashInstance.transform.position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
         trashInstance.name = $"{N} Micronuclei";
-        //TMP_Text tmpText = trashInstance.AddComponent<TextMeshProUGUI>();
+        TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
+        tmpText.text = $"{N}";
         return trashInstance;
     }
 
@@ -131,7 +133,7 @@ public class Trash : MonoBehaviour
             Debug.Log($"Trash spacing from image is the following: {spacing}");
             
         List<GameObject> trashList = new List<GameObject>();
-        
+
         for (int n = 0; n <= 3; n++){
             GameObject trashinstance = createTrash(n, rawImagecurrent);
 
@@ -146,7 +148,22 @@ public class Trash : MonoBehaviour
             
             trashList.Add(trashinstance);
         }
+        
+        // Create Title
+        GameObject title = new GameObject("Title");
+        title.transform.parent = transform;
+        Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
+        title.transform.position = new Vector3(image_position.x - (spacing*2), image_position.y + spacing, image_position.z);
+        title.AddComponent<TextMeshPro>();
+        TextMeshPro titleText = title.GetComponent<TextMeshPro>();
+        titleText.text = "Micronuclei count";
+        titleText.fontSize = 1;
+        titleText.alignment = TextAlignmentOptions.Center;
+        titleText.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
+
         }
+
+
 
     }
 
