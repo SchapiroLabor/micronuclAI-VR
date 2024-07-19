@@ -11,8 +11,8 @@ public class ClickNextImage : MonoBehaviour
     //public XRGrabInteractable interactable;
     // Start is called before the first frame update
     
-    private InteractableImageStack Canvas_script;
-    private GameObject rawImagesubsequent;
+    public InteractableImageStack Canvas_script;
+    public GameObject rawImagesubsequent;
     
    void Start()
 
@@ -29,17 +29,15 @@ public class ClickNextImage : MonoBehaviour
 
 
 
-    private  void create_GO4subsequentimage(Transform empty_subs_img)
+    private  void create_GO4subsequentimage(GameObject rawImagesubsequent)
     {   
         // Create subsequent image only when there are more than one images
-
-        if (empty_subs_img == null){
             if (Canvas_script.images.Count > 1){
             // Create a new RawImage GameObject from the prefab
-            rawImagesubsequent = Instantiate(empty_subs_img.gameObject,  transform);
-            rawImagesubsequent.SetActive(false);
-
-            }}
+            rawImagesubsequent = Instantiate(rawImagesubsequent, transform);
+            rawImagesubsequent.SetActive(true);
+            
+            }
     }
 
 
@@ -47,27 +45,25 @@ public class ClickNextImage : MonoBehaviour
 
     public void displaysecondimg()
     {   
-
-        // Get preloaded image 
-        Transform rawImagesubsequent = transform.Find("SubsequentImage");
-        //Create second image
-        create_GO4subsequentimage(rawImagesubsequent);
-
-        Debug.Log("Displaying second image");
-
-        if (this.gameObject != null && rawImagesubsequent == null)
+        
+        if (this.gameObject != null)
 
         {
-
+        Debug.Log("Displaying second image as current image is not null");
+        //Create second image
+        create_GO4subsequentimage(rawImagesubsequent);
         // Display the second image only when current image has moved and rawimage has spwned
         //if (rawImagecurrent.transform.position != transform.position){
-
         int subsequent_img = Canvas_script.current_img_indx;
 
         if (subsequent_img < (Canvas_script.images.Count-1)){
-        subsequent_img += 1;}
+        subsequent_img += 1;
+         Debug.Log($"Subsequent image index changed from {Canvas_script.current_img_indx} to {subsequent_img}");
+        }
+        
 
         else {
+            Debug.Log($"Subsequent image index goes back to  {Canvas_script.current_img_indx} to {subsequent_img}");
             subsequent_img = 0; 
         }
         
