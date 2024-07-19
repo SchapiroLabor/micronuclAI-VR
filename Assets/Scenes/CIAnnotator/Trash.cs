@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
 using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
+using TMPro;
 
 
 public class Trash : MonoBehaviour
@@ -112,28 +113,38 @@ public class Trash : MonoBehaviour
         Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
         Debug.Log(image_position);
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
-        float x_shift = width / 2;
-        GameObject trashInstance = Instantiate(trashPrefab, new Vector3(image_position.x + x_shift, image_position.y, image_position.z), Quaternion.identity, parent: transform);
-        trashInstance.transform.position = new Vector3(image_position.x + x_shift, image_position.y, image_position.z);
+        float x_shift = (width / 100)/1.5f;
+        Vector3 position = new Vector3(image_position.x + x_shift, image_position.y, image_position.z);
+        Debug.Log(position);
+        GameObject trashInstance = Instantiate(trashPrefab, position, Quaternion.identity, parent: transform);
+        trashInstance.transform.position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
         trashInstance.name = $"{N} Micronuclei";
+        //TMP_Text tmpText = trashInstance.AddComponent<TextMeshProUGUI>();
         return trashInstance;
     }
 
     public void createBuckets()
     {   
         RawImage rawImagecurrent = Canvas_script.transform.Find("Image").gameObject.GetComponent<RawImage>();
-        GameObject Current = null;
         if (rawImagecurrent != null){
-            float spacing = rawImagecurrent.GetComponent<RectTransform>().rect.width * 0.25f;
+            var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width/100)/2;
+            Debug.Log($"Trash spacing from image is the following: {spacing}");
             
+        List<GameObject> trashList = new List<GameObject>();
         
-        
-        for (int n = 1; n <= 5; n++){
+        for (int n = 0; n <= 3; n++){
             GameObject trashinstance = createTrash(n, rawImagecurrent);
-            if (Current != null){
-                Current.transform.position = new Vector3(Current.transform.position.x, Current.transform.position.y - spacing, Current.transform.position.z);
+
+            if (trashList.Count > 0){
+                GameObject Previous = trashList[trashList.Count - 1];
+
+            if (n%2 == 0){
+                trashinstance.transform.position = new Vector3(Previous.transform.position.x - spacing, Previous.transform.position.y + spacing, trashinstance.transform.position.z);}
+            else {
+                trashinstance.transform.position = new Vector3(Previous.transform.position.x,  Previous.transform.position.y - spacing, trashinstance.transform.position.z);}
             }
-            Current = trashinstance;
+            
+            trashList.Add(trashinstance);
         }
         }
 
