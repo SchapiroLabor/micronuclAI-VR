@@ -38,7 +38,6 @@ public class ClickNextImage : MonoBehaviour
 
 
 
-
     public void displaysecondimg()
     {   
         
@@ -68,10 +67,6 @@ public class ClickNextImage : MonoBehaviour
         rawImagesubsequentGO.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", subsequent_img + 1, Canvas_script.N_image);
         rawImagesubsequentGO.SetActive(true);
         
-        
-
-        
-
     }}
     
 

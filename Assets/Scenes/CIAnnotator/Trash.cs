@@ -70,11 +70,9 @@ public class Trash : MonoBehaviour
     private GameObject createTrash(int N, RawImage rawImagecurrent)
     {
         Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
-        Debug.Log(image_position);
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
         float x_shift = (width / 100)/1.5f;
         Vector3 position = new Vector3(image_position.x + x_shift, image_position.y, image_position.z);
-        Debug.Log(position);
         GameObject trashInstance = Instantiate(trashPrefab, position, Quaternion.identity, parent: transform);
         trashInstance.transform.position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
         trashInstance.name = $"{N} Micronuclei";
