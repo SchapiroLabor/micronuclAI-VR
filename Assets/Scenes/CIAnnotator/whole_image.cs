@@ -1,21 +1,17 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http.Headers;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Threading;
-using Unity.Jobs;
-using Unity.Collections; // Add this line to use the Thread class
-
 
 public class whole_image : MonoBehaviour
 {
+   List<element>  data_dict;
+
     // Start is called before the first frame update
     void Start()
     {
-        //read_csv_with_python(1);
+        read_csv_with_python();
     }
 
     // Update is called once per frame
@@ -24,84 +20,51 @@ public class whole_image : MonoBehaviour
         
     }
 
-
-
-
-    private System.Diagnostics.Process set_python_script(int cell_indx)
+    public class element
     {
-
-    string pythonScriptPath = Path.Combine("/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes", "read_df.py");
-    pythonScriptPath = $"\"{pythonScriptPath}\"";
-
-
-    // Create a new process to run the Python script
-    System.Diagnostics.Process process = new System.Diagnostics.Process();
-    process.StartInfo.FileName = "/home/ibrahim/miniconda3/bin/python";
-    process.StartInfo.Arguments = $"{pythonScriptPath} --cell_index {cell_indx}";
-    process.StartInfo.UseShellExecute = false;
-    process.StartInfo.RedirectStandardOutput = true;
-    process.StartInfo.RedirectStandardError = true;
-
-    return process;
-
-
+        public int x_min { get; set; }
+        public int x_max { get; set; }
+        public int y_min { get; set; }
+        public int y_max { get; set; }
     }
 
-
-    private Dictionary<string, object>  ExecutePythonProcess(System.Diagnostics.Process process)
+    private void read_csv_with_python()
     {
+        string pythonScriptPath = Path.Combine("/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes", "read_df.py");
+        pythonScriptPath = $"\"{pythonScriptPath}\"";
+
+        // Create a new process to run the Python script
+        System.Diagnostics.Process process = new System.Diagnostics.Process();
+        process.StartInfo.FileName = "/home/ibrahim/miniconda3/bin/python";
+        process.StartInfo.Arguments = $"{pythonScriptPath}";
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+        process.StartInfo.CreateNoWindow = true;
+        process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+
         // Start the process
         process.Start();
-    
+
         string output = process.StandardOutput.ReadToEnd();
-    
+        string error = process.StandardError.ReadToEnd();
+
         // Wait for the process to finish
         process.WaitForExit();
 
-        Console.WriteLine($"Output looks like {output} and is of type {output.GetType()}");
-
-        Dictionary<string, object> data = ConvertOutputToDictionary(output);
-
-        return data;
-
-    }
-
-
-    private Dictionary<string, object> ConvertOutputToDictionary(string output)
-    {
-        // Convert the output JSON string to a dictionary
-        List<Dictionary<string, object>> data_list = JsonUtility.FromJson<List<Dictionary<string, object>>>(output);
-        Dictionary<string, object> data = data_list[0];
-
-        return data;
-    }
-
-    private void read_csv_with_python(int cell_indx)
-    {
-        // Set the terminal process
-        System.Diagnostics.Process process = set_python_script(cell_indx);
-
-         Dictionary<string, object> data = ExecutePythonProcess(process);
-
-        if (data == null)
+        if (error != "")
         {
-            Console.WriteLine("Failed to parse the output JSON string");
+            Debug.Log($"Error is {error}");
         }
 
-        else {
-            // Access the dictionary values as needed
-            foreach (KeyValuePair<string, object> entry in data)
-            {
-                string key = entry.Key;
-                object value = entry.Value;
+        data_dict = ConvertOutputToDictionary(output);
+    }
 
-                // Do something with the key-value pair
-                // For example, print them to the console
-                Console.WriteLine($"Key: {key}, Value: {value}");
-            }
-        }
+    private List<element> ConvertOutputToDictionary(string output)
+    {
+        List<element> result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<element>>(output);
 
-
+        return result;
     }
 
     private void ColorPixelCluster(Rect pixelCluster, Color newColor)
@@ -121,4 +84,27 @@ public class whole_image : MonoBehaviour
         // Apply all changes to the texture
         originalTexture.Apply();
     }
+
+    private Rect get_bbox_from_df(int patch_indx)
+    {
+        // Get the bounding box of the pixel cluster
+        element patchData = data_dict[patch_indx];
+        int width = patchData.x_max - patchData.x_min;
+        int height = patchData.y_max - patchData.y_min;
+        Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
+        Debug.Log($"The axes ranges are {patchData.x_min}, {patchData.x_max}, {patchData.y_min}, {patchData.y_max}");
+
+        return bbox;
+    }
+
+    public void current_cell_bbox(int patch_indx)
+    {
+        // Get the bounding box of the pixel cluster
+        Rect bbox = get_bbox_from_df(patch_indx);
+
+        // Color the pixel cluster
+        ColorPixelCluster(bbox, Color.red);
+    }
+
+    
 }

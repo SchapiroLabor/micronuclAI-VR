@@ -13,3 +13,6 @@
 /media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/obj/Debug/net8.0/PythonCSVReaderApp.pdb
 /media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/obj/Debug/net8.0/PythonCSVReaderApp.genruntimeconfig.cache
 /media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/obj/Debug/net8.0/ref/PythonCSVReaderApp.dll
+/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/bin/Debug/net8.0/Newtonsoft.Json.dll
+/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/obj/Debug/net8.0/PythonCSVReaderApp.csproj.AssemblyReference.cache
+/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp/obj/Debug/net8.0/PythonCSVReaderApp.csproj.CopyComplete

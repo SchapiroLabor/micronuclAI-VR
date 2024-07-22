@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PythonCSVReaderApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+05d7be9bf666aed273274c44d3e83d18e5398462")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ce408971c252211681dca124979466391f50eb2f")]
 [assembly: System.Reflection.AssemblyProductAttribute("PythonCSVReaderApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PythonCSVReaderApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
