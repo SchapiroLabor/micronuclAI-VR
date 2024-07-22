@@ -91,6 +91,8 @@ public class Trash : MonoBehaviour
         List<GameObject> trashList = new List<GameObject>();
 
         for (int n = 0; n <= 3; n++){
+
+
             GameObject trashinstance = createTrash(n, rawImagecurrent);
 
             if (trashList.Count > 0){
@@ -103,6 +105,8 @@ public class Trash : MonoBehaviour
             }
             
             trashList.Add(trashinstance);
+
+        Destroy(trashPrefab); // Destroy the prefab after creating the trash instances Laz solution
         }
 
         // Create Title

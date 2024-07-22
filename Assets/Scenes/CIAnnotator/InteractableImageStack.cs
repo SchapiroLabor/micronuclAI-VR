@@ -178,4 +178,13 @@ public class InteractableImageStack : MonoBehaviour
         tmpText.fontSize = 600;
         tmpText.alignment = TextAlignmentOptions.TopGeoAligned;
     }
+
+
+    public GameObject create_GO(Transform parent, string prefabPath)
+    {
+        // Create a new RawImage GameObject from the prefab
+        GameObject instance= Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform.position, transform.rotation);
+        instance.transform.SetParent(parent);
+        return instance;
+    }
 }

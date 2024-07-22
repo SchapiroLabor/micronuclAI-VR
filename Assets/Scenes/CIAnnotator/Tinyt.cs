@@ -2,27 +2,83 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class Tinyt : MonoBehaviour
 {
 
+    private Color originalColor;
+    private Color originalEmissionColor;
+    private Material material;
 
+    public GameObject Image;
+
+    
     // Start is called before the first frame update
     void Start()
     {
+        // Cache the Renderer's material and original color at start
+        material = GetComponent<Renderer>().material;
+        originalColor = material.color;
         
+        // Assuming the original emission is set and needs to be stored
+        originalEmissionColor = material.GetColor("_EmissionColor");
+        
+        // Ensure the material supports emission color by enabling emission
+        material.EnableKeyword("_EMISSION");
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        confirm_if_within_bounds();
     }
 
     // Start is called before the first frame update
 
     // Update is called once per frame
 
+
+ private Vector3 CheckRaycastHit(XRRayInteractor rayInteractor)
+    {
+        if (rayInteractor && rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
+        {
+            // Log the name of the hit GameObject
+            Debug.Log("Hit " + hit.collider.gameObject.name);
+            Debug.Log("World coords: " + hit.point.x.ToString() + ", " + hit.point.y.ToString());
+
+            return hit.point;
+            
+        }
+
+        else
+
+        {
+            return new Vector3(0,0,0);
+        }
+        
+    }
+
+    public void confirm_if_within_bounds()
+{
+    Vector3 current_position = Image.transform.position;
+    Renderer renderer = GetComponent<Renderer>();
+
+    if (renderer.bounds.Contains(current_position))
+    {
+        Debug.Log("Within bounds");
+        change2brightgreen();
+    }
+
+    else
+    {
+        Debug.Log("Not within bounds");
+        RevertToOriginalColor();
+    }
+
+}
+
+/*
     void OnCollisionEnter(Collision collision)
 
 
@@ -40,4 +96,25 @@ public class Tinyt : MonoBehaviour
         }
 
     }
+*/
+    private void change2brightgreen()
+    {         // Ensure the material supports emission color by enabling emission
+            GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
+
+            // Set the emission color to a bright green
+            GetComponent<Renderer>().material.SetColor("_EmissionColor", new Color(0f, 1f, 0f, 1f));
+            //transform.parent.GetComponent<Trash>().dispose();}
+    }
+
+
+        // Call this method to revert to the original color and emission
+    private void RevertToOriginalColor()
+    {
+        material.color = originalColor;
+        material.SetColor("_EmissionColor", originalEmissionColor);
+    }
+
+
+    
+
 }
