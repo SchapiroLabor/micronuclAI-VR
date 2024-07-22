@@ -178,6 +178,7 @@ public class InteractableImageStack : MonoBehaviour
         // Adjust the dimensions of the RawImage to match the texture's dimensions
         RectTransform rectTransform = whole_img.GetComponent<RawImage>().GetComponent<RectTransform>();
         rectTransform.sizeDelta = new  UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
+        whole_img.transform.position = new  UnityEngine.Vector3(70, 1, 80);
 
         return whole_img;
     }
@@ -227,7 +228,8 @@ public class InteractableImageStack : MonoBehaviour
         float y_shift = (height / 100)/y_scale;
         
         float z_shift = CalculateViewingDistance(instance, visualAngle)*z_scale;
-         UnityEngine.Vector3 position = new  UnityEngine.Vector3(image_position.x + x_shift, image_position.y + y_shift, image_position.z + z_shift);
+        UnityEngine.Vector3 position = new  UnityEngine.Vector3(70, 1, 80);
+        
         whole_image_title(position, instance);
         return position;
 
@@ -236,7 +238,7 @@ public class InteractableImageStack : MonoBehaviour
     private void whole_image_title( UnityEngine.Vector3 image_position, GameObject whole_image)
     {
 
-        TMP_Text tmpText = whole_image.GetComponentInChildren<TMP_Text>();
+        TMP_Text tmpText = whole_image.GetNamedChild("title").GetComponent<TMP_Text>();
 
         tmpText.text = "Whole image";
         tmpText.fontSize = 600;

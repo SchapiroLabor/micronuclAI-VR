@@ -5,6 +5,9 @@ using System.IO;
 using System.Net.Http.Headers;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Threading;
+using Unity.Jobs;
+using Unity.Collections; // Add this line to use the Thread class
 
 
 public class whole_image : MonoBehaviour
@@ -12,7 +15,7 @@ public class whole_image : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        read_csv_with_python(1);
+        //read_csv_with_python(1);
     }
 
     // Update is called once per frame
@@ -20,6 +23,8 @@ public class whole_image : MonoBehaviour
     {
         
     }
+
+
 
 
     private System.Diagnostics.Process set_python_script(int cell_indx)
