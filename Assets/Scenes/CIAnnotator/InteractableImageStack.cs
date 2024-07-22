@@ -202,9 +202,9 @@ public class InteractableImageStack : MonoBehaviour
             whole_img.name = "Whole Image";
             whole_img.transform.SetParent(transform);
             whole_img = set_texture2whole_img(whole_img);
-             UnityEngine.Vector3 position = situate2right_of_displayedimage(4f, 1, 1, 40, whole_img);
+             //UnityEngine.Vector3 position = situate2right_of_displayedimage(0.0004f, 0.004f, 1, 40, whole_img);
             // set to the right of the current image
-            whole_img.transform.position = position;
+            //whole_img.transform.position = position;
             
 
     }
@@ -226,8 +226,8 @@ public class InteractableImageStack : MonoBehaviour
         float x_shift = (width / 100)/x_scale;
         float y_shift = (height / 100)/y_scale;
         
-        //float z_shift = CalculateViewingDistance(instance, visualAngle)*z_scale;
-         UnityEngine.Vector3 position = new  UnityEngine.Vector3(image_position.x + x_shift + 80, image_position.y + y_shift, image_position.z + 80);
+        float z_shift = CalculateViewingDistance(instance, visualAngle)*z_scale;
+         UnityEngine.Vector3 position = new  UnityEngine.Vector3(image_position.x + x_shift, image_position.y + y_shift, image_position.z + z_shift);
         whole_image_title(position, instance);
         return position;
 
@@ -239,10 +239,12 @@ public class InteractableImageStack : MonoBehaviour
         TMP_Text tmpText = whole_image.GetComponentInChildren<TMP_Text>();
 
         tmpText.text = "Whole image";
-        tmpText.fontSize = 1000;
+        tmpText.fontSize = 600;
         tmpText.alignment = TextAlignmentOptions.Center;
-        float scaledHeight = whole_image.GetComponent<RectTransform>().rect.height * whole_image.GetComponent<RectTransform>().localScale.y;
-        tmpText.GetComponent<RectTransform>().position = new  UnityEngine.Vector3(image_position.x, image_position.y + scaledHeight, image_position.z);
+        //float scaledHeight = whole_image.GetComponent<RectTransform>().rect.height * whole_image.GetComponent<RectTransform>().localScale.y;
+        tmpText.GetComponent<RectTransform>().position = new  UnityEngine.Vector3(399, 5660, -1928);
+        //RectTransform rectTransform = tmpText.GetComponent<RectTransform>();
+        //rectTransform.sizeDelta = new  UnityEngine.Vector2(600, 300);
         
     }
             
