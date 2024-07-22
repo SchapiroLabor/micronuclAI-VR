@@ -242,15 +242,11 @@ public class InteractableImageStack : MonoBehaviour
         tmpText.fontSize = 600;
         tmpText.alignment = TextAlignmentOptions.Center;
         //float scaledHeight = whole_image.GetComponent<RectTransform>().rect.height * whole_image.GetComponent<RectTransform>().localScale.y;
-        // Make title dependen on image position
         tmpText.GetComponent<RectTransform>().position = new  UnityEngine.Vector3(399, 5660, -1928);
         //RectTransform rectTransform = tmpText.GetComponent<RectTransform>();
         //rectTransform.sizeDelta = new  UnityEngine.Vector2(600, 300);
         
     }
-
-
-    
             
 
 }
