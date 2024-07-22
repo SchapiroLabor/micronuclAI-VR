@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "OKpJb9vI5nEYeRmQgtVEyBHzNaEbBZb5l/2AG/Dd72NaoxL3aRxB6ukbKUp4ZUnyM1+Ld6DQfjabZiWTfZzhfA==",
+  "success": true,
+  "projectFilePath": "/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/PythonCSVReaderApp/PythonCSVReaderApp.csproj",
+  "expectedPackageFiles": [
+    "/home/ibrahim/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
