@@ -37,6 +37,9 @@ public class InteractableImageStack : MonoBehaviour
         // Initialize the image
         init_current_img(rawImagecurrent, current_img_indx);
 
+        // Create and display second image
+        transform.GetComponentInChildren<ClickNextImage>().CreateGOForSubsequentImage(N_image, this.gameObject);
+
         create_and_display_whole_image();
 
     }
@@ -128,7 +131,7 @@ public class InteractableImageStack : MonoBehaviour
         rawImagecurrent.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
     }
 
-    
+
     private void create_and_display_whole_image()
     {
         if (images.Count > 1)

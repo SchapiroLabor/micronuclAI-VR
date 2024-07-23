@@ -10,17 +10,12 @@ public class ClickNextImage : MonoBehaviour
     public GameObject CanvasUI;
     private int subsequent_img;
 
-    private void Start()
-    {
-        CreateGOForSubsequentImage();
 
-    }
-
-    private void CreateGOForSubsequentImage()
+    public void CreateGOForSubsequentImage(int N_images, GameObject parent)
     {
 
         // Create subsequent image only when there are more than one images
-        if (Canvas_script.N_image > 1)
+        if (N_images > 1)
         {   
             // Step 1: Define the path to the prefab within the Resources folder
             string prefabPath = "Assets/Scenes/CIAnnotator/SubsequentImage.prefab";
@@ -29,6 +24,7 @@ public class ClickNextImage : MonoBehaviour
             if (rawImagesubsequentGO == null)
             {
                 rawImagesubsequentGO = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform.position, transform.rotation);
+                
             }
 
             else
@@ -37,7 +33,7 @@ public class ClickNextImage : MonoBehaviour
                 rawImagesubsequentGO.transform.rotation = transform.rotation;
             }
             rawImagesubsequentGO.name = "SubsequentImage";
-            rawImagesubsequentGO.transform.SetParent(transform.parent);
+            rawImagesubsequentGO.transform.SetParent(parent.transform);
             rawImagesubsequentGO.SetActive(false);
 
             Create_button_next2image(x_scale: 1f, y_scale: 0.45f);
