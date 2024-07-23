@@ -7,6 +7,7 @@ public class ClickNextImage : MonoBehaviour
 {
     public InteractableImageStack Canvas_script;
     public GameObject rawImagesubsequentGO;
+    public GameObject button;
     private int subsequent_img;
 
     private void Start()
@@ -37,6 +38,8 @@ public class ClickNextImage : MonoBehaviour
 
             rawImagesubsequentGO.transform.SetParent(transform.parent);
             rawImagesubsequentGO.SetActive(false);
+
+            Create_button_next2image(x_scale: 1f, y_scale: 0.45f);
         }
 
         else
@@ -73,10 +76,44 @@ public class ClickNextImage : MonoBehaviour
         }
     }
 
-public void Create_button_next2image()
-{
-    Canvas_script.GetComponentInChildren<whole_image>().current_cell_bbox(subsequent_img);
+public void Create_button_next2image(float x_scale = 0.8f, float y_scale = 1f)
+{   
+
+    if (button == null)
+    {
+            // Create a button to display the next image
+    string prefab_path = "Assets/Scenes/CIAnnotator/Button.prefab";
+    button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
+    }
+
+
+    button.transform.position += Get_Axes_Offsets(x_scale, y_scale);
+    
 }
+
+
+private Vector3 Get_Axes_Offsets(float x_scale, float y_scale)
+{
+
+    // Get the width and height of the RawImage
+    float width = GetComponent<RectTransform>().rect.width;
+    float height = GetComponent<RectTransform>().rect.height;
+
+
+    float scaled_width = width* GetComponent<RectTransform>().localScale.x;
+    float scaled_height = height * GetComponent<RectTransform>().localScale.y;
+
+    // Calculate the x and y offsets
+    float x_offset = scaled_width  * x_scale;
+    float y_offset = scaled_height * y_scale;
+
+    return new Vector3(x_offset, y_offset, 0);
+
+
+
+
+}
+
 
     private void Update()
     {

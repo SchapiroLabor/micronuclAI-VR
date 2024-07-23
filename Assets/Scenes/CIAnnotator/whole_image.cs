@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public class whole_image : MonoBehaviour
 {
    List<element>  data_dict;
+   public InteractableImageStack Canvas_script;
 
     // Start is called before the first frame update
     void Start()
@@ -104,6 +105,11 @@ public class whole_image : MonoBehaviour
 
         // Color the pixel cluster
         ColorPixelCluster(bbox, Color.red);
+    }
+
+    public void DisplayPatch()
+    {
+        current_cell_bbox(Canvas_script.current_img_indx);
     }
 
     
