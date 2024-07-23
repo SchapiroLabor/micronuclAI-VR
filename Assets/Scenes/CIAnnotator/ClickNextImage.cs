@@ -7,7 +7,7 @@ public class ClickNextImage : MonoBehaviour
 {
     public InteractableImageStack Canvas_script;
     public GameObject rawImagesubsequentGO;
-    public GameObject button;
+    public GameObject CanvasUI;
     private int subsequent_img;
 
     private void Start()
@@ -79,11 +79,37 @@ public class ClickNextImage : MonoBehaviour
 public void Create_button_next2image(float x_scale = 0.8f, float y_scale = 1f)
 {   
 
+
+    if (CanvasUI == null)
+    {
+            // Create a button to display the next image
+    string prefab_path = "Assets/Scenes/CIAnnotator/Canvas UI.prefab";
+    CanvasUI = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
+
+    }
+
+    else
+    {
+        CanvasUI.transform.position = transform.position;
+        CanvasUI.transform.rotation = transform.rotation;
+    }
+
+    CanvasUI.transform.localScale = Vector3.one;
+    CanvasUI.transform.position += Get_Axes_Offsets(x_scale, y_scale);
+
+    GameObject button = CanvasUI.transform.Find("LocatePatch").gameObject;
+
     if (button == null)
     {
             // Create a button to display the next image
     string prefab_path = "Assets/Scenes/CIAnnotator/Button.prefab";
     button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
+    }
+
+    else
+    {
+        button.transform.position = transform.position;
+        button.transform.rotation = transform.rotation;
     }
 
 
