@@ -8,6 +8,7 @@ using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using TMPro;
 using Unity.XR.CoreUtils;
+using UnityEditor;
 
 
 public class Trash : MonoBehaviour
@@ -17,6 +18,39 @@ public class Trash : MonoBehaviour
     public GameObject trashPrefab;
 
 
+
+void Update ()
+
+{
+
+
+
+}
+
+
+
+
+
+private void re_init_image(GameObject ImageCurrent)
+
+{   
+    if (ImageCurrent == null || ImageCurrent.activeSelf == false)
+    {
+    ImageCurrent.SetActive(true);
+    ImageCurrent.GetComponent<RawImage>().texture = Canvas_script.images[Canvas_script.current_img_indx];
+    ImageCurrent.GetComponent<RectTransform>().position = Canvas_script.start_position;
+    ImageCurrent.GetComponent<RectTransform>().rotation = Canvas_script.start_rotation;
+    Canvas_script.updatename(ImageCurrent, Canvas_script.current_img_indx);
+    closedisplaysecondimg();
+    }
+
+    else
+    {
+        Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+
+    }
+}
+
 // This is executed once the trash object collider is triggered
     public void dispose()
 
@@ -24,24 +58,22 @@ public class Trash : MonoBehaviour
         
 
         // Get current image index
-         if (Canvas_script.current_img_indx < (Canvas_script.N_image-1))
-         {
+        if (Canvas_script.current_img_indx < (Canvas_script.N_image - 1))
+        {
             Canvas_script.current_img_indx += 1;
-            }
-
+        }
         else 
         {
             Canvas_script.current_img_indx = 0; 
         }
-        
+        // Get child by name
         GameObject ImageCurrent = Canvas_script.transform.Find("Image").gameObject;
 
         if (ImageCurrent != null)
             {
-            Destroy(ImageCurrent);
-            Canvas_script.init_current_img(ImageCurrent, Canvas_script.current_img_indx);
-            //interactionManager.CancelInteractableSelection(GetComponent<IXRSelectInteractable>());
-            closedisplaysecondimg();
+            Debug.Log(string.Format("This object is not deleted with current ID {0}", Canvas_script.current_img_indx));
+            ImageCurrent.SetActive(false);
+            re_init_image(ImageCurrent);
             }
 
             else
@@ -53,17 +85,14 @@ public class Trash : MonoBehaviour
     }
 
 
+
+
     public void closedisplaysecondimg()
 
     {
         GameObject rawImagesubsequent = Canvas_script.transform.Find("SubsequentImage").gameObject;
-        if (rawImagesubsequent != null)
-        {
         
-        Destroy(rawImagesubsequent);
-
-        }
-
+        rawImagesubsequent.SetActive(false);
    
     }
 
@@ -90,6 +119,11 @@ public class Trash : MonoBehaviour
             
         List<GameObject> trashList = new List<GameObject>();
 
+        if (trashPrefab == null)
+        {
+            trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
+        }
+
         for (int n = 0; n <= 3; n++){
 
 
@@ -105,9 +139,9 @@ public class Trash : MonoBehaviour
             }
             
             trashList.Add(trashinstance);
+        }
 
         Destroy(trashPrefab); // Destroy the prefab after creating the trash instances Laz solution
-        }
 
         // Create Title
         GameObject title = new GameObject("Title");

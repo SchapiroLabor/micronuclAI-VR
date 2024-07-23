@@ -11,7 +11,6 @@ public class Tinyt : MonoBehaviour
     private Color originalEmissionColor;
     private Material material;
 
-    public GameObject Image;
 
     
     // Start is called before the first frame update
@@ -59,44 +58,74 @@ public class Tinyt : MonoBehaviour
         
     }
 
+/*
     public void confirm_if_within_bounds()
 {
     Vector3 current_position = Image.transform.position;
-    Renderer renderer = GetComponent<Renderer>();
+    Collider renderer = GetComponent<MeshCollider>();
 
-    if (renderer.bounds.Contains(current_position))
+    var bounds = renderer.bounds;
+    var minX = bounds.min.x;
+    var maxX = bounds.max.x;
+    var minY = bounds.min.y;
+    var maxY = bounds.max.y;
+
+    if (current_position.x >= minX && current_position.x <= maxX && current_position.y >= minY && current_position.y <= maxY)
     {
-        Debug.Log("Within bounds");
+        Debug.Log("X and Y are within bounds");
         change2brightgreen();
     }
-
     else
     {
-        Debug.Log("Not within bounds");
+        Debug.Log("X and/or Y are not within bounds");
         RevertToOriginalColor();
     }
 
 }
-
-/*
-    void OnCollisionEnter(Collision collision)
-
-
-    {
-
-        // Check if the collision involves the other GameObject you are interested in
-        if (collision.gameObject.name == "Image")
-        {
-            transform.parent.GetComponent<Trash>().dispose();
-        }
-
-        else 
-        {
-             Debug.Log(string.Format("No collision as if statement is not satisfied {0}", collision.gameObject.name));
-        }
-
-    }
 */
+    public void confirm_if_within_bounds()
+{   
+
+    GameObject Image = transform.parent.parent.GetComponent<InteractableImageStack>().rawImagecurrent;
+    if (Image != null)
+    {
+    Vector3 current_position = Image.transform.position;
+    Collider renderer = GetComponent<MeshCollider>();
+
+    var bounds = renderer.bounds;
+
+    if (bounds.Contains(current_position))
+    {
+        Debug.Log("X and Y are within bounds");
+        change2brightgreen();
+    }
+    else
+    {
+        Debug.Log("X and/or Y are not within bounds");
+        RevertToOriginalColor();
+    }
+    }
+
+
+}
+void OnCollisionEnter(Collision collision)
+
+
+{
+
+    // Check if the collision involves the other GameObject you are interested in
+    if (collision.gameObject.name == "Image")
+    {
+        transform.parent.GetComponent<Trash>().dispose();
+    }
+
+    else 
+    {
+            Debug.Log(string.Format("No collision as if statement is not satisfied {0}", collision.gameObject.name));
+    }
+
+}
+
     private void change2brightgreen()
     {         // Ensure the material supports emission color by enabling emission
             GetComponent<Renderer>().material.EnableKeyword("_EMISSION");

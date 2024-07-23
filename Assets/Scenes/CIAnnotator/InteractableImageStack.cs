@@ -6,16 +6,20 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
+using Unity.VisualScripting;
+using System.Diagnostics.CodeAnalysis;
 
 public class InteractableImageStack : MonoBehaviour
 {
     public List<Texture2D> images;
     private List<string> imagePaths;
-    private GameObject rawImagecurrent;
-    public int current_img_indx = 0;
+    public GameObject rawImagecurrent;
+    public int current_img_indx;
     public int N_image;
     private GameObject whole_img;
     private Texture2D whole_img_texture;
+    public Vector3 start_position;
+    public Quaternion start_rotation;
 
     private void Start()
     {
@@ -28,10 +32,13 @@ public class InteractableImageStack : MonoBehaviour
         // Get preloaded image
         rawImagecurrent = transform.Find("Image").gameObject;
 
+        current_img_indx = 0;
+
         // Initialize the image
         init_current_img(rawImagecurrent, current_img_indx);
 
         create_and_display_whole_image();
+
     }
 
     private void setCanvasPosition()
@@ -75,20 +82,53 @@ public class InteractableImageStack : MonoBehaviour
         N_image = images.Count;
     }
 
+
+    private void Populate_CurrentImg_variables(GameObject rawImagecurrent)
+    {
+
+    ClickNextImage clickNextImage = rawImagecurrent.GetComponent<ClickNextImage>();
+    // Confirm what variables are in the script
+    clickNextImage.Canvas_script = transform.GetComponent<InteractableImageStack>();
+    clickNextImage.rawImagesubsequentGO = transform.Find("SubsequentImage").gameObject;
+    // Find object in scene
+    clickNextImage.CanvasUI = GameObject.Find("Canvas UI").gameObject;
+    }
+
     public void init_current_img(GameObject rawImagecurrent, int current_img_indx)
     {
         if (rawImagecurrent == null)
-        {
-            rawImagecurrent = Instantiate(rawImagecurrent, transform);
+        {   
+            string prefabPath = "Assets/Scenes/CIAnnotator/Image.prefab";
+            rawImagecurrent = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform);
+            rawImagecurrent.SetActive(true);
+            rawImagecurrent.transform.SetParent(transform);
+            rawImagecurrent.name = "Image";
+            Populate_CurrentImg_variables(rawImagecurrent);
+
         }
+
+        else
+        {
+            Debug.Log("RawImageCurrent is not null");
+        }
+
+        start_position = rawImagecurrent.transform.position;
+        start_rotation = rawImagecurrent.transform.rotation;
 
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
         float height = rawImagecurrent.GetComponent<RectTransform>().rect.height;
         rawImagecurrent.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
         rawImagecurrent.GetComponent<RawImage>().texture = images[current_img_indx];
+        updatename(rawImagecurrent, current_img_indx);
+        
+    }
+
+    public void updatename(GameObject rawImagecurrent, int current_img_indx)
+    {
         rawImagecurrent.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
     }
 
+    
     private void create_and_display_whole_image()
     {
         if (images.Count > 1)
