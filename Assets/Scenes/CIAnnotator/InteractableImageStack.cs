@@ -150,6 +150,8 @@ public class InteractableImageStack : MonoBehaviour
                 whole_img.transform.SetParent(transform);
                 whole_img = set_texture2whole_img(whole_img);
                 whole_image_title(whole_img);
+                whole_img.transform.position = new Vector3(25, -40, 120);
+                whole_img.transform.rotation = Quaternion.Euler(60, 30, 0);
             }
             else
             {
@@ -170,7 +172,6 @@ public class InteractableImageStack : MonoBehaviour
         whole_img.GetComponent<RawImage>().texture = whole_img_texture;
         RectTransform rectTransform = whole_img.GetComponent<RawImage>().GetComponent<RectTransform>();
         rectTransform.sizeDelta = new Vector2(whole_img_texture.width, whole_img_texture.height);
-        whole_img.transform.position = new Vector3(70, 1, 80);
 
         return whole_img;
     }
@@ -180,7 +181,7 @@ public class InteractableImageStack : MonoBehaviour
         string path = "Assets/Resources/whole_img.png";
         (int width, int height) = GetDimensions(path);
         byte[] fileData = File.ReadAllBytes(path);
-        Texture2D texture = new Texture2D(width, height);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.R8, false);
         texture.LoadImage(fileData);
         return texture;
     }

@@ -120,7 +120,7 @@ public class whole_image : MonoBehaviour
 
 private void CreateArrow()
 {
-    string prefabPath = "Assets/Scenes/CIAnnotator/Arrow.prefab";
+    string prefabPath = "Assets/Samples/XR Interaction Toolkit/2.5.3/Starter Assets/Models/Primitive_Cylinder.fbx";
     Arrow = Canvas_script.create_GO(transform, prefabPath);
     Arrow.SetActive(false);
 
@@ -128,23 +128,19 @@ private void CreateArrow()
 // Make scaling 10% of the size of the parent
 float x_scale = GetComponent<RawImage>().texture.width * 0.1f;
 float y_scale = GetComponent<RawImage>().texture.height * 0.1f;
-Arrow.transform.localScale = new UnityEngine.Vector3(x_scale, y_scale, 1);
-
-// Set rect size of arrow to one
-Arrow.GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(1, 1);
-
-    // 
+Arrow.transform.localScale = new UnityEngine.Vector3(4000, 500, 10);
 
 }
 
 private void PositionArrow(UnityEngine.Vector3 position, UnityEngine.Quaternion rotation)
 {
 
-Arrow.transform.localPosition = position;
-Debug.Log($"The mid point world with offset is {Arrow.transform.position}");
-Arrow.transform.rotation =rotation;
-Debug.Log($"After rotation the mid point world with offset is {Arrow.transform.position}");
 
+
+Arrow.transform.localPosition = new UnityEngine.Vector3(position.x, position.y, position.z*10);
+Debug.Log($"The position of cylinder is {Arrow.transform.localPosition}");
+Arrow.transform.localRotation =rotation;
+Debug.Log($"After rotation the mid point world with offset is {Arrow.transform.position}");
 if (!Arrow.activeSelf){
 Arrow.SetActive(true);
 }
@@ -159,10 +155,11 @@ private (UnityEngine.Vector3, UnityEngine.Quaternion) GetArrowPositionAndRotatio
 
     // Add y offset
     UnityEngine.Vector2 max_bounds = Pixel2WorldCoordinate(new UnityEngine.Vector2(patch_position.x_max, patch_position.y_max));
-    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3(mid_point_world.x, max_bounds.y, transform.position.z);
+    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3(max_bounds.x, max_bounds.y, -transform.position.z);
     
+
     // Get the rotation in 150° Angle
-    UnityEngine.Quaternion rotation = UnityEngine.Quaternion.Euler(transform.rotation.x, transform.rotation.y, 150);
+    UnityEngine.Quaternion rotation = UnityEngine.Quaternion.Euler(0, 90, 0);
     
 
     return (mid_point_world_with_offset, rotation);
