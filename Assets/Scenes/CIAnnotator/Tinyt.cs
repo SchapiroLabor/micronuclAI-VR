@@ -30,7 +30,7 @@ public class Tinyt : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        confirm_if_within_bounds();
+        //confirm_if_within_bounds();
     }
 
     // Start is called before the first frame update
@@ -83,7 +83,9 @@ public class Tinyt : MonoBehaviour
 
 }
 */
-    public void confirm_if_within_bounds()
+
+/*
+public void confirm_if_within_bounds()
 {   
 
     GameObject Image = transform.parent.parent.GetComponent<InteractableImageStack>().rawImagecurrent;
@@ -107,7 +109,8 @@ public class Tinyt : MonoBehaviour
     }
 
 
-}
+}*/
+/*
 void OnCollisionEnter(Collision collision)
 
 
@@ -124,7 +127,9 @@ void OnCollisionEnter(Collision collision)
             Debug.Log(string.Format("No collision as if statement is not satisfied {0}", collision.gameObject.name));
     }
 
-}
+   
+
+} */
 
     private void change2brightgreen()
     {         // Ensure the material supports emission color by enabling emission

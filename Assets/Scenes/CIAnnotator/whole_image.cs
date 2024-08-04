@@ -5,6 +5,7 @@ using System.Numerics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class whole_image : MonoBehaviour
 {
@@ -13,17 +14,15 @@ public class whole_image : MonoBehaviour
    private GameObject Arrow;
 
     // Start is called before the first frame update
-    void Start()
+    public void Initialize()
     {
         read_csv_with_python();
         CreateArrow();
+
+        set_texture2whole_img();
+        PositionImagetitle();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public class element
     {
@@ -121,7 +120,7 @@ public class whole_image : MonoBehaviour
 private void CreateArrow()
 {
     string prefabPath = "Assets/Samples/XR Interaction Toolkit/2.5.3/Starter Assets/Models/Primitive_Cylinder.fbx";
-    Arrow = Canvas_script.create_GO(transform, prefabPath);
+    Arrow = Canvas_script.CreateGameObject(transform, prefabPath);
     Arrow.SetActive(false);
 
     // Size of arrow can only be changed via scale propoerty
@@ -199,5 +198,71 @@ public void DisplayArrow()
     PositionArrow(position, rotation);
 
 }
+
+    private void set_texture2whole_img()
+    {
+        Texture2D whole_img_texture = LoadTexture();
+
+        if (whole_img_texture == null)
+        {
+            Debug.Log("Whole image texture is null");
+        }
+
+        GetComponent<RawImage>().texture = whole_img_texture;
+        RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
+        rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
+
+        // Reduce Local Scale
+        rectTransform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 1f);
+
+    }
+
+    private Texture2D LoadTexture()
+    {
+        string path = "Assets/Resources/whole_img.png";
+        (int width, int height) = GetDimensions(path);
+        byte[] fileData = File.ReadAllBytes(path);
+        Texture2D texture = new Texture2D(width, height, TextureFormat.R8, false);
+        texture.LoadImage(fileData);
+        return texture;
+    }
+
+    public static (int width, int height) GetDimensions(string filePath)
+    {
+        using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        {
+            stream.Seek(8, SeekOrigin.Begin);
+
+            byte[] chunkLength = new byte[4];
+            byte[] chunkType = new byte[4];
+            stream.Read(chunkLength, 0, 4);
+            stream.Read(chunkType, 0, 4);
+
+            string type = System.Text.Encoding.ASCII.GetString(chunkType);
+            if (type != "IHDR")
+            {
+                throw new Exception("IHDR chunk not found");
+            }
+
+            byte[] dimensions = new byte[8];
+            stream.Read(dimensions, 0, 8);
+
+            int width = BitConverter.ToInt32(new byte[] { dimensions[3], dimensions[2], dimensions[1], dimensions[0] }, 0);
+            int height = BitConverter.ToInt32(new byte[] { dimensions[7], dimensions[6], dimensions[5], dimensions[4] }, 0);
+
+            return (width, height);
+        }
+    }
+
+    private void PositionImagetitle()
+    {
+        TMP_Text tmpText = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+
+        tmpText.transform.localScale = new UnityEngine.Vector3(1, 1, 1);
+        tmpText.text = "Whole image";
+        tmpText.fontSize = 600;
+        tmpText.alignment = TextAlignmentOptions.TopGeoAligned;
+    }
+
 
 }

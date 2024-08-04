@@ -14,21 +14,20 @@ using UnityEditor;
 public class Trash : MonoBehaviour
 {
 
-    public InteractableImageStack Canvas_script;
+    private InteractableImageStack Canvas_script;
     public GameObject trashPrefab;
+    private ClickNextImage CurrentImage_script;
 
 
 
-void Update ()
+public void Initialize ()
 
 {
-
-
-
+    
+        Canvas_script = transform.parent.GetComponent<InteractableImageStack>();
+        CurrentImage_script = transform.parent.GetComponent<ClickNextImage>();
+        createBuckets();
 }
-
-
-
 
 
 private void re_init_image(GameObject ImageCurrent)
@@ -40,7 +39,7 @@ private void re_init_image(GameObject ImageCurrent)
     ImageCurrent.GetComponent<RawImage>().texture = Canvas_script.images[Canvas_script.current_img_indx];
     ImageCurrent.GetComponent<RectTransform>().position = Canvas_script.start_position;
     ImageCurrent.GetComponent<RectTransform>().rotation = Canvas_script.start_rotation;
-    Canvas_script.updatename(ImageCurrent, Canvas_script.current_img_indx);
+    CurrentImage_script.UpdateImageName(ImageCurrent, Canvas_script.current_img_indx);
     closedisplaysecondimg();
     }
 
@@ -90,7 +89,7 @@ private void re_init_image(GameObject ImageCurrent)
     public void closedisplaysecondimg()
 
     {
-        GameObject rawImagesubsequent = Canvas_script.transform.Find("SubsequentImage").gameObject;
+        GameObject rawImagesubsequent = CurrentImage_script.transform.parent.Find("SubsequentImage").gameObject;
         
         rawImagesubsequent.SetActive(false);
    
@@ -112,7 +111,7 @@ private void re_init_image(GameObject ImageCurrent)
 
     public void createBuckets()
     {   
-        RawImage rawImagecurrent = Canvas_script.transform.Find("Image").gameObject.GetComponent<RawImage>();
+        RawImage rawImagecurrent = transform.parent.Find("Image").gameObject.GetComponent<RawImage>();
         if (rawImagecurrent != null){
             var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width/100)/2;
             Debug.Log($"Trash spacing from image is the following: {spacing}");
@@ -161,27 +160,6 @@ private void re_init_image(GameObject ImageCurrent)
 
     }
 
-    private void Start()
-    {
-        createBuckets();
-    }
-
-    public void assign_bleb_id(GameObject image, int imgid, int blebid)
-
-    {
-        TextMeshProUGUI imageid = image.transform.Find("Image_ID").gameObject.GetComponent<TextMeshProUGUI>();
-        TextMeshProUGUI bleb = image.transform.Find("CIN_counter").gameObject.GetComponent<TextMeshProUGUI>();
-
-        // Get child objects to set bleb count and ID
-
-        //Debug.Log("")
-
-        imageid.text = string.Format("Image ID: {0}", imgid);
-        bleb.text = string.Format("N blebs: {0}", blebid);
-
-
-
-    }
 
 
 
