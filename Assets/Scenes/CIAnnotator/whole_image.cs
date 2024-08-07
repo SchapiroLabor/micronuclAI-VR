@@ -6,20 +6,25 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Mathematics;
+using UnityEngine.UIElements;
 
 public class whole_image : MonoBehaviour
 {
    List<element>  data_dict;
    public InteractableImageStack Canvas_script;
    private GameObject Arrow;
+   private float height;
+   private float width;
 
     // Start is called before the first frame update
     public void Initialize()
     {
         read_csv_with_python();
-        CreateArrow();
+        InitializeIntensityCylinder();
 
-        set_texture2whole_img();
+        SetTextureOnWholeImage();
+        PositionWholeImage();
         PositionImagetitle();
     }
 
@@ -96,7 +101,7 @@ public class whole_image : MonoBehaviour
         int width = patchData.x_max - patchData.x_min;
         int height = patchData.y_max - patchData.y_min;
         Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
-        Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
+        //Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
 
         return bbox;
     }
@@ -113,78 +118,48 @@ public class whole_image : MonoBehaviour
     public void DisplayPatch()
     {
         current_cell_bbox(Canvas_script.current_img_indx);
+
         DisplayArrow();
 
     }
 
-private void CreateArrow()
+private void InitializeIntensityCylinder()
 {
-    string prefabPath = "Assets/Samples/XR Interaction Toolkit/2.5.3/Starter Assets/Models/Primitive_Cylinder.fbx";
-    Arrow = Canvas_script.CreateGameObject(transform, prefabPath);
-    Arrow.SetActive(false);
+string prefabPath = "Assets/Samples/XR Interaction Toolkit/2.5.3/Starter Assets/Models/Primitive_Cylinder.fbx";
+Arrow = Canvas_script.CreateGameObject(transform, prefabPath);
+Arrow.SetActive(false);
 
-    // Size of arrow can only be changed via scale propoerty
-// Make scaling 10% of the size of the parent
-float x_scale = GetComponent<RawImage>().texture.width * 0.1f;
-float y_scale = GetComponent<RawImage>().texture.height * 0.1f;
-Arrow.transform.localScale = new UnityEngine.Vector3(4000, 500, 10);
+// Square root area of image
+float estimate_length = math.sqrt((width * height));
+float length = estimate_length * 0.1f;
+Arrow.transform.localScale = new UnityEngine.Vector3(estimate_length*0.5f, length , 1);
+
+// Get the rotation in 150° Angle
+Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(0, 0, 0);
 
 }
 
-private void PositionArrow(UnityEngine.Vector3 position, UnityEngine.Quaternion rotation)
+private void PositionArrow(UnityEngine.Vector3 position)
 {
 
+Arrow.transform.localPosition = new UnityEngine.Vector3(position.x, position.y, position.z);
 
-
-Arrow.transform.localPosition = new UnityEngine.Vector3(position.x, position.y, position.z*10);
-Debug.Log($"The position of cylinder is {Arrow.transform.localPosition}");
-Arrow.transform.localRotation =rotation;
-Debug.Log($"After rotation the mid point world with offset is {Arrow.transform.position}");
 if (!Arrow.activeSelf){
 Arrow.SetActive(true);
 }
 
 }
 
-private (UnityEngine.Vector3, UnityEngine.Quaternion) GetArrowPositionAndRotation(element patch_position)
+private UnityEngine.Vector3 GetArrowPosition(element patch_position)
 {
     // Get mid point from the patch position
     UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2((patch_position.y_min + patch_position.y_max)/2, (patch_position.x_min + patch_position.x_max)/2);
-    UnityEngine.Vector3 mid_point_world = Pixel2WorldCoordinate(mid_point_pixel);
 
-    // Add y offset
-    UnityEngine.Vector2 max_bounds = Pixel2WorldCoordinate(new UnityEngine.Vector2(patch_position.x_max, patch_position.y_max));
-    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3(max_bounds.x, max_bounds.y, -transform.position.z);
+    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3(mid_point_pixel.x, mid_point_pixel.y, transform.InverseTransformPoint(transform.position).z);
     
-
-    // Get the rotation in 150° Angle
-    UnityEngine.Quaternion rotation = UnityEngine.Quaternion.Euler(0, 90, 0);
-    
-
-    return (mid_point_world_with_offset, rotation);
+    return mid_point_world_with_offset;
 }
 
-
-private UnityEngine.Vector2 Pixel2WorldCoordinate(UnityEngine.Vector2 PixelCoordinate)
-
-{       
-    /*
-        // Normalize pixel coords 
-        // Remember, both pixel coords and local coords are in the range [0, 1] and have origin at the bottom-left corner
-        UnityEngine.Vector2 NormalizedPixelCoordinate = new UnityEngine.Vector2(PixelCoordinate.x / GetComponent<RawImage>().texture.width,
-        PixelCoordinate.y / GetComponent<RawImage>().texture.height);
-        Debug.Log($"The normalized pixel coordinate is {NormalizedPixelCoordinate}");
-        // Convert normalized pixel coords to world coords
-        Debug.Log($"The transform size is {GetComponent<RectTransform>().rect.size}");
-        UnityEngine.Vector2 WorldCoordinate = transform.TransformPoint(NormalizedPixelCoordinate);
-        Debug.Log($"The world coordinate is {WorldCoordinate}");
-    */
-
-        return PixelCoordinate;
-
-
-
-}
 
 public void DisplayArrow()
 {
@@ -192,14 +167,14 @@ public void DisplayArrow()
     element patch_position = data_dict[Canvas_script.current_img_indx];
 
     // Get the arrow position and rotation
-    (UnityEngine.Vector3 position, UnityEngine.Quaternion rotation) = GetArrowPositionAndRotation(patch_position);
+    UnityEngine.Vector3 position = GetArrowPosition(patch_position);
 
     // Position the arrow
-    PositionArrow(position, rotation);
+    PositionArrow(position);
 
 }
 
-    private void set_texture2whole_img()
+private void SetTextureOnWholeImage()
     {
         Texture2D whole_img_texture = LoadTexture();
 
@@ -215,7 +190,52 @@ public void DisplayArrow()
         // Reduce Local Scale
         rectTransform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 1f);
 
+
+
     }
+private void PositionWholeImage()
+    {
+
+        RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
+
+        // Pivot and achors are at bottom left of image
+        rectTransform.pivot = new UnityEngine.Vector2(0, 0);
+        rectTransform.anchorMin = new UnityEngine.Vector2(0, 0);
+        rectTransform.anchorMax = new UnityEngine.Vector2(0, 0);
+
+        // Reduce Local Scale
+        rectTransform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 1f);
+
+        // Position above player with z starting at same position
+        UnityEngine.Vector3 playerPosition = Canvas_script.userCamera.transform.position;
+        float z = playerPosition.z+1; // Keep the z position same as the player position.
+        float x = (width*rectTransform.localScale.x)/2; // Mid width of the image is algin with the player
+
+        RawImage rawImage = GetComponent<RawImage>();
+        width = rawImage.texture.width;
+        height = rawImage.texture.height;
+        // Position image at a working distance to occupy 30% of the screen
+        float img_area = (width*height);
+        Debug.Log($"The image area is {img_area}");
+        float fov_horizontal = Camera.main.sensorSize.x/Camera.main.focalLength;
+        float fov_vertical = Camera.main.sensorSize.y/Camera.main.focalLength;
+        Debug.Log($"The fov_horizontal is {fov_horizontal} and fov_vertical is {fov_vertical}");
+        float screen_area = fov_vertical * fov_horizontal * Screen.width * Screen.height;
+        Debug.Log($"The screen area is {screen_area}");
+        float distance = (screen_area/(screen_area*0.3f))/img_area;
+        Debug.Log($"The distance is {distance}");
+        float y = distance*rectTransform.localScale.x;
+        Debug.Log($"The y is {y}");
+
+
+        rectTransform.transform.position = new UnityEngine.Vector3(y, x, z);
+
+        // Set rotation to roof
+        rectTransform.transform.rotation = UnityEngine.Quaternion.Euler(90, 0, 0);
+
+
+    }
+
 
     private Texture2D LoadTexture()
     {
