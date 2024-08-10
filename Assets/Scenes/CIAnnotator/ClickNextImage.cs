@@ -32,30 +32,125 @@ public class ClickNextImage : MonoBehaviour
         }
 
         gameObject.name = "Image";
+
         PopulateVariables();
 
-        // Populate the list dedicated to image textures
+        // Position and populate the list dedicated to image textures
         getImageTextures();
 
         // Initialize the image
         InitializeCurrentImage(current_img_indx);
-
-        SetNativeAndColliderSize(gameObject);
         
         // Create and display second image
-        CreateGOForSubsequentImage(N_image);
+        CreateGameObjectForSecondImage(N_image);
     }
 
-    private void SetNativeAndColliderSize(GameObject gameObject)
-    {
-        // SHould only be executed after first texture has been assigned as native size is not dnymaic
-        // Set the collider size
-        gameObject.GetComponent<RawImage>().SetNativeSize();
-        SetColliderSize(gameObject);
+    void PositionImageStack()
+    {   
+        // Set the anchors and pivots of the Image
+        Canvas_script.SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
+
+        // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
+        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+
+        // Set side lengths of the rect transform
+        transform.localScale = new UnityEngine.Vector3(1, 1, 1);
+
+        // Face Image to player
+        start_position =  transform.parent.position + transform.parent.forward * 0.01f;
+        start_rotation = transform.parent.rotation;
+
+
+
+
     }
+
+private void PositionResizeText()
+{
+    // Set the anchors and pivots of the Text
+    Canvas_script.SetupAnchorsAndPivots(transform.GetChild(0).GetComponent<RectTransform>());
+
+    // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
+    transform.GetChild(0).GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+    transform.GetChild(0).GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+
+    // Set side lengths of the rect transform
+    transform.GetChild(0).localScale = new UnityEngine.Vector3(1, 1, 1);
+
+    // Face Text to player
+    transform.GetChild(0).position = transform.position;
+    transform.GetChild(0).rotation = transform.rotation;
+
+    // Set the size of the Text to be 1/3 of the width of the image
+    transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(GetComponent<RectTransform>().sizeDelta.x, GetComponent<RectTransform>().sizeDelta.y/3);
+
+    // Set the font size of the Text same to width of image
+    transform.GetChild(0).GetComponent<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
+
+    // Set the text of the Text
+    transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Patch 1/1";
+
+}
+
+private void ResizeImgtobewithin40percentofFOV(float WD)
+{
+
+    // Get the FOV at the panel height
+    List<float> outputs = Canvas_script.GetFOVatWD(WD);
+    
+    float newWidth = outputs[0]*0.4f; // Height
+    float newHeight = outputs[1]*0.4f; // Width
+
+    // Get the width and height of the RawImage
+    float width = GetComponent<RawImage>().texture.width;
+    float height = GetComponent<RawImage>().texture.height;
+
+    Debug.Log("Width: " + width + " Height: " + height);
+
+    // Reduce image size whilst keeping the image aspect ratio
+    float aspect_ratio = width/height;
+
+    // Adjust the dimensions to maintain the aspect ratio
+    if (newWidth > newHeight * aspect_ratio)
+    {
+        newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+    }
+    else
+    {
+        newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+    }
+
+    Debug.Log("New Width: " + newWidth + " New Height: " + newHeight);
+    // Set width and height of the Canvas
+    RectTransform rectTransform = GetComponent<RectTransform>();
+
+    rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+
+}
+
+    private void PopulateVariables()
+    {
+
+    // Confirm what variables are in the script
+    Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
+
+    // Find object in scene
+    CanvasUI = GameObject.Find("Canvas UI").gameObject;
+
+    // Get the start position and rotation of the RawImage
+    current_img_indx = 0;
+
+    // Get the RawImage component
+    rawImage = GetComponent<RawImage>();
+
+    }
+
 
     private void getImageTextures()
     {
+        PositionImageStack();
+
         var ext = new List<string> { "jpg", "gif", "png" };
         imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/test_imgs", "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path =>
@@ -73,49 +168,28 @@ public class ClickNextImage : MonoBehaviour
     }
 
 
-    private void PopulateVariables()
-    {
-
-    // Confirm what variables are in the script
-    Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
-
-    // Find object in scene
-    CanvasUI = GameObject.Find("Canvas UI").gameObject;
-
-    // Get the start position and rotation of the RawImage
-    current_img_indx = 0;
-
-    // Get the RawImage component
-    rawImage = GetComponent<RawImage>();
-
-
-    // Set Image to centre with same angle
-    start_position = new Vector3(1, 1, 0);
-    start_rotation = Canvas_script.GetComponent<RectTransform>().rotation;;
-
-
-    }
-
     public void InitializeCurrentImage(int current_img_indx)
     {
 
-        transform.localPosition = new Vector3(transform.localPosition.x * start_position.x, transform.localPosition.y * start_position.y, transform.localPosition.z * start_position.z);
+        transform.position = start_position;
         transform.rotation = start_rotation;
 
         rawImage.texture = images[current_img_indx];
         UpdateImageName(gameObject, current_img_indx);
+
+        // Resize the image to be within 40% of the FOV
+        ResizeImgtobewithin40percentofFOV(transform.position.z);
+
+        // Set the collider size
+        SetColliderSize();
         
     }
 
-    private void SetColliderSize(GameObject gameObject)
+    private void SetColliderSize()
     {
-        float width = gameObject.GetComponent<RectTransform>().rect.width;
-        float height = gameObject.GetComponent<RectTransform>().rect.height;
-        gameObject.GetComponent<BoxCollider>().size = new Vector3(width, height, 0);
+        gameObject.GetComponent<BoxCollider>().size = GetComponent<RectTransform>().sizeDelta;
 
     }
-
-
 
 
     public void UpdateImageName(GameObject rawImagecurrent, int current_img_indx)
@@ -125,9 +199,7 @@ public class ClickNextImage : MonoBehaviour
 
 
 
-
-
-    public void CreateGOForSubsequentImage(int N_images)
+public void CreateGameObjectForSecondImage(int N_images)
     {
 
         // Create subsequent image only when there are more than one images
@@ -153,7 +225,7 @@ public class ClickNextImage : MonoBehaviour
             rawImagesubsequentGO.transform.SetParent(transform.parent);
             rawImagesubsequentGO.SetActive(false);
 
-            Create_button_next2image(x_scale: 1f, y_scale: 0.45f);
+            InstantiateLocatePatchButton();
         }
 
         else
@@ -164,8 +236,8 @@ public class ClickNextImage : MonoBehaviour
 
 
 
-    public void DisplaySecondImage()
-    {
+public void DisplaySecondImage()
+{
         if (this.gameObject != null && rawImagesubsequentGO != null)
         {
             subsequent_img = Canvas_script.current_img_indx;
@@ -190,7 +262,7 @@ public class ClickNextImage : MonoBehaviour
         }
     }
 
-public void Create_button_next2image(float x_scale = 0.8f, float y_scale = 1f)
+public void InstantiateLocatePatchButton()
 {   
 
 
@@ -202,14 +274,7 @@ public void Create_button_next2image(float x_scale = 0.8f, float y_scale = 1f)
 
     }
 
-    else
-    {
-        CanvasUI.transform.position = transform.position;
-        CanvasUI.transform.rotation = transform.rotation;
-    }
-
-    CanvasUI.transform.localScale = Vector3.one;
-    CanvasUI.transform.position += Get_Axes_Offsets(x_scale, y_scale);
+    PositionandResizeCanvasUI();
 
     GameObject button = CanvasUI.transform.Find("LocatePatch").gameObject;
 
@@ -220,20 +285,31 @@ public void Create_button_next2image(float x_scale = 0.8f, float y_scale = 1f)
     button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
     }
 
-    else
-    {
-        button.transform.position = transform.position;
-        button.transform.rotation = transform.rotation;
-    }
+    ChildIdenticalToParent(CanvasUI, button);
 
+    // Set the font size of the Button same to width of image
+    button.GetComponentInChildren<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
 
-    button.transform.position += Get_Axes_Offsets(x_scale, y_scale);
+    // Set text of the button
+    button.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
     
 }
 
 
-private Vector3 Get_Axes_Offsets(float x_scale, float y_scale)
+private void PositionandResizeCanvasUI()
 {
+    // Set the anchors and pivots of the Canvas UI
+    Canvas_script.SetupAnchorsAndPivots(CanvasUI.GetComponent<RectTransform>());
+
+    // Face the Canvas UI to the player
+    CanvasUI.transform.rotation = Quaternion.Euler(Vector3.zero);
+
+    // Change pivot to top left corner of the Canvas UI, so no overlap with the RawImage
+    CanvasUI.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
+
+
+    // Set scale of the Canvas
+    CanvasUI.transform.localScale = Vector3.one;
 
     // Get the width and height of the RawImage
     float width = GetComponent<RectTransform>().rect.width;
@@ -243,22 +319,33 @@ private Vector3 Get_Axes_Offsets(float x_scale, float y_scale)
     float scaled_width = width* GetComponent<RectTransform>().localScale.x;
     float scaled_height = height * GetComponent<RectTransform>().localScale.y;
 
-    // Calculate the x and y offsets
-    float x_offset = scaled_width  * x_scale;
-    float y_offset = scaled_height * y_scale;
+    // Set the position of the Canvas UI to top right corner of the RawImage
+    CanvasUI.transform.position = new Vector3((transform.position.x + scaled_width/2) * 1.1f, transform.position.y + scaled_height/2, transform.position.z);
 
-    return new Vector3(x_offset, y_offset, 0);
-
-
-
+    // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
+    CanvasUI.GetComponent<RectTransform>().sizeDelta = new Vector2(scaled_width/6, scaled_width/9);
 
 }
 
 
-    private void Update()
-    {
+public void ChildIdenticalToParent(GameObject parent, GameObject child)
+{
+    child.transform.SetParent(parent.transform);
+    // Anchors and pivots are the same as the parent
+    child.GetComponent<RectTransform>().anchorMin = parent.GetComponent<RectTransform>().anchorMin;
+    child.GetComponent<RectTransform>().anchorMax = parent.GetComponent<RectTransform>().anchorMax;
+    child.GetComponent<RectTransform>().pivot = parent.GetComponent<RectTransform>().pivot;
 
-    }
+    child.transform.position = parent.transform.position;
+    child.transform.rotation = parent.transform.rotation;
+    child.transform.localScale = parent.transform.localScale;
+
+    // Set the size of the child to be the same as the parent
+    child.GetComponent<RectTransform>().sizeDelta = parent.GetComponent<RectTransform>().sizeDelta;
+
+
+}
+
 }
 
 

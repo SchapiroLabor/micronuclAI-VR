@@ -1,13 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEditor;
-using Unity.VisualScripting;
-using System.Diagnostics.CodeAnalysis;
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector2;
+using Quaternion = UnityEngine.Quaternion;
 
 public class InteractableImageStack : MonoBehaviour
 {
@@ -44,33 +40,79 @@ public class InteractableImageStack : MonoBehaviour
     private void Initialize()
     {
         // Initialize all children using their Initialize method
-        transform.GetComponentInChildren<whole_image>().Initialize();
         transform.GetComponentInChildren<GridMaker>().Initialize();
+        transform.GetComponentInChildren<whole_image>().Initialize();
+    }
+
+
+    public void SetupAnchorsAndPivots(RectTransform rectTransform)
+    {
+        // Set the anchors and pivots of the Canvas
+        rectTransform.anchorMin = new Vector2(0, 0);
+        rectTransform.anchorMax = new Vector2(1, 1);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+    }
+
+    public List<float> GetFOVatWD(float WD)
+    {
+        // Pythagoras theorem to calculate the distance
+        List<float> holder = new List<float>();
+        float vertical_fov = Camera.main.fieldOfView;
+        float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
+        float fov_width =  Camera.main.aspect * fov_height;     // Aspect ratio of the camera is width/height
+
+        holder.Add(fov_height);
+        holder.Add(fov_width);
+        holder.Add(WD);
+
+        return holder;
+    }
+
+    public List<float> GetFOVatNearClipping()
+    {   // Must be near or else the child elements of canvas will not be visible
+
+        // Pythagoras theorem to calculate the distance
+        List<float> holder = new List<float>();
+        float vertical_fov = Camera.main.fieldOfView;
+        float clipping_distance = Camera.main.nearClipPlane;
+        float fov_height = (clipping_distance * Mathf.Tan(vertical_fov * 0.5f)) * 2;
+        float fov_width =  Camera.main.aspect * fov_height; // Aspect ratio of the camera is width/height
+
+        holder.Add(fov_height);
+        holder.Add(fov_width);
+        holder.Add(clipping_distance);
+
+        return holder;
+    }
+
+
+    public Vector3 FacePlayer(float scaler)
+    {
+        // Face the player
+        Vector3 cameraPosition = userCamera.transform.position;
+        Vector3 cameraForward = userCamera.transform.forward;
+        return cameraPosition + cameraForward * scaler;
     }
 
     void PositionCanvas()
     {
-        Vector3 cameraPosition = userCamera.transform.position;
 
-        Vector3 cameraForward = userCamera.transform.forward;
-
-        // Calculate the new position for the Canvas to max clipping distance
-        Vector3 newPosition = cameraPosition + cameraForward * userCamera.farClipPlane;
-
-        // Set the position and rotation of the Canvas
-        transform.position = newPosition;
-        transform.rotation = Quaternion.LookRotation(cameraForward);
-
-        transform.localScale = new Vector3(1, 1, 1);
-        float focalLength = userCamera.focalLength;
-
-        float width = (userCamera.sensorSize.x/focalLength) * Screen.width;
-        float height = (userCamera.sensorSize.y/focalLength) * Screen.height;
-
-        // Set width and height of the Canvas
+        // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
+        SetupAnchorsAndPivots(rectTransform);
 
-        rectTransform.sizeDelta = new Vector2(width, height);
+        // Calculate the new position for the Canvas to minimum clipping distance
+        transform.position = FacePlayer(userCamera.nearClipPlane);
+
+        // Set rotation of the Canvas to face the camera
+        transform.rotation = Quaternion.Euler(Vector3.zero);
+
+        // Set scale to 1
+        transform.localScale = new Vector3(1, 1, 1);
+
+        List<float> outputs = GetFOVatNearClipping();
+
+        rectTransform.sizeDelta = new Vector2(outputs[1], outputs[0]);
 
 
     }

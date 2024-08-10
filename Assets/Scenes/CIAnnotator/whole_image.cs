@@ -8,6 +8,9 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.Mathematics;
 using UnityEngine.UIElements;
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector2;
+using Quaternion = UnityEngine.Quaternion;
 
 public class whole_image : MonoBehaviour
 {
@@ -16,6 +19,8 @@ public class whole_image : MonoBehaviour
    private GameObject Arrow;
    private float height;
    private float width;
+
+   private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
 
     // Start is called before the first frame update
     public void Initialize()
@@ -193,46 +198,72 @@ private void SetTextureOnWholeImage()
 
 
     }
+
+    private List<float> GetFOVatWD(float WD)
+    {
+        // Pythagoras theorem to calculate the distance
+        List<float> holder = new List<float>();
+        float vertical_fov = Camera.main.fieldOfView;
+        float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
+        float fov_width =  Camera.main.aspect * fov_height;     // Aspect ratio of the camera is width/height
+
+        holder.Add(fov_height);
+        holder.Add(fov_width);
+        holder.Add(WD);
+
+        return holder;
+    }
+
+private void ResizeImgtobewithinFOV(float WD)
+{
+
+    // Get the FOV at the panel height
+    List<float> outputs = GetFOVatWD(WD);
+    float newWidth = outputs[0];
+    float newHeight = outputs[1]; // Width
+
+    // Reduce image size whilst keeping the image aspect ratio
+    float aspect_ratio = width/height;
+
+    // Adjust the dimensions to maintain the aspect ratio
+    if (newWidth > newHeight * aspect_ratio)
+    {
+        newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+    }
+    else
+    {
+        newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+    }
+
+    // Set width and height of the Canvas
+    RectTransform rectTransform = GetComponent<RectTransform>();
+
+    rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+}
+
 private void PositionWholeImage()
     {
 
-        RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
-
-        // Pivot and achors are at bottom left of image
-        rectTransform.pivot = new UnityEngine.Vector2(0, 0);
-        rectTransform.anchorMin = new UnityEngine.Vector2(0, 0);
-        rectTransform.anchorMax = new UnityEngine.Vector2(0, 0);
+        // Setup anchors and pivots
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        Canvas_script.SetupAnchorsAndPivots(rectTransform);
+        // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
+        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
 
         // Reduce Local Scale
-        rectTransform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 1f);
+        rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
 
-        // Position above player with z starting at same position
-        UnityEngine.Vector3 playerPosition = Canvas_script.userCamera.transform.position;
-        float z = playerPosition.z+1; // Keep the z position same as the player position.
-        float x = (width*rectTransform.localScale.x)/2; // Mid width of the image is algin with the player
+        // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
+        Vector3 newPosition = Canvas_script.FacePlayer(raycast_distance);
+        newPosition.y = transform.parent.GetChild(1).GetComponent<RectTransform>().sizeDelta.y;;
 
-        RawImage rawImage = GetComponent<RawImage>();
-        width = rawImage.texture.width;
-        height = rawImage.texture.height;
-        // Position image at a working distance to occupy 30% of the screen
-        float img_area = (width*height);
-        Debug.Log($"The image area is {img_area}");
-        float fov_horizontal = Camera.main.sensorSize.x/Camera.main.focalLength;
-        float fov_vertical = Camera.main.sensorSize.y/Camera.main.focalLength;
-        Debug.Log($"The fov_horizontal is {fov_horizontal} and fov_vertical is {fov_vertical}");
-        float screen_area = fov_vertical * fov_horizontal * Screen.width * Screen.height;
-        Debug.Log($"The screen area is {screen_area}");
-        float distance = (screen_area/(screen_area*0.3f))/img_area;
-        Debug.Log($"The distance is {distance}");
-        float y = distance*rectTransform.localScale.x;
-        Debug.Log($"The y is {y}");
+        // Set size of the image
+        ResizeImgtobewithinFOV((newPosition.y+newPosition.z)/2);
 
-
-        rectTransform.transform.position = new UnityEngine.Vector3(y, x, z);
-
-        // Set rotation to roof
-        rectTransform.transform.rotation = UnityEngine.Quaternion.Euler(90, 0, 0);
-
+        // Set angle of the image to panel at 90°
+        rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
+        rectTransform.transform.position = newPosition;
 
     }
 
@@ -240,14 +271,14 @@ private void PositionWholeImage()
     private Texture2D LoadTexture()
     {
         string path = "Assets/Resources/whole_img.png";
-        (int width, int height) = GetDimensions(path);
+        (float width, float height) = GetDimensions(path);
         byte[] fileData = File.ReadAllBytes(path);
-        Texture2D texture = new Texture2D(width, height, TextureFormat.R8, false);
+        Texture2D texture = new Texture2D((int)width, (int)height, TextureFormat.R8, false);
         texture.LoadImage(fileData);
         return texture;
     }
 
-    public static (int width, int height) GetDimensions(string filePath)
+    public (float width, float height) GetDimensions(string filePath)
     {
         using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
         {
@@ -267,8 +298,8 @@ private void PositionWholeImage()
             byte[] dimensions = new byte[8];
             stream.Read(dimensions, 0, 8);
 
-            int width = BitConverter.ToInt32(new byte[] { dimensions[3], dimensions[2], dimensions[1], dimensions[0] }, 0);
-            int height = BitConverter.ToInt32(new byte[] { dimensions[7], dimensions[6], dimensions[5], dimensions[4] }, 0);
+            width = BitConverter.ToInt32(new byte[] { dimensions[3], dimensions[2], dimensions[1], dimensions[0] }, 0);
+            height = BitConverter.ToInt32(new byte[] { dimensions[7], dimensions[6], dimensions[5], dimensions[4] }, 0);
 
             return (width, height);
         }
