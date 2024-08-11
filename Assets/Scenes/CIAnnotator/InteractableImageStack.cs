@@ -89,8 +89,9 @@ public class InteractableImageStack : MonoBehaviour
     public Vector3 FacePlayer(float scaler)
     {
         // Face the player
-        Vector3 cameraPosition = userCamera.transform.position;
-        Vector3 cameraForward = userCamera.transform.forward;
+        Vector3 cameraPosition = new Vector3(0,0,0);
+        Vector3 cameraForward = new Vector3(0,0,1);
+
         return cameraPosition + cameraForward * scaler;
     }
 
@@ -103,6 +104,8 @@ public class InteractableImageStack : MonoBehaviour
 
         // Calculate the new position for the Canvas to minimum clipping distance
         transform.position = FacePlayer(userCamera.nearClipPlane);
+
+        Debug.Log("The position of the canvas is the following: " + transform.position);
 
         // Set rotation of the Canvas to face the camera
         transform.rotation = Quaternion.Euler(Vector3.zero);
@@ -125,5 +128,22 @@ public class InteractableImageStack : MonoBehaviour
         return instance;
     }
 
+public void ChildIdenticalToParent(GameObject parent, GameObject child)
+{
+    child.transform.SetParent(parent.transform);
+    // Anchors and pivots are the same as the parent
+    child.GetComponent<RectTransform>().anchorMin = parent.GetComponent<RectTransform>().anchorMin;
+    child.GetComponent<RectTransform>().anchorMax = parent.GetComponent<RectTransform>().anchorMax;
+    child.GetComponent<RectTransform>().pivot = parent.GetComponent<RectTransform>().pivot;
+
+    child.transform.position = parent.transform.position;
+    child.transform.rotation = parent.transform.rotation;
+    child.transform.localScale = parent.transform.localScale;
+
+    // Set the size of the child to be the same as the parent
+    child.GetComponent<RectTransform>().sizeDelta = parent.GetComponent<RectTransform>().sizeDelta;
+
+
+}
 
 }

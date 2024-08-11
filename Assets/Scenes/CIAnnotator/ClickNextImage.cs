@@ -295,7 +295,7 @@ public void InstantiateLocatePatchButton()
     button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
     }
 
-    ChildIdenticalToParent(CanvasUI, button);
+    Canvas_script.ChildIdenticalToParent(CanvasUI, button);
 
     // Set the font size of the Button same to width of image
     button.GetComponentInChildren<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
@@ -341,23 +341,7 @@ private void PositionandResizeCanvasUI()
 }
 
 
-public void ChildIdenticalToParent(GameObject parent, GameObject child)
-{
-    child.transform.SetParent(parent.transform);
-    // Anchors and pivots are the same as the parent
-    child.GetComponent<RectTransform>().anchorMin = parent.GetComponent<RectTransform>().anchorMin;
-    child.GetComponent<RectTransform>().anchorMax = parent.GetComponent<RectTransform>().anchorMax;
-    child.GetComponent<RectTransform>().pivot = parent.GetComponent<RectTransform>().pivot;
 
-    child.transform.position = parent.transform.position;
-    child.transform.rotation = parent.transform.rotation;
-    child.transform.localScale = parent.transform.localScale;
-
-    // Set the size of the child to be the same as the parent
-    child.GetComponent<RectTransform>().sizeDelta = parent.GetComponent<RectTransform>().sizeDelta;
-
-
-}
 
 }
 

@@ -41,6 +41,7 @@ private void re_init_image(GameObject ImageCurrent)
     ImageCurrent.GetComponent<RectTransform>().rotation = Canvas_script.start_rotation;
     CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), Canvas_script.current_img_indx, Canvas_script.N_image);
     closedisplaysecondimg();
+
     }
 
     else
@@ -96,13 +97,22 @@ private void re_init_image(GameObject ImageCurrent)
     }
 
     private GameObject createTrash(int N, RawImage rawImagecurrent)
-    {
+    {   
+       
+
+
         Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
         float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
-        float x_shift = (width / 100)/1.5f;
-        Vector3 position = new Vector3(image_position.x + x_shift, image_position.y, image_position.z);
+        float x_shift = width;
+        Vector3 position = new Vector3(- x_shift - image_position.x, image_position.y, image_position.z);
         GameObject trashInstance = Instantiate(trashPrefab, position, Quaternion.identity, parent: transform);
-        trashInstance.transform.position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
+
+         // Set pivot at bottom centre
+        RectTransform rectTransform = trashInstance.GetComponent<RectTransform>();
+        rectTransform.pivot = new Vector2(0.5f, 0);
+
+        trashInstance.transform.position = position;
+        trashInstance.transform.localScale = Vector3.one;
         trashInstance.name = $"{N} Micronuclei";
         TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
         tmpText.text = $"{N}";
