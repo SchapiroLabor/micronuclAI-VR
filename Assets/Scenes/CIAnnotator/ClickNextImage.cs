@@ -6,10 +6,11 @@ using System.IO;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+// Import functions from another script
+using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
 
 public class ClickNextImage : MonoBehaviour
 {
-    private InteractableImageStack Canvas_script;
     public GameObject rawImagesubsequentGO;
     private GameObject CanvasUI;
     private int subsequent_img;
@@ -48,7 +49,7 @@ public class ClickNextImage : MonoBehaviour
     void PositionImageStack()
     {   
         // Set the anchors and pivots of the Image
-        Canvas_script.SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
+        SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
 
         // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
         transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
@@ -71,7 +72,7 @@ public class ClickNextImage : MonoBehaviour
 public void PositionResizeText(RectTransform rectTransform, int current_img_indx, int N_image)
 {
     // Set the anchors and pivots of the Text
-    Canvas_script.SetupAnchorsAndPivots(rectTransform.GetChild(0).GetComponent<RectTransform>());
+    SetupAnchorsAndPivots(rectTransform.GetChild(0).GetComponent<RectTransform>());
 
     // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
     rectTransform.GetChild(0).GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
@@ -109,7 +110,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
 {
 
     // Get the FOV at the panel height
-    List<float> outputs = Canvas_script.GetFOVatWD(WD);
+    List<float> outputs = GetFOVatWD(WD);
     
     float newWidth = outputs[0]*0.4f; // Height
     float newHeight = outputs[1]*0.4f; // Width
@@ -143,9 +144,6 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
 
     private void PopulateVariables()
     {
-
-    // Confirm what variables are in the script
-    Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
 
     // Find object in scene
     CanvasUI = GameObject.Find("Canvas UI").gameObject;
@@ -209,7 +207,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
 
 
 
-public void CreateGameObjectForSecondImage(int N_images)
+private void CreateGameObjectForSecondImage(int N_images)
     {
 
         // Create subsequent image only when there are more than one images
@@ -250,6 +248,8 @@ public void DisplaySecondImage()
 {
         if (this.gameObject != null && rawImagesubsequentGO != null)
         {
+            InteractableImageStack Canvas_script = transform.Find("Canvas").GetComponent<InteractableImageStack>();
+
             subsequent_img = Canvas_script.current_img_indx;
 
             if (subsequent_img < (Canvas_script.images.Count - 1))
@@ -261,6 +261,8 @@ public void DisplaySecondImage()
                 subsequent_img = 0;
             }
 
+            Debug.Log("Subsequent Image Index: " + subsequent_img);
+            Debug.Log("Image count: " + Canvas_script.images.Count);
             rawImagesubsequentGO.GetComponent<RawImage>().texture = Canvas_script.images[subsequent_img];
             rawImagesubsequentGO.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", subsequent_img + 1, Canvas_script.N_image);
             rawImagesubsequentGO.SetActive(true);
@@ -295,7 +297,7 @@ public void InstantiateLocatePatchButton()
     button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
     }
 
-    Canvas_script.ChildIdenticalToParent(CanvasUI, button);
+    ChildIdenticalToParent(CanvasUI, button);
 
     // Set the font size of the Button same to width of image
     button.GetComponentInChildren<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
@@ -312,7 +314,7 @@ public void InstantiateLocatePatchButton()
 private void PositionandResizeCanvasUI()
 {
     // Set the anchors and pivots of the Canvas UI
-    Canvas_script.SetupAnchorsAndPivots(CanvasUI.GetComponent<RectTransform>());
+    SetupAnchorsAndPivots(CanvasUI.GetComponent<RectTransform>());
 
     // Face the Canvas UI to the player
     CanvasUI.transform.rotation = Quaternion.Euler(Vector3.zero);

@@ -11,11 +11,13 @@ using UnityEngine.UIElements;
 using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
+// Import functions from another script
+using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
 {
    List<element>  data_dict;
-   private InteractableImageStack Canvas_script;
+
    private GameObject Arrow;
    private float height;
    private float width;
@@ -25,7 +27,6 @@ public class whole_image : MonoBehaviour
     // Start is called before the first frame update
     public void Initialize()
     {
-        Canvas_script = transform.parent.GetComponent<InteractableImageStack>();
 
         read_csv_with_python();
         
@@ -128,7 +129,8 @@ public class whole_image : MonoBehaviour
     }
 
     public void DisplayPatch()
-    {
+    {   
+        InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
         current_cell_bbox(Canvas_script.current_img_indx);
 
         DisplayArrow();
@@ -138,7 +140,7 @@ public class whole_image : MonoBehaviour
 private void InitializeIntensityCylinder()
 {
 string prefabPath = "Assets/Scenes/CIAnnotator/Cylinder.prefab";
-Arrow = Canvas_script.CreateGameObject(transform, prefabPath);
+Arrow = CreateGameObject(transform, prefabPath, transform);
 Arrow.SetActive(false);
 
 // Square root area of image
@@ -205,10 +207,11 @@ Debug.Log($"Get Arrow and player world rotation {Arrow.transform.rotation} and {
 
 private void DisplayArrow()
 {
+
+    InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
+
     // Get the patch position
     element patch_position = data_dict[Canvas_script.current_img_indx];
-
-    Debug.Log($"Current image index is {Canvas_script.current_img_indx}");
 
     // Get the arrow position and rotation
     UnityEngine.Vector3 position = GetArrowPosition(patch_position);
@@ -285,7 +288,7 @@ private void PositionWholeImage()
 
         // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
-        Canvas_script.SetupAnchorsAndPivots(rectTransform);
+        SetupAnchorsAndPivots(rectTransform);
         // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
         transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
         transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
@@ -294,7 +297,7 @@ private void PositionWholeImage()
         rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
 
         // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
-        Vector3 newPosition = Canvas_script.FacePlayer(raycast_distance);
+        Vector3 newPosition = FacePlayer(raycast_distance);
         newPosition.y = transform.parent.GetChild(1).GetComponent<RectTransform>().sizeDelta.y;;
 
         // Set size of the image

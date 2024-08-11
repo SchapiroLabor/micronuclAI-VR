@@ -45,7 +45,7 @@ public class InteractableImageStack : MonoBehaviour
     }
 
 
-    public void SetupAnchorsAndPivots(RectTransform rectTransform)
+    public static void SetupAnchorsAndPivots(RectTransform rectTransform)
     {
         // Set the anchors and pivots of the Canvas
         rectTransform.anchorMin = new Vector2(0, 0);
@@ -53,7 +53,7 @@ public class InteractableImageStack : MonoBehaviour
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
     }
 
-    public List<float> GetFOVatWD(float WD)
+    public static List<float> GetFOVatWD(float WD)
     {
         // Pythagoras theorem to calculate the distance
         List<float> holder = new List<float>();
@@ -86,7 +86,7 @@ public class InteractableImageStack : MonoBehaviour
     }
 
 
-    public Vector3 FacePlayer(float scaler)
+    public static Vector3 FacePlayer(float scaler)
     {
         // Face the player
         Vector3 cameraPosition = new Vector3(0,0,0);
@@ -120,7 +120,7 @@ public class InteractableImageStack : MonoBehaviour
 
     }
 
-    public GameObject CreateGameObject(Transform parent, string prefabPath)
+    public static GameObject CreateGameObject(Transform parent, string prefabPath, Transform transform)
     {
         // Create a new RawImage GameObject from the prefab
         GameObject instance= Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform.position, transform.rotation);
@@ -128,7 +128,7 @@ public class InteractableImageStack : MonoBehaviour
         return instance;
     }
 
-public void ChildIdenticalToParent(GameObject parent, GameObject child)
+public static void ChildIdenticalToParent(GameObject parent, GameObject child)
 {
     child.transform.SetParent(parent.transform);
     // Anchors and pivots are the same as the parent

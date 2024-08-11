@@ -5,6 +5,8 @@ using UnityEngine;
 using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
+// Import functions from another script
+using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
 
 public class GridMaker : MonoBehaviour
 {
@@ -26,22 +28,21 @@ public class GridMaker : MonoBehaviour
         PositionGrid();
 
         // Init children
-        transform.GetComponentInChildren<Trash>().Initialize();
         transform.GetComponentInChildren<ClickNextImage>().Initialize();
+        transform.GetComponentInChildren<Trash>().Initialize();
     }
 
     void PositionGrid()
     {   
-        InteractableImageStack Canvas_script = transform.parent.GetComponent<InteractableImageStack>();
         // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
-        Canvas_script.SetupAnchorsAndPivots(rectTransform);
+        SetupAnchorsAndPivots(rectTransform);
 
         // Set side lengths of the rect transform
         rectTransform.localScale = new UnityEngine.Vector3(1, 1, 1);
 
         // Set distance from the camera at maximum raycast distance
-        Vector3 newPosition = Canvas_script.FacePlayer((raycast_distance * 0.9f)); // 0.9f provides a buffer, incase player moves without knowing and believes interaction is not feasible
+        Vector3 newPosition = FacePlayer((raycast_distance * 0.9f)); // 0.9f provides a buffer, incase player moves without knowing and believes interaction is not feasible
         rectTransform.position = newPosition;
 
         // Set size of Grid to FOV at the maximum raycast distance

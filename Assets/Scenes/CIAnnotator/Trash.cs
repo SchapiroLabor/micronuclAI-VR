@@ -9,14 +9,16 @@ using Unity.VisualScripting;
 using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEditor;
-
+// Import functions from another script
+using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
 
 public class Trash : MonoBehaviour
 {
 
-    private InteractableImageStack Canvas_script;
-    public GameObject trashPrefab;
-    private ClickNextImage CurrentImage_script;
+    private GameObject trashPrefab;
+    public ClickNextImage CurrentImage_script;
+
+
 
 
 
@@ -24,15 +26,39 @@ public void Initialize ()
 
 {
     
-        Canvas_script = transform.parent.GetComponent<InteractableImageStack>();
-        CurrentImage_script = transform.parent.GetComponent<ClickNextImage>();
+
+        trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
+
+        // Set the anchors and pivots of the Canvas
+        SetupAnchorsAndPivots(GetComponent<RectTransform>());
+
+        // Set anchors to left bottom
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0, 0);
+        rectTransform.anchorMax = new Vector2(0, 0);
+
+        // Set Grid Layour group spacing to 10% of image width
+        GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        gridLayoutGroup.spacing =  new Vector2(0.1f, 0.1f) * CurrentImage_script.GetComponent<RectTransform>().rect.width;
+
+        // Set pivot to center right
+        rectTransform.pivot = new Vector2(1f, 0.5f);
+
+        Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().localPosition;
+        float width = CurrentImage_script.GetComponent<RectTransform>().rect.width / 2;
+        float x_shift = width;
+        // Have to use local position becuase world positions provides unexpected results
+        Vector3 position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
+        transform.localPosition = position;
+
         createBuckets();
 }
 
 
 private void re_init_image(GameObject ImageCurrent)
 
-{   
+{   InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
+
     if (ImageCurrent == null || ImageCurrent.activeSelf == false)
     {
     ImageCurrent.SetActive(true);
@@ -55,7 +81,7 @@ private void re_init_image(GameObject ImageCurrent)
     public void dispose()
 
     { 
-        
+        InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
 
         // Get current image index
         if (Canvas_script.current_img_indx < (Canvas_script.N_image - 1))
@@ -98,20 +124,9 @@ private void re_init_image(GameObject ImageCurrent)
 
     private GameObject createTrash(int N, RawImage rawImagecurrent)
     {   
-       
-
-
-        Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
-        float width = rawImagecurrent.GetComponent<RectTransform>().rect.width;
-        float x_shift = width;
-        Vector3 position = new Vector3(- x_shift - image_position.x, image_position.y, image_position.z);
-        GameObject trashInstance = Instantiate(trashPrefab, position, Quaternion.identity, parent: transform);
-
-         // Set pivot at bottom centre
-        RectTransform rectTransform = trashInstance.GetComponent<RectTransform>();
-        rectTransform.pivot = new Vector2(0.5f, 0);
-
-        trashInstance.transform.position = position;
+    
+        GameObject trashInstance = Instantiate(trashPrefab, transform);
+        trashInstance.transform.position = new Vector3(trashInstance.transform.position.x, trashInstance.transform.position.y, transform.position.z);
         trashInstance.transform.localScale = Vector3.one;
         trashInstance.name = $"{N} Micronuclei";
         TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
@@ -119,12 +134,14 @@ private void re_init_image(GameObject ImageCurrent)
         return trashInstance;
     }
 
+
+
     public void createBuckets()
     {   
         RawImage rawImagecurrent = transform.parent.Find("Image").gameObject.GetComponent<RawImage>();
+
         if (rawImagecurrent != null){
-            var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width/100)/2;
-            Debug.Log($"Trash spacing from image is the following: {spacing}");
+            var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width)/2;
             
         List<GameObject> trashList = new List<GameObject>();
 
@@ -138,23 +155,23 @@ private void re_init_image(GameObject ImageCurrent)
 
             GameObject trashinstance = createTrash(n, rawImagecurrent);
 
-            if (trashList.Count > 0){
+           /* if (trashList.Count > 0){
                 GameObject Previous = trashList[trashList.Count - 1];
 
             if (n%2 == 0){
-                trashinstance.transform.position = new Vector3(Previous.transform.position.x - spacing, Previous.transform.position.y + spacing, trashinstance.transform.position.z);}
+                trashinstance.transform.position = new Vector3(Previous.transform.position.x - spacing, Previous.transform.position.y + spacing, transform.position.z);}
             else {
-                trashinstance.transform.position = new Vector3(Previous.transform.position.x,  Previous.transform.position.y - spacing, trashinstance.transform.position.z);}
+                trashinstance.transform.position = new Vector3(Previous.transform.position.x,  Previous.transform.position.y - spacing, transform.position.z);}
             }
+            */
             
             trashList.Add(trashinstance);
         }
 
-        Destroy(trashPrefab); // Destroy the prefab after creating the trash instances Laz solution
 
         // Create Title
         GameObject title = new GameObject("Title");
-        title.transform.parent = transform;
+        title.transform.parent = transform.parent;
         Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
         title.transform.position = new Vector3(image_position.x - (spacing*2), image_position.y + spacing, image_position.z);
         title.AddComponent<TextMeshPro>();
