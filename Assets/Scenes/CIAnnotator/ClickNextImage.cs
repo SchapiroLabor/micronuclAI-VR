@@ -62,34 +62,46 @@ public class ClickNextImage : MonoBehaviour
         start_rotation = transform.parent.rotation;
 
 
+        
+
 
 
     }
 
-private void PositionResizeText()
+public void PositionResizeText(RectTransform rectTransform, int current_img_indx, int N_image)
 {
     // Set the anchors and pivots of the Text
-    Canvas_script.SetupAnchorsAndPivots(transform.GetChild(0).GetComponent<RectTransform>());
+    Canvas_script.SetupAnchorsAndPivots(rectTransform.GetChild(0).GetComponent<RectTransform>());
 
     // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
-    transform.GetChild(0).GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
-    transform.GetChild(0).GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+    rectTransform.GetChild(0).GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+    rectTransform.GetChild(0).GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+
+    // Set pivot to bottom center of the Text
+    rectTransform.GetChild(0).GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0);
 
     // Set side lengths of the rect transform
-    transform.GetChild(0).localScale = new UnityEngine.Vector3(1, 1, 1);
+    rectTransform.GetChild(0).localScale = new UnityEngine.Vector3(1, 1, 1);
 
     // Face Text to player
-    transform.GetChild(0).position = transform.position;
-    transform.GetChild(0).rotation = transform.rotation;
+    rectTransform.GetChild(0).position = rectTransform.position;
+    rectTransform.GetChild(0).rotation = rectTransform.rotation;
 
     // Set the size of the Text to be 1/3 of the width of the image
-    transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(GetComponent<RectTransform>().sizeDelta.x, GetComponent<RectTransform>().sizeDelta.y/3);
+    rectTransform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y/3);
 
     // Set the font size of the Text same to width of image
-    transform.GetChild(0).GetComponent<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
+    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().fontSize = rectTransform.sizeDelta.x * 0.1f;
 
     // Set the text of the Text
-    transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Patch 1/1";
+    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
+
+    // Position to top center of the RawImage
+    rectTransform.GetChild(0).position = new Vector3(rectTransform.position.x, rectTransform.sizeDelta.y/2, rectTransform.position.z);
+
+    // Centre text in the Text
+    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+
 
 }
 
@@ -175,27 +187,25 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
         transform.rotation = start_rotation;
 
         rawImage.texture = images[current_img_indx];
-        UpdateImageName(gameObject, current_img_indx);
 
         // Resize the image to be within 40% of the FOV
-        ResizeImgtobewithin40percentofFOV(transform.position.z);
+        ResizeImgtobewithin40percentofFOV(rawImage.transform.position.z);
 
         // Set the collider size
-        SetColliderSize();
+        SetColliderSize(rawImage);
+
+        // Position and resize the text
+        PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx, N_image);
         
     }
 
-    private void SetColliderSize()
+    private void SetColliderSize(RawImage rawImage)
     {
-        gameObject.GetComponent<BoxCollider>().size = GetComponent<RectTransform>().sizeDelta;
+        rawImage.GetComponent<BoxCollider>().size = GetComponent<RectTransform>().sizeDelta;
 
     }
 
 
-    public void UpdateImageName(GameObject rawImagecurrent, int current_img_indx)
-    {
-        rawImagecurrent.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
-    }
 
 
 
@@ -292,6 +302,9 @@ public void InstantiateLocatePatchButton()
 
     // Set text of the button
     button.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
+
+    // Set alginment of the text in the button
+    button.GetComponentInChildren<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
     
 }
 

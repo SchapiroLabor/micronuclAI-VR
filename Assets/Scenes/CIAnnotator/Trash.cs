@@ -39,7 +39,7 @@ private void re_init_image(GameObject ImageCurrent)
     ImageCurrent.GetComponent<RawImage>().texture = Canvas_script.images[Canvas_script.current_img_indx];
     ImageCurrent.GetComponent<RectTransform>().position = Canvas_script.start_position;
     ImageCurrent.GetComponent<RectTransform>().rotation = Canvas_script.start_rotation;
-    CurrentImage_script.UpdateImageName(ImageCurrent, Canvas_script.current_img_indx);
+    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), Canvas_script.current_img_indx, Canvas_script.N_image);
     closedisplaysecondimg();
     }
 
