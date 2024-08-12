@@ -79,9 +79,6 @@ private void Trashifwithinbounds()
         }
 
     }
-    
-    
-
 }
 
     private void change2brightgreen()
