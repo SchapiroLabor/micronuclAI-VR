@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 6178964353712266557}
   - component: {fileID: 3913650389028493625}
   - component: {fileID: 5378919634767534068}
+  - component: {fileID: 5565752525032867091}
   m_Layer: 0
   m_Name: trash_text
   m_TagString: Untagged
@@ -37,7 +38,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!33 &6178964353712266557
 MeshFilter:
@@ -101,6 +102,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c13003b1ee6db54188cbd9b97f073878, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!64 &5565752525032867091
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5306894076688062867}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: 39bcb2bc55ab6c14a8d3f24fc5e07575, type: 3}
 --- !u!1 &8667880526128129099
 GameObject:
   m_ObjectHideFlags: 0

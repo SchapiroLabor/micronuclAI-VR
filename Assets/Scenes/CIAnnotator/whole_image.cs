@@ -122,18 +122,16 @@ public class whole_image : MonoBehaviour
         // Get the bounding box of the pixel cluster
         Rect bbox = get_bbox_from_df(patch_indx);
 
-        Debug.Log($"The bounding box is {bbox}");
-
         // Color the pixel cluster
         ColorPixelCluster(bbox, Color.red);
     }
 
     public void DisplayPatch()
     {   
-        InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
-        current_cell_bbox(Canvas_script.current_img_indx);
+        ClickNextImage CurrentRawImage = transform.parent.GetChild(1).GetComponentInChildren<ClickNextImage>();
+        current_cell_bbox(CurrentRawImage.current_img_indx);
 
-        DisplayArrow();
+        //DisplayArrow(CurrentRawImage.current_img_indx);
 
     }
 
@@ -199,19 +197,14 @@ private UnityEngine.Vector3 GetArrowPosition(element patch_position)
     // If image is rotated 90°, then anchor point is not applicable anymore
     mid_point_world_with_offset = new UnityEngine.Vector3(mid_point_world_with_offset.x, mid_point_world_with_offset.y, mid_point_world_with_offset.z) - mid_point_world;
 
-
-Debug.Log($"Get Arrow and player world rotation {Arrow.transform.rotation} and {Camera.main.transform.rotation}");
     return mid_point_world_with_offset;
 }
 
 
-private void DisplayArrow()
+private void DisplayArrow(int current_img_indx)
 {
-
-    InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
-
     // Get the patch position
-    element patch_position = data_dict[Canvas_script.current_img_indx];
+    element patch_position = data_dict[current_img_indx];
 
     // Get the arrow position and rotation
     UnityEngine.Vector3 position = GetArrowPosition(patch_position);
@@ -361,8 +354,6 @@ private void PositionWholeImage()
 
         // Position at whole image height distance in z axis.
         title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y, transform.position.z  + (GetComponent<RectTransform>().sizeDelta.y/2) * 1.5f);
-        Debug.Log($"The position of the title is {title.GetComponent<RectTransform>().position}");
-
 
         // Set size of text box to be same width but aspect ratio  for height
         title.GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(GetComponent<RectTransform>().sizeDelta.x, GetComponent<RectTransform>().sizeDelta.y/9);

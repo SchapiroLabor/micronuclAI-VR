@@ -16,7 +16,8 @@ public class Trash : MonoBehaviour
 {
 
     private GameObject trashPrefab;
-    public ClickNextImage CurrentImage_script;
+
+
 
 
 
@@ -24,8 +25,11 @@ public class Trash : MonoBehaviour
 
 public void Initialize ()
 
-{
-    
+{       
+        if (transform.parent.Find("Image") != null)
+        {
+        
+        ClickNextImage CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
 
         trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
 
@@ -37,35 +41,72 @@ public void Initialize ()
         rectTransform.anchorMin = new Vector2(0, 0);
         rectTransform.anchorMax = new Vector2(0, 0);
 
-        // Set Grid Layour group spacing to 10% of image width
-        GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        gridLayoutGroup.spacing =  new Vector2(0.1f, 0.1f) * CurrentImage_script.GetComponent<RectTransform>().rect.width;
-
         // Set pivot to center right
         rectTransform.pivot = new Vector2(1f, 0.5f);
 
-        Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().localPosition;
+        Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().position;
         float width = CurrentImage_script.GetComponent<RectTransform>().rect.width / 2;
         float x_shift = width;
         // Have to use local position becuase world positions provides unexpected results
         Vector3 position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
-        transform.localPosition = position;
+        transform.position = position;
+
+        Vector2 fov = ResizeImgtobewithin60percentofFOV(image_position.z);
+
+        // Set Grid Layour group spacing to 10% of image width
+        GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
+        gridLayoutGroup.spacing =  new Vector2(0.01f, 0.01f) * fov;
+        gridLayoutGroup.cellSize = fov/4;
+
+        // Above only works if content size fitters exists
 
         createBuckets();
+
+        }
+
 }
 
+private Vector2 ResizeImgtobewithin60percentofFOV(float WD)
+{
+
+    // Get the FOV at the panel height
+    List<float> outputs = GetFOVatWD(WD);
+    
+    float newWidth = outputs[0]*0.6f; // Height
+    float newHeight = outputs[1]*0.6f; // Width
+
+    // Reduce image size whilst keeping the image aspect ratio
+    float aspect_ratio =1;
+
+    // Adjust the dimensions to maintain the aspect ratio
+    if (newWidth > newHeight * aspect_ratio)
+    {
+        newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+    }
+    else
+    {
+        newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+    }
+
+    Debug.Log("New Width: " + newWidth + " New Height: " + newHeight);
+    // Set width and height of the Canvas
+
+    return new UnityEngine.Vector2(newWidth, newHeight);
+
+}
 
 private void re_init_image(GameObject ImageCurrent)
 
-{   InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
+{   
 
     if (ImageCurrent == null || ImageCurrent.activeSelf == false)
     {
+    ClickNextImage CurrentImage_script = ImageCurrent.GetComponent<ClickNextImage>();
     ImageCurrent.SetActive(true);
-    ImageCurrent.GetComponent<RawImage>().texture = Canvas_script.images[Canvas_script.current_img_indx];
-    ImageCurrent.GetComponent<RectTransform>().position = Canvas_script.start_position;
-    ImageCurrent.GetComponent<RectTransform>().rotation = Canvas_script.start_rotation;
-    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), Canvas_script.current_img_indx, Canvas_script.N_image);
+    ImageCurrent.GetComponent<RawImage>().texture = CurrentImage_script.images[CurrentImage_script.current_img_indx];
+    ImageCurrent.GetComponent<RectTransform>().position = CurrentImage_script.start_position;
+    ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
+    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImage_script.current_img_indx, CurrentImage_script.N_image);
     closedisplaysecondimg();
 
     }
@@ -81,23 +122,24 @@ private void re_init_image(GameObject ImageCurrent)
     public void dispose()
 
     { 
-        InteractableImageStack Canvas_script = transform.parent.parent.GetComponent<InteractableImageStack>();
+        GameObject ImageCurrent = transform.parent.Find("Image").gameObject;
+
+        ClickNextImage CurrentImage_script = ImageCurrent.GetComponent<ClickNextImage>();
 
         // Get current image index
-        if (Canvas_script.current_img_indx < (Canvas_script.N_image - 1))
+        if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1))
         {
-            Canvas_script.current_img_indx += 1;
+            CurrentImage_script.current_img_indx += 1;
         }
         else 
         {
-            Canvas_script.current_img_indx = 0; 
+            CurrentImage_script.current_img_indx = 0; 
         }
-        // Get child by name
-        GameObject ImageCurrent = Canvas_script.transform.Find("Image").gameObject;
+
 
         if (ImageCurrent != null)
             {
-            Debug.Log(string.Format("This object is not deleted with current ID {0}", Canvas_script.current_img_indx));
+            Debug.Log(string.Format("This object is not deleted with current ID {0}", CurrentImage_script.current_img_indx));
             ImageCurrent.SetActive(false);
             re_init_image(ImageCurrent);
             }
@@ -115,8 +157,8 @@ private void re_init_image(GameObject ImageCurrent)
 
     public void closedisplaysecondimg()
 
-    {
-        GameObject rawImagesubsequent = CurrentImage_script.transform.parent.Find("SubsequentImage").gameObject;
+    {   
+        GameObject rawImagesubsequent = transform.parent.Find("SubsequentImage").gameObject;
         
         rawImagesubsequent.SetActive(false);
    

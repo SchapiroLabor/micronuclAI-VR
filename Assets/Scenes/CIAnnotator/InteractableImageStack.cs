@@ -7,12 +7,6 @@ using Quaternion = UnityEngine.Quaternion;
 
 public class InteractableImageStack : MonoBehaviour
 {
-    public List<Texture2D> images;
-    public GameObject rawImagecurrent;
-    public int current_img_indx;
-    public int N_image;
-    public Vector3 start_position;
-    public Quaternion start_rotation;
     public Camera userCamera;  // Reference to the user's camera
 
     private void Start()

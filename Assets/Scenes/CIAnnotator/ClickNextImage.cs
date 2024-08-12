@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 // Import functions from another script
-using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
+using static InteractableImageStack;
+using UnityEngine.XR.Interaction.Toolkit.Filtering;
+using UnityEngine.XR.Interaction.Toolkit; // With a static directive, you can access the members of the class by using the class name itself
 
 public class ClickNextImage : MonoBehaviour
 {
@@ -19,8 +21,9 @@ public class ClickNextImage : MonoBehaviour
     private RawImage rawImage;
     public List<Texture2D> images = new List<Texture2D>();
     public int N_image;
-    private Vector3 start_position;
-    private Quaternion start_rotation;
+    public Vector3 start_position;
+    public Quaternion start_rotation;
+    public InteractableImageStack Canvas_script;
 
    public void Initialize()
     {
@@ -44,64 +47,64 @@ public class ClickNextImage : MonoBehaviour
         
         // Create and display second image
         CreateGameObjectForSecondImage(N_image);
+
+
+        // Add function to select entered listener
+        GetComponent<XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
     }
 
-    void PositionImageStack()
-    {   
-        // Set the anchors and pivots of the Image
-        SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
 
-        // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
-        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
-        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+void PositionImageStack()
+{   
+    // Set the anchors and pivots of the Image
+    SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
 
-        // Set side lengths of the rect transform
-        transform.localScale = new UnityEngine.Vector3(1, 1, 1);
+    // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
+    transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+    transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
 
-        // Face Image to player
-        start_position =  transform.parent.position + transform.parent.forward * 0.01f;
-        start_rotation = transform.parent.rotation;
+    // Set side lengths of the rect transform
+    transform.localScale = new UnityEngine.Vector3(1, 1, 1);
 
+    // Face Image to player
+    start_position =  transform.parent.position + transform.parent.forward * 0.01f;
+    start_rotation = transform.parent.rotation;
 
-        
-
-
-
-    }
+}
 
 public void PositionResizeText(RectTransform rectTransform, int current_img_indx, int N_image)
 {
     // Set the anchors and pivots of the Text
-    SetupAnchorsAndPivots(rectTransform.GetChild(0).GetComponent<RectTransform>());
+    RectTransform textRectTransform = rectTransform.GetChild(0).GetComponent<RectTransform>();
+    SetupAnchorsAndPivots(textRectTransform);
 
     // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
-    rectTransform.GetChild(0).GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
-    rectTransform.GetChild(0).GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+    textRectTransform.anchorMin = new Vector2(0, 0);
+    textRectTransform.anchorMax = new Vector2(0, 0);
 
     // Set pivot to bottom center of the Text
-    rectTransform.GetChild(0).GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0);
+    textRectTransform.pivot = new Vector2(0.5f, 0);
 
     // Set side lengths of the rect transform
-    rectTransform.GetChild(0).localScale = new UnityEngine.Vector3(1, 1, 1);
+    textRectTransform.localScale = Vector3.one;
 
-    // Face Text to player
-    rectTransform.GetChild(0).position = rectTransform.position;
-    rectTransform.GetChild(0).rotation = rectTransform.rotation;
+    // Set the position and rotation of the child transform
+    textRectTransform.SetPositionAndRotation(rectTransform.position, rectTransform.rotation);
 
     // Set the size of the Text to be 1/3 of the width of the image
-    rectTransform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y/3);
+    textRectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y/3);
 
     // Set the font size of the Text same to width of image
-    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().fontSize = rectTransform.sizeDelta.x * 0.1f;
+    textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = rectTransform.sizeDelta.x * 0.1f;
 
     // Set the text of the Text
-    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
+    textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
 
     // Position to top center of the RawImage
-    rectTransform.GetChild(0).position = new Vector3(rectTransform.position.x, rectTransform.sizeDelta.y/2, rectTransform.position.z);
+    textRectTransform.position = new Vector3(rectTransform.position.x, rectTransform.sizeDelta.y/2, rectTransform.position.z);
 
     // Centre text in the Text
-    rectTransform.GetChild(0).GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+    textRectTransform.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
 
 
 }
@@ -118,8 +121,6 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
     // Get the width and height of the RawImage
     float width = GetComponent<RawImage>().texture.width;
     float height = GetComponent<RawImage>().texture.height;
-
-    Debug.Log("Width: " + width + " Height: " + height);
 
     // Reduce image size whilst keeping the image aspect ratio
     float aspect_ratio = width/height;
@@ -194,6 +195,9 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
 
         // Position and resize the text
         PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx, N_image);
+
+        // Set non maskable to true
+        rawImage.GetComponent<RawImage>().maskable = false;
         
     }
 
@@ -231,7 +235,12 @@ private void CreateGameObjectForSecondImage(int N_images)
             }
             rawImagesubsequentGO.name = "SubsequentImage";
             rawImagesubsequentGO.transform.SetParent(transform.parent);
+            rawImagesubsequentGO.transform.position = start_position;
+            rawImagesubsequentGO.transform.rotation = start_rotation;
             rawImagesubsequentGO.SetActive(false);
+            rawImagesubsequentGO.GetComponent<RawImage>().maskable = false;
+            rawImagesubsequentGO.GetComponent<RectTransform>().sizeDelta = GetComponent<RectTransform>().sizeDelta;
+            rawImagesubsequentGO.GetComponent<RectTransform>().localScale = GetComponent<RectTransform>().localScale;
 
             InstantiateLocatePatchButton();
         }
@@ -242,17 +251,14 @@ private void CreateGameObjectForSecondImage(int N_images)
         }
     }
 
-
-
-public void DisplaySecondImage()
+private void DisplaySecondImage()
 {
         if (this.gameObject != null && rawImagesubsequentGO != null)
         {
-            InteractableImageStack Canvas_script = transform.Find("Canvas").GetComponent<InteractableImageStack>();
+            
+            subsequent_img = current_img_indx;
 
-            subsequent_img = Canvas_script.current_img_indx;
-
-            if (subsequent_img < (Canvas_script.images.Count - 1))
+            if (subsequent_img < (images.Count))
             {
                 subsequent_img += 1;
             }
@@ -261,11 +267,10 @@ public void DisplaySecondImage()
                 subsequent_img = 0;
             }
 
-            Debug.Log("Subsequent Image Index: " + subsequent_img);
-            Debug.Log("Image count: " + Canvas_script.images.Count);
-            rawImagesubsequentGO.GetComponent<RawImage>().texture = Canvas_script.images[subsequent_img];
-            rawImagesubsequentGO.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", subsequent_img + 1, Canvas_script.N_image);
+            rawImagesubsequentGO.GetComponent<RawImage>().texture = images[subsequent_img];
+            PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img, N_image);
             rawImagesubsequentGO.SetActive(true);
+            
 
         }
         else
@@ -341,7 +346,6 @@ private void PositionandResizeCanvasUI()
     CanvasUI.GetComponent<RectTransform>().sizeDelta = new Vector2(scaled_width/6, scaled_width/9);
 
 }
-
 
 
 
