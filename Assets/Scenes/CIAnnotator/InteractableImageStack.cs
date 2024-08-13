@@ -36,7 +36,8 @@ public class InteractableImageStack : MonoBehaviour
         // Initialize all children using their Initialize method
         transform.GetComponentInChildren<GridMaker>().Initialize();
         transform.GetComponentInChildren<whole_image>().Initialize();
-        InstantiateCanvasUI(transform.GetComponentInChildren<ClickNextImage>().transform);
+        InstantiateCanvasUI(transform.GetComponentInChildren<ClickNextImage>().transform, transform.GetComponentInChildren<whole_image>().transform,
+        transform.GetComponentInChildren<Trash>().transform);
         
     }
 
@@ -142,14 +143,14 @@ public static void ChildIdenticalToParent(GameObject parent, GameObject child)
 
 }
 
-private void InstantiateCanvasUI(Transform rawImageTransform)
+private void InstantiateCanvasUI(Transform rawImageTransform, Transform WholeImage, Transform trash)
 {   
     // Create a new Canvas UI GameObject
     GameObject CanvasUI = CreateGameObject(transform, "Assets/Scenes/CIAnnotator/Canvas UI.prefab", transform);
 
     PositionandResizeCanvasUI(CanvasUI, rawImageTransform);
 
-    CanvasUI.GetComponent<SetupButtons>().Initialize(rawImageTransform, CanvasUI.transform.position, CanvasUI.transform.rotation);
+    CanvasUI.GetComponent<SetupButtons>().Initialize(rawImageTransform, CanvasUI.transform.position, CanvasUI.transform.rotation, WholeImage, trash);
     
 }
 

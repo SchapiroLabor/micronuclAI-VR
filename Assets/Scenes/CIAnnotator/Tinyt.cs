@@ -12,6 +12,7 @@ public class Tinyt : MonoBehaviour
     private Color originalEmissionColor;
     private Material material;
     private GameObject Image;
+    public List<int> patches = new List<int>();
 
 
     
@@ -75,7 +76,10 @@ private void Trashifwithinbounds()
 
         if (bounds.Contains(current_position))
         {
+            // Add index to list
+            patches.Add(Image.GetComponent<ClickNextImage>().current_img_indx);
             transform.parent.GetComponent<Trash>().dispose();
+            
         }
 
     }

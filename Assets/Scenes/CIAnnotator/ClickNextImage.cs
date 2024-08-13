@@ -279,12 +279,7 @@ private void DisplaySecondImage()
     }
 
 
-public void ReverseCurrentPatch()
-{
 
-Debug.Log("Reverse Patch");
-
-}
 
 }
 

@@ -16,8 +16,7 @@ public class Trash : MonoBehaviour
 {
 
     private GameObject trashPrefab;
-
-
+    private ClickNextImage CurrentImage_script;
 
 
 
@@ -29,7 +28,7 @@ public void Initialize ()
         if (transform.parent.Find("Image") != null)
         {
         
-        ClickNextImage CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
+        CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
 
         trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
 
@@ -121,10 +120,8 @@ private void re_init_image(GameObject ImageCurrent)
 // This is executed once the trash object collider is triggered
     public void dispose()
 
-    { 
-        GameObject ImageCurrent = transform.parent.Find("Image").gameObject;
+    {
 
-        ClickNextImage CurrentImage_script = ImageCurrent.GetComponent<ClickNextImage>();
 
         // Get current image index
         if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1))
@@ -136,7 +133,37 @@ private void re_init_image(GameObject ImageCurrent)
             CurrentImage_script.current_img_indx = 0; 
         }
 
+        GameObject ImageCurrent = CurrentImage_script.gameObject;
 
+        if (ImageCurrent != null)
+            {
+            Debug.Log(string.Format("This object is not deleted with current ID {0}", CurrentImage_script.current_img_indx));
+            ImageCurrent.SetActive(false);
+            re_init_image(ImageCurrent);
+            }
+
+            else
+            {
+                Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+
+            }
+
+    }
+
+    public void ReverseDispose()
+    {
+
+                // Get current image index
+        if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1) && CurrentImage_script.current_img_indx > 0)
+        {
+            CurrentImage_script.current_img_indx -= 1;
+        }
+        else 
+        {
+            CurrentImage_script.current_img_indx = 0; 
+        }
+
+        GameObject ImageCurrent = CurrentImage_script.gameObject;
         if (ImageCurrent != null)
             {
             Debug.Log(string.Format("This object is not deleted with current ID {0}", CurrentImage_script.current_img_indx));
@@ -180,7 +207,7 @@ private void re_init_image(GameObject ImageCurrent)
 
     public void createBuckets()
     {   
-        RawImage rawImagecurrent = transform.parent.Find("Image").gameObject.GetComponent<RawImage>();
+        RawImage rawImagecurrent = CurrentImage_script.GetComponent<RawImage>();
 
         if (rawImagecurrent != null){
             var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width)/2;
@@ -194,19 +221,8 @@ private void re_init_image(GameObject ImageCurrent)
 
         for (int n = 0; n <= 3; n++){
 
-
             GameObject trashinstance = createTrash(n, rawImagecurrent);
 
-           /* if (trashList.Count > 0){
-                GameObject Previous = trashList[trashList.Count - 1];
-
-            if (n%2 == 0){
-                trashinstance.transform.position = new Vector3(Previous.transform.position.x - spacing, Previous.transform.position.y + spacing, transform.position.z);}
-            else {
-                trashinstance.transform.position = new Vector3(Previous.transform.position.x,  Previous.transform.position.y - spacing, transform.position.z);}
-            }
-            */
-            
             trashList.Add(trashinstance);
         }
 

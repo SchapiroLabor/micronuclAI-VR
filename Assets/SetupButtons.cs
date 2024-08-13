@@ -20,7 +20,8 @@ public class SetupButtons : MonoBehaviour
     UnityEngine.Vector3 buttonPosition;
     UnityEngine.Quaternion buttonRoation;
     // Start is called before the first frame update
-     public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation)
+     public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation,
+     Transform WholeImage, Transform Trash)
     {
      fontSize = ImagePatch.GetComponent<RectTransform>().sizeDelta.x * 0.1f;
      buttonPosition = position;
@@ -50,9 +51,9 @@ public class SetupButtons : MonoBehaviour
     // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
     buttonSize = new UnityEngine.Vector2(scaled_width/3, scaled_width/6);
 
-        setupLocatePatchButton();
-        setupReverseButton();
-        setupAddBinButton();
+        setupLocatePatchButton(WholeImage);
+        setupReverseButton(Trash);
+        setupAddBinButton(Trash);
         
     }
 
@@ -62,7 +63,7 @@ public class SetupButtons : MonoBehaviour
 
 
 
-    private void setupLocatePatchButton()
+    private void setupLocatePatchButton(Transform WholeImage)
 
     {
 
@@ -82,12 +83,12 @@ public class SetupButtons : MonoBehaviour
     LocatePatch.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
 
     // Add a listener to the button
-    LocatePatch.GetComponent<Button>().onClick.AddListener(() => transform.parent.parent.GetComponentInChildren<whole_image>().DisplayPatch());
+    LocatePatch.GetComponent<Button>().onClick.AddListener(() => WholeImage.GetComponentInChildren<whole_image>().DisplayPatch());
 
     }
 
 
-private void setupReverseButton()
+private void setupReverseButton(Transform Trash)
 
     {
 
@@ -105,12 +106,12 @@ private void setupReverseButton()
     ReverseButton.GetComponentInChildren<TextMeshProUGUI>().text = "Undo";
 
     // Add a listener to the button
-    ReverseButton.GetComponent<Button>().onClick.AddListener(() => transform.parent.parent.GetComponentInChildren<ClickNextImage>().ReverseCurrentPatch());
+    ReverseButton.GetComponent<Button>().onClick.AddListener(() => Trash.GetComponentInChildren<Trash>().ReverseDispose());
     
     }
 
 
-private void setupAddBinButton()
+private void setupAddBinButton(Transform Trash)
 
     {
 
@@ -126,7 +127,7 @@ private void setupAddBinButton()
     AddBin.GetComponentInChildren<TextMeshProUGUI>().text = "Add Bin";
 
     // Add a listener to the button
-    AddBin.GetComponent<Button>().onClick.AddListener(() => transform.parent.parent.GetComponentInChildren<Trash>().CreateBucket());
+    AddBin.GetComponent<Button>().onClick.AddListener(() => Trash.GetComponentInChildren<Trash>().CreateBucket());
     
     }
 
