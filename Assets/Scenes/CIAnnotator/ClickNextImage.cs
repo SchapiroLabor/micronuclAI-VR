@@ -51,6 +51,10 @@ public class ClickNextImage : MonoBehaviour
 
         // Add function to select entered listener
         GetComponent<XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
+
+
+
+
     }
 
 
@@ -146,9 +150,6 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
     private void PopulateVariables()
     {
 
-    // Find object in scene
-    CanvasUI = GameObject.Find("Canvas UI").gameObject;
-
     // Get the start position and rotation of the RawImage
     current_img_indx = 0;
 
@@ -241,8 +242,6 @@ private void CreateGameObjectForSecondImage(int N_images)
             rawImagesubsequentGO.GetComponent<RawImage>().maskable = false;
             rawImagesubsequentGO.GetComponent<RectTransform>().sizeDelta = GetComponent<RectTransform>().sizeDelta;
             rawImagesubsequentGO.GetComponent<RectTransform>().localScale = GetComponent<RectTransform>().localScale;
-
-            InstantiateLocatePatchButton();
         }
 
         else
@@ -279,75 +278,13 @@ private void DisplaySecondImage()
         }
     }
 
-public void InstantiateLocatePatchButton()
-{   
 
-
-    if (CanvasUI == null)
-    {
-            // Create a button to display the next image
-    string prefab_path = "Assets/Scenes/CIAnnotator/Canvas UI.prefab";
-    CanvasUI = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
-
-    }
-
-    PositionandResizeCanvasUI();
-
-    GameObject button = CanvasUI.transform.Find("LocatePatch").gameObject;
-
-    if (button == null)
-    {
-            // Create a button to display the next image
-    string prefab_path = "Assets/Scenes/CIAnnotator/Button.prefab";
-    button = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path), transform.position, transform.rotation);
-    }
-
-    ChildIdenticalToParent(CanvasUI, button);
-
-    // Set the font size of the Button same to width of image
-    button.GetComponentInChildren<TextMeshProUGUI>().fontSize = (int)GetComponent<RectTransform>().sizeDelta.x * 0.1f;
-
-    // Set text of the button
-    button.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
-
-    // Set alginment of the text in the button
-    button.GetComponentInChildren<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
-    
-}
-
-
-private void PositionandResizeCanvasUI()
+public void ReverseCurrentPatch()
 {
-    // Set the anchors and pivots of the Canvas UI
-    SetupAnchorsAndPivots(CanvasUI.GetComponent<RectTransform>());
 
-    // Face the Canvas UI to the player
-    CanvasUI.transform.rotation = Quaternion.Euler(Vector3.zero);
-
-    // Change pivot to top left corner of the Canvas UI, so no overlap with the RawImage
-    CanvasUI.GetComponent<RectTransform>().pivot = new Vector2(0, 1);
-
-
-    // Set scale of the Canvas
-    CanvasUI.transform.localScale = Vector3.one;
-
-    // Get the width and height of the RawImage
-    float width = GetComponent<RectTransform>().rect.width;
-    float height = GetComponent<RectTransform>().rect.height;
-
-
-    float scaled_width = width* GetComponent<RectTransform>().localScale.x;
-    float scaled_height = height * GetComponent<RectTransform>().localScale.y;
-
-    // Set the position of the Canvas UI to top right corner of the RawImage
-    CanvasUI.transform.position = new Vector3((transform.position.x + scaled_width/2) * 1.1f, transform.position.y + scaled_height/2, transform.position.z);
-
-    // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
-    CanvasUI.GetComponent<RectTransform>().sizeDelta = new Vector2(scaled_width/6, scaled_width/9);
+Debug.Log("Reverse Patch");
 
 }
-
-
 
 }
 

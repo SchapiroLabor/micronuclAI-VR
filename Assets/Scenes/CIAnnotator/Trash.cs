@@ -230,6 +230,10 @@ private void re_init_image(GameObject ImageCurrent)
     }
 
 
+public void CreateBucket()
+{
+Debug.Log("Bucket created");
+}
 
 
 }

@@ -177,7 +177,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668758913251958, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 44.7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668758913251958, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -237,7 +237,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759388320319, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759388320319, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -285,7 +285,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759906836222, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759906836222, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -305,7 +305,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759991436502, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668759991436502, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -341,7 +341,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760453204319, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 44.7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760453204319, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -361,7 +361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760497519799, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760497519799, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -389,7 +389,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760711245992, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1984668760711245992, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -765,6 +765,18 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8492587415078152464, guid: 5283215c6aded027293bf03e3332e4e6, type: 3}
   m_PrefabInstance: {fileID: 1111236338}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &864290175
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 864290169}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f5f0c9c8f14583bb0b868c0f131047, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!20 &1047915865 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 2871854915733156393, guid: 65eb6b98091a5734ba9d9ca871cef69a, type: 3}
@@ -946,6 +958,9 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8492587415078152464, guid: 5283215c6aded027293bf03e3332e4e6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 864290175}
     - targetCorrespondingSourceObject: {fileID: 5524238174084529376, guid: 5283215c6aded027293bf03e3332e4e6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 498640713}
