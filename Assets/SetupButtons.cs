@@ -38,7 +38,7 @@ public class SetupButtons : MonoBehaviour
     gameObject.GetComponent<VerticalLayoutGroup>().childControlHeight = false;
     gameObject.GetComponent<VerticalLayoutGroup>().childForceExpandWidth = false;
     gameObject.GetComponent<VerticalLayoutGroup>().childForceExpandHeight = false;
-    gameObject.GetComponent<VerticalLayoutGroup>().spacing = fontSize * 0.1f;
+    gameObject.GetComponent<VerticalLayoutGroup>().spacing = fontSize * 0.2f;
 
     // Get the width and height of the RawImage
     float width = ImagePatch.GetComponent<RectTransform>().rect.width;
@@ -53,7 +53,7 @@ public class SetupButtons : MonoBehaviour
 
         setupLocatePatchButton(WholeImage);
         setupReverseButton(Trash);
-        setupAddBinButton(Trash);
+        setupAddBinButton(Trash, ImagePatch);
         
     }
 
@@ -111,7 +111,7 @@ private void setupReverseButton(Transform Trash)
     }
 
 
-private void setupAddBinButton(Transform Trash)
+private void setupAddBinButton(Transform Trash, Transform ImagePatch)
 
     {
 

@@ -10,13 +10,16 @@ using TMPro;
 using Unity.XR.CoreUtils;
 using UnityEditor;
 // Import functions from another script
-using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
-
+using static InteractableImageStack;
+using System.Numerics; // With a static directive, you can access the members of the class by using the class name itself
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector3;
 public class Trash : MonoBehaviour
 {
 
     private GameObject trashPrefab;
     private ClickNextImage CurrentImage_script;
+    private List<GameObject> trashList = new List<GameObject>();
 
 
 
@@ -54,7 +57,7 @@ public void Initialize ()
 
         // Set Grid Layour group spacing to 10% of image width
         GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        gridLayoutGroup.spacing =  new Vector2(0.01f, 0.01f) * fov;
+        gridLayoutGroup.spacing =  0.01f * fov;
         gridLayoutGroup.cellSize = fov/4;
 
         // Above only works if content size fitters exists
@@ -191,7 +194,7 @@ private void re_init_image(GameObject ImageCurrent)
    
     }
 
-    private GameObject createTrash(int N, RawImage rawImagecurrent)
+    private GameObject createTrash(int N)
     {   
     
         GameObject trashInstance = Instantiate(trashPrefab, transform);
@@ -200,6 +203,7 @@ private void re_init_image(GameObject ImageCurrent)
         trashInstance.name = $"{N} Micronuclei";
         TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
         tmpText.text = $"{N}";
+        
         return trashInstance;
     }
 
@@ -212,7 +216,7 @@ private void re_init_image(GameObject ImageCurrent)
         if (rawImagecurrent != null){
             var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width)/2;
             
-        List<GameObject> trashList = new List<GameObject>();
+        
 
         if (trashPrefab == null)
         {
@@ -221,7 +225,7 @@ private void re_init_image(GameObject ImageCurrent)
 
         for (int n = 0; n <= 3; n++){
 
-            GameObject trashinstance = createTrash(n, rawImagecurrent);
+            GameObject trashinstance = createTrash(n);
 
             trashList.Add(trashinstance);
         }
@@ -230,14 +234,28 @@ private void re_init_image(GameObject ImageCurrent)
         // Create Title
         GameObject title = new GameObject("Title");
         title.transform.parent = transform.parent;
-        Vector3 image_position = rawImagecurrent.GetComponent<RectTransform>().position;
-        title.transform.position = new Vector3(image_position.x - (spacing*2), image_position.y + spacing, image_position.z);
+
+
+
+
+        // Pivot of current class is at 1, 0.5
         title.AddComponent<TextMeshPro>();
         TextMeshPro titleText = title.GetComponent<TextMeshPro>();
+        UnityEngine.Vector3 position = transform.position;
+        title.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0);
+        UnityEngine.Vector2 size = new UnityEngine.Vector2(rawImagecurrent.GetComponent<RectTransform>().rect.width, rawImagecurrent.GetComponent<RectTransform>().rect.height);
+
+        // Add content size fitter to the title
+        title.AddComponent<ContentSizeFitter>();
+        title.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        title.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        title.transform.position = new UnityEngine.Vector3(position.x - (size.x/2)*1.5f, (position.y + (size.y/2))*1.5f, position.z);
+        
         titleText.text = "Micronuclei count";
-        titleText.fontSize = 1;
+        titleText.fontSize = size.x;
         titleText.alignment = TextAlignmentOptions.Center;
-        titleText.GetComponent<RectTransform>().sizeDelta = new Vector2(1, 1);
+
 
         }
 
@@ -248,7 +266,10 @@ private void re_init_image(GameObject ImageCurrent)
 
 public void CreateBucket()
 {
-Debug.Log("Bucket created");
+    GameObject trashinstance = createTrash(trashList.Count + 1);
+
+    trashList.Add(trashinstance);
+
 }
 
 
