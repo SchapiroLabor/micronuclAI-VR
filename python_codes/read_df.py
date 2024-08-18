@@ -37,3 +37,4 @@ def get_crop_values():
 if __name__ == "__main__":
     out = get_crop_values()
     print(out)
+    exit(0)

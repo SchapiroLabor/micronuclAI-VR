@@ -28,8 +28,8 @@ public class GridMaker : MonoBehaviour
         PositionGrid();
 
         // Init children
-        transform.GetComponentInChildren<ClickNextImage>().Initialize();
-        transform.GetComponentInChildren<Trash>().Initialize();
+        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform);
+        transform.GetComponentInChildren<Trash>().Initialize(transform);
     }
 
     void PositionGrid()

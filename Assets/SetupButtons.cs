@@ -19,6 +19,9 @@ public class SetupButtons : MonoBehaviour
     UnityEngine.Vector2 buttonSize;
     UnityEngine.Vector3 buttonPosition;
     UnityEngine.Quaternion buttonRoation;
+
+    Transform CanvasUI;
+
     // Start is called before the first frame update
      public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation,
      Transform WholeImage, Transform Trash)
@@ -40,28 +43,30 @@ public class SetupButtons : MonoBehaviour
     gameObject.GetComponent<VerticalLayoutGroup>().childForceExpandHeight = false;
     gameObject.GetComponent<VerticalLayoutGroup>().spacing = fontSize * 0.2f;
 
+    buttonSize = ResizeButton(ImagePatch);
+
+    setupLocatePatchButton(WholeImage);
+    setupReverseButton(Trash);
+    setupAddBinButton(Trash, ImagePatch);
+    
+        
+    }
+
+    private Vector2 ResizeButton(Transform ImagePatch)
+
+    {
+    
     // Get the width and height of the RawImage
     float width = ImagePatch.GetComponent<RectTransform>().rect.width;
     float height = ImagePatch.GetComponent<RectTransform>().rect.height;
-
 
     float scaled_width = width* ImagePatch.GetComponent<RectTransform>().localScale.x;
     float scaled_height = height * ImagePatch.GetComponent<RectTransform>().localScale.y;
 
     // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
-    buttonSize = new UnityEngine.Vector2(scaled_width/3, scaled_width/6);
+     return new UnityEngine.Vector2(scaled_width/3, scaled_width/6);
 
-        setupLocatePatchButton(WholeImage);
-        setupReverseButton(Trash);
-        setupAddBinButton(Trash, ImagePatch);
-        
     }
-
-
-
-
-
-
 
     private void setupLocatePatchButton(Transform WholeImage)
 
@@ -76,8 +81,6 @@ public class SetupButtons : MonoBehaviour
     LocatePatch.name = "Locate Patch";
 
     standardiseButton(LocatePatch);
-
-    Debug.Log("Button Position: " + LocatePatch.transform.position);
 
     // Set text of the button
     LocatePatch.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
@@ -167,9 +170,10 @@ private void standardiseButton(GameObject Button)
 
     Button.transform.localPosition =  new Vector3(Button.transform.localPosition.x, Button.transform.localPosition.y, 0);
 
-
-
     }
+
+
+
 
 
 }

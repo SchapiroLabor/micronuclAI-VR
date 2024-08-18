@@ -350,6 +350,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MenuPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 4027820444184367460, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 127
+      objectReference: {fileID: 0}
     - target: {fileID: 4172713493846961956, guid: f8bab11aa31d21b41862235fcc4e4343, type: 3}
       propertyPath: m_Pivot.x
       value: 0

@@ -14,9 +14,9 @@ using UnityEngine.XR.Interaction.Toolkit; // With a static directive, you can ac
 public class ClickNextImage : MonoBehaviour
 {
     public GameObject rawImagesubsequentGO;
-    private GameObject CanvasUI;
     private int subsequent_img;
     public List<String> imagePaths;
+    public List<string> img_names;
     public int current_img_indx;
     private RawImage rawImage;
     public List<Texture2D> images = new List<Texture2D>();
@@ -25,13 +25,13 @@ public class ClickNextImage : MonoBehaviour
     public Quaternion start_rotation;
     public InteractableImageStack Canvas_script;
 
-   public void Initialize()
+   public void Initialize(Transform parent)
     {
 
         if (gameObject == null)
         {   
             string prefabPath = "Assets/Scenes/CIAnnotator/Image.prefab";
-            Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform);
+            Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), parent);
             gameObject.SetActive(true);
         }
 
@@ -139,7 +139,6 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
         newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
     }
 
-    Debug.Log("New Width: " + newWidth + " New Height: " + newHeight);
     // Set width and height of the Canvas
     RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -174,9 +173,11 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
         foreach (string imagePath in imagePaths)
         {
             images.Add(Resources.Load<Texture2D>("test_imgs/" + Path.GetFileNameWithoutExtension(imagePath)));
+            img_names.Add(Path.GetFileNameWithoutExtension(imagePath));
         }
 
         N_image = images.Count;
+        Debug.Log(string.Format("Number of images: {0}", img_names.Count));
     }
 
 

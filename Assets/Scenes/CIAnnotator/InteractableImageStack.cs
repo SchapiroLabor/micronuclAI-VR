@@ -4,10 +4,28 @@ using UnityEditor;
 using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
-
+using UnityEngine.UI;
+using TMPro;
+using OpenCover.Framework.Model;
+using System.IO;
+using System.IO.Pipes;
+using System.Threading;
+using System.Diagnostics;
+using Debug = UnityEngine.Debug;
+using System;
+using System.Linq;
+using Newtonsoft.Json;
+using UnityEditor.Build;
 public class InteractableImageStack : MonoBehaviour
 {
     public Camera userCamera;  // Reference to the user's camera
+    private Transform CurrentImage;
+    private Transform WholeImage;
+    private Transform Trash;
+    public string python_exe = "/home/ibrahim/miniconda3/bin/python";
+    public string cwd;
+    private string python_save2csv = "python_codes/save_as_df.py";
+    private bool Ready2Exit = false;
 
     private void Start()
     {
@@ -32,14 +50,30 @@ public class InteractableImageStack : MonoBehaviour
     }
 
     private void Initialize()
-    {
+    {   
+        // Save workign directory
+        cwd = Directory.GetCurrentDirectory();
+
         // Initialize all children using their Initialize method
         transform.GetComponentInChildren<GridMaker>().Initialize();
-        transform.GetComponentInChildren<whole_image>().Initialize();
-        InstantiateCanvasUI(transform.GetComponentInChildren<ClickNextImage>().transform, transform.GetComponentInChildren<whole_image>().transform,
-        transform.GetComponentInChildren<Trash>().transform);
+        transform.GetComponentInChildren<whole_image>().Initialize(transform);
+
+        // Get Image, whole image and Trash
+        CurrentImage = transform.GetComponentInChildren<ClickNextImage>().transform;
+        WholeImage = transform.GetComponentInChildren<whole_image>().transform;
+        Trash = transform.GetComponentInChildren<Trash>().transform;
+
+
+        // Instantiate Canvas UI
+        InstantiateCanvasUI(CurrentImage, WholeImage, Trash);
+
+        // Instanziate Exit Button
+        SetupSeperateButton(CurrentImage, transform);
         
     }
+
+
+    
 
 
     public static void SetupAnchorsAndPivots(RectTransform rectTransform)
@@ -101,8 +135,6 @@ public class InteractableImageStack : MonoBehaviour
 
         // Calculate the new position for the Canvas to minimum clipping distance
         transform.position = FacePlayer(userCamera.nearClipPlane);
-
-        Debug.Log("The position of the canvas is the following: " + transform.position);
 
         // Set rotation of the Canvas to face the camera
         transform.rotation = Quaternion.Euler(Vector3.zero);
@@ -176,5 +208,401 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
     // Set scale of the Canvas
     CanvasUI.transform.localScale = Vector3.one;
 }
+
+
+    void SetupSeperateButton(Transform ImagePatch, Transform parent)
+    {   
+        
+
+        // Set position of the button
+        Vector3 image_position = ImagePatch.GetComponent<RectTransform>().position;
+        float width = ImagePatch.GetComponent<RectTransform>().rect.width;
+        float x_shift = width;
+
+        Vector3 position = new Vector3((image_position.x + x_shift)*1.2f, image_position.y, image_position.z);
+
+        // Set rotation of the button
+        Quaternion rotation = new Quaternion(0, ImagePatch.transform.rotation.y, ImagePatch.transform.rotation.z, ImagePatch.transform.rotation.w);
+
+        // Set Canvas up
+        Transform CanvasUI = SetUICanvasup4ExitButton(parent, rotation, position);
+
+        // Set up exit button
+        setupExitButton(ImagePatch, CanvasUI);
+         
+    }
+
+    private Transform  SetUICanvasup4ExitButton(Transform parent, Quaternion rotation, Vector3 position)
+    {
+        string prefab_path = "Assets/Scenes/CIAnnotator/Canvas UI.prefab";
+        GameObject CanvasUI = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path);
+        CanvasUI.name = "Canvas UI 4 EXIT Button";
+        CanvasUI = Instantiate(CanvasUI);
+        CanvasUI.transform.SetParent(parent);
+
+        // Set scale to 1
+        CanvasUI.transform.localScale = new Vector3(1, 1, 1);
+
+
+        // Set anchors to right bottom
+        RectTransform rectTransform = CanvasUI.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0, 0);
+        rectTransform.anchorMax = new Vector2(0, 0);
+
+        // Set pivot to bottom left, for some reason if it is 0,0.5 then it changes its localposition to localPosition.y + 50
+        rectTransform.pivot = new Vector2(0, 0); 
+
+        // Set Canvas UI
+        CanvasUI.transform.rotation = rotation;
+        CanvasUI.transform.position = position;
+
+        //CanvasUI.GetComponent<RectTransform>().sizeDelta = Vector2.one;
+
+        // Add content size fitter componet
+        CanvasUI.AddComponent<ContentSizeFitter>();
+        CanvasUI.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        CanvasUI.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+
+
+        return CanvasUI.transform;
+    }
+
+
+    private void setupExitButton(Transform ImagePatch, Transform Parent)
+
+    {
+
+    GameObject ExitButton = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/Button.prefab");
+
+    // Instantiate
+    ExitButton = Instantiate(ExitButton, Parent);
+
+    // Set name
+    ExitButton.name = "ExitButton";
+
+    // Set rotation of the button
+    ExitButton.transform.rotation = Parent.rotation;
+    // Set position of the button
+    ExitButton.transform.position = Parent.position;
+
+
+
+    StandardiseExitButton(ExitButton, ImagePatch, Parent.GetComponent<RectTransform>().anchorMin,
+    Parent.GetComponent<RectTransform>().anchorMax, Parent.GetComponent<RectTransform>().pivot);
+
+    // Set Canvas to same size as button, for some reason when I set it same to Exit Button, localpositioning of Exit Button is not working
+    Parent.GetComponent<RectTransform>().sizeDelta = Vector2.one;
+
+    // Set text of the button
+    ExitButton.GetComponentInChildren<TextMeshProUGUI>().text = "EXIT Game";
+
+    // Add a listener to the button
+    ExitButton.GetComponent<Button>().onClick.AddListener(() => Exit());
+
+    }
+
+    private void StandardiseExitButton(GameObject Button, Transform ImagePatch, Vector2 AnchorMin, Vector2 AnchorMax, Vector2 Pivot)
+    {
+    // Set the font size of the Button same to width of image
+    Button.GetComponentInChildren<TextMeshProUGUI>().fontSize = ImagePatch.GetComponent<RectTransform>().sizeDelta.x * 0.1f;;
+
+    // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
+    Button.GetComponent<RectTransform>().sizeDelta = ResizeButton(ImagePatch);
+
+    // Set alginment of the text in the button
+    Button.GetComponentInChildren<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
+
+        // Give button black background and white text
+    Button.GetComponent<Image>().color = Color.black;
+    Button.GetComponentInChildren<TextMeshProUGUI>().color = Color.white;
+
+    // Set text margins to 0
+    Button.GetComponentInChildren<TextMeshProUGUI>().margin = new Vector4(0, 0, 0, 0);
+
+    // Setup anchors to bottom left corner
+    Button.GetComponent<RectTransform>().anchorMin = AnchorMin;
+    Button.GetComponent<RectTransform>().anchorMax = AnchorMax;
+
+        // Set pivot to top right left corner
+    Button.GetComponent<RectTransform>().pivot = Pivot;
+
+    // Scale all to one
+    Button.transform.localScale = Vector3.one;
+
+    Button.transform.localPosition =  new Vector3(0, 0, 0);
+
+    }
+
+
+    // Define dictionary class to store the counts of micro nuclei
+    public class MicronucleiCounts : Dictionary<string, List<object>>
+    {
+        public void AddMicronuclei(string key, object value)
+        {
+            if (!ContainsKey(key))
+            {
+                this[key] = new List<object>();
+            }
+            this[key].Add(value);
+        }
+    }
+
+
+
+
+    private string CollectMicroNucleiCounts()
+    {   
+        MicronucleiCounts micronucleiCounts = new MicronucleiCounts();
+
+
+        // Only get basename of the image using 
+        
+
+        for (int i = 0; i < Trash.childCount; i++)
+        {
+            Tinyt script = Trash.GetChild(i).GetComponent<Tinyt>();
+
+
+            if (script.patches.Count == 0)
+            {   
+                Debug.Log($"No patches in the image for trash {script.gameObject.name}");
+                continue;
+            }
+            else
+            {
+            for (int j = 0; j < script.patches.Count; j++)
+            {
+                Debug.Log($"Micronuclei count for {script.patches_names[j]} is {script.keys[j]}");
+                micronucleiCounts.AddMicronuclei("img", script.patches_names[j]);
+                micronucleiCounts.AddMicronuclei("Micronuclei", script.keys[j]);
+            }
+            }
+
+            
+        }
+
+        // Jsonify the micronucleiCounts
+        string json = JsonConvert.SerializeObject(micronucleiCounts);
+        return json;
+
+    }
+
+    private void Exit()
+    {
+        // Get the counts of micro nuclei
+        string micronucleiCounts = CollectMicroNucleiCounts();
+
+        Debug.Log(micronucleiCounts);
+
+        // Execute on a second thread
+        System.Threading.ThreadPool.QueueUserWorkItem((state) =>
+        {
+        try
+        {
+            // Transfer it to terminal environment
+            string script = python_save2csv; // Uri.EscapeDataString();
+
+            Write2Python(script, python_exe, micronucleiCounts);
+
+            // Perform any necessary cleanup or saving here
+
+            
+        }
+        finally
+        {
+            Debug.Log("Exiting VR application...");
+
+            Ready2Exit = true;
+
+        } 
+        }); 
+
+    }
+
+void Update()
+{
+    if (Ready2Exit == true)
+    { 
+            // Quit the application
+            Application.Quit();
+
+            // If running in the Unity Editor, stop play mode
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+            #endif
+    }
+}
+
+        private Vector2 ResizeButton(Transform ImagePatch)
+
+    {
+    
+    // Get the width and height of the RawImage
+    float width = ImagePatch.GetComponent<RectTransform>().rect.width;
+    float height = ImagePatch.GetComponent<RectTransform>().rect.height;
+
+    float scaled_width = width* ImagePatch.GetComponent<RectTransform>().localScale.x;
+    float scaled_height = height * ImagePatch.GetComponent<RectTransform>().localScale.y;
+
+    // Set the size of the Canvas UI to 1/3 of width of image with aspect ratio of 3:1
+     return new UnityEngine.Vector2(scaled_width/3, scaled_width/6);
+
+    }
+
+
+
+    public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe, string argument = null)
+    {   
+
+        Debug.Log($"[SERVER] Server handle: {argument}");
+        // Create a new process to run the Python script    
+        return new System.Diagnostics.Process
+        {   
+            StartInfo = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = python_exe,
+                Arguments = $"{ScriptPath} {argument}",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true, // Redirect the standard error to capture it
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            }
+        };
+    }
+
+    public static string ReadfromPython(string ScriptPath, string python_exe, string server_handle = null)
+    {
+        // Create a new process to run the Python script
+        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe, server_handle);
+
+        // Start the process
+        process.Start();
+
+        // Read the output from the Python script
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+
+        // Wait for the process to finish
+        process.WaitForExit();
+        process.Close();
+
+        Debug.Log(error);
+
+        // Return the output from the Python script
+        return output;
+    }
+
+
+    public static void Write2Python(string ScriptPath, string python_exe, string message)
+    {   
+        // Create a new process to run the Python script
+        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe);
+
+        // Save message as txt file
+        string directory = System.IO.Path.GetDirectoryName(ScriptPath);
+        string filePath = System.IO.Path.Combine(directory, "message.txt");
+        System.IO.File.WriteAllText(filePath, message);
+
+        // Redirect the standard output and error to capture them
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.RedirectStandardError = true;
+
+        // Start the process
+        process.Start();
+
+        // Read the output and error from the Python script
+        string output = process.StandardOutput.ReadToEnd();
+        string error = process.StandardError.ReadToEnd();
+
+        // Wait for the process to finish
+        process.WaitForExit();
+        process.Close();
+
+        // Print the output and error from the Python script
+        Debug.Log(output);
+        Debug.Log(error);
+    }
+
+
+/*
+    public static void Write2Python(string ScriptPath, string python_exe, string message)
+    {   
+
+        // Throws a pipe is broken exception. Not sure why that is. 
+
+        // Event to signal when the client is ready
+            // ManualResetEvent clientReady = new ManualResetEvent(false);
+
+        using (AnonymousPipeServerStream pipeServer =
+            new AnonymousPipeServerStream(PipeDirection.Out,
+            HandleInheritability.Inheritable))
+        {
+            Debug.Log($"[SERVER] Current TransmissionMode: {pipeServer.TransmissionMode}.");
+
+            // Pass the client process a handle to the server and execute it
+            System.Diagnostics.Process pipeClient = SetupPythonProcess(ScriptPath, python_exe, pipeServer.GetClientHandleAsString());
+
+            Debug.Log($"[SERVER] Client handle: {pipeServer.GetClientHandleAsString()}");
+            pipeClient.Start();
+            // Remove the client handle from the local variable list to free up memory
+            pipeServer.DisposeLocalCopyOfClientHandle(); 
+
+            try
+            {   
+                // Wait for the client to signal that it's ready
+                    // Block the current thread until the client signals
+                //clientReady.WaitOne();
+
+                // Read user input and send that to the client process.
+                using (StreamWriter sw = new StreamWriter(pipeServer))
+                {
+                    // Flush buffer to stream after every write. 
+                        // Means, write data now and do not leave it in memory
+                        // Don't use for frequent communication, it slows down the process
+                    sw.AutoFlush = true;
+                    // Send output and add line terminator to it
+                    sw.WriteLine(message);
+
+                    // Ensures all data is written to pipe before continuing execution 
+                        //of current thread i.e. will block thread.
+                        // Does not apear to work 
+                    pipeServer.WaitForPipeDrain();
+
+                }
+
+                // Capture and print the error output from the Python script
+                string errorOutput = pipeClient.StandardError.ReadToEnd();
+                if (!string.IsNullOrEmpty(errorOutput))
+                {
+                    Debug.LogError($"[SERVER] Error from Python script: {errorOutput}");
+                }
+                
+            }
+            // Catch the IOException that is raised if the pipe is broken
+            // or disconnected.
+            catch (IOException e)
+            {
+                Debug.Log($"[SERVER] Error: {e.Message}");
+            }
+        
+                // Read the output and error from the Python script
+        string output = pipeClient.StandardOutput.ReadToEnd();
+        string error = pipeClient.StandardError.ReadToEnd();
+
+        pipeClient.WaitForExit();
+        pipeClient.Close();
+
+                // Print the output and error from the Python script
+        Debug.Log(output);
+        Debug.LogError(error);
+
+        }
+
+
+    }*/
+
+    
+
 
 }

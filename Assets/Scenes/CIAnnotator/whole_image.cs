@@ -25,10 +25,10 @@ public class whole_image : MonoBehaviour
    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
 
     // Start is called before the first frame update
-    public void Initialize()
+    public void Initialize(Transform parent)
     {
 
-        read_csv_with_python();
+        read_csv_with_python(parent);
         
         SetTextureOnWholeImage();
 
@@ -48,34 +48,13 @@ public class whole_image : MonoBehaviour
         public int y_max { get; set; }
     }
 
-    private void read_csv_with_python()
-    {
-        string pythonScriptPath = Path.Combine("/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes", "read_df.py");
+    private void read_csv_with_python(Transform parent)
+    {   
+
+        string pythonScriptPath = Path.Combine(parent.GetComponent<InteractableImageStack>().cwd, "python_codes", "read_df.py");
         pythonScriptPath = $"\"{pythonScriptPath}\"";
 
-        // Create a new process to run the Python script
-        System.Diagnostics.Process process = new System.Diagnostics.Process();
-        process.StartInfo.FileName = "/home/ibrahim/miniconda3/bin/python";
-        process.StartInfo.Arguments = $"{pythonScriptPath}";
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.CreateNoWindow = true;
-        process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
-
-        // Start the process
-        process.Start();
-
-        string output = process.StandardOutput.ReadToEnd();
-        string error = process.StandardError.ReadToEnd();
-
-        // Wait for the process to finish
-        process.WaitForExit();
-
-        if (error != "")
-        {
-            Debug.Log($"Error is {error}");
-        }
+        string output = ReadfromPython(pythonScriptPath, parent.GetComponent<InteractableImageStack>().python_exe);
 
         data_dict = ConvertOutputToDictionary(output);
     }

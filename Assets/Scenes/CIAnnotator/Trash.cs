@@ -20,51 +20,47 @@ public class Trash : MonoBehaviour
     private GameObject trashPrefab;
     private ClickNextImage CurrentImage_script;
     private List<GameObject> trashList = new List<GameObject>();
+    private string last_trash;
 
-
-
-
-
-public void Initialize ()
+    public void Initialize (Transform parent)
 
 {       
-        if (transform.parent.Find("Image") != null)
-        {
+
+    // Set parent
+    transform.parent = parent;
         
-        CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
+    CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
 
-        trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
+    // Set the anchors and pivots of the Canvas
+    SetupAnchorsAndPivots(GetComponent<RectTransform>());
 
-        // Set the anchors and pivots of the Canvas
-        SetupAnchorsAndPivots(GetComponent<RectTransform>());
+    // Set anchors to left bottom
+    RectTransform rectTransform = GetComponent<RectTransform>();
+    rectTransform.anchorMin = new Vector2(0, 0);
+    rectTransform.anchorMax = new Vector2(0, 0);
 
-        // Set anchors to left bottom
-        RectTransform rectTransform = GetComponent<RectTransform>();
-        rectTransform.anchorMin = new Vector2(0, 0);
-        rectTransform.anchorMax = new Vector2(0, 0);
+    // Set pivot to center right
+    rectTransform.pivot = new Vector2(1f, 0.5f);
 
-        // Set pivot to center right
-        rectTransform.pivot = new Vector2(1f, 0.5f);
+    Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().position;
+    float width = CurrentImage_script.GetComponent<RectTransform>().rect.width / 2;
+    float x_shift = width;
+    // Have to use local position becuase world positions provides unexpected results
+    Vector3 position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
+    transform.position = position;
 
-        Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().position;
-        float width = CurrentImage_script.GetComponent<RectTransform>().rect.width / 2;
-        float x_shift = width;
-        // Have to use local position becuase world positions provides unexpected results
-        Vector3 position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
-        transform.position = position;
+    Vector2 fov = ResizeImgtobewithin60percentofFOV(image_position.z);
 
-        Vector2 fov = ResizeImgtobewithin60percentofFOV(image_position.z);
+    // Set Grid Layour group spacing to 10% of image width
+    GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
+    gridLayoutGroup.spacing =  0.01f * fov;
+    gridLayoutGroup.cellSize = fov/4;
 
-        // Set Grid Layour group spacing to 10% of image width
-        GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
-        gridLayoutGroup.spacing =  0.01f * fov;
-        gridLayoutGroup.cellSize = fov/4;
+    // Above only works if content size fitters exists
 
-        // Above only works if content size fitters exists
+    createBuckets();
 
-        createBuckets();
-
-        }
+        
 
 }
 
@@ -90,7 +86,6 @@ private Vector2 ResizeImgtobewithin60percentofFOV(float WD)
         newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
     }
 
-    Debug.Log("New Width: " + newWidth + " New Height: " + newHeight);
     // Set width and height of the Canvas
 
     return new UnityEngine.Vector2(newWidth, newHeight);
@@ -121,11 +116,11 @@ private void re_init_image(GameObject ImageCurrent)
 }
 
 // This is executed once the trash object collider is triggered
-    public void dispose()
+    public void dispose(string Trash_name)
 
     {
 
-
+        last_trash = Trash_name;
         // Get current image index
         if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1))
         {
@@ -140,7 +135,6 @@ private void re_init_image(GameObject ImageCurrent)
 
         if (ImageCurrent != null)
             {
-            Debug.Log(string.Format("This object is not deleted with current ID {0}", CurrentImage_script.current_img_indx));
             ImageCurrent.SetActive(false);
             re_init_image(ImageCurrent);
             }
@@ -155,6 +149,10 @@ private void re_init_image(GameObject ImageCurrent)
 
     public void ReverseDispose()
     {
+        if (last_trash != null)
+
+        {
+
 
                 // Get current image index
         if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1) && CurrentImage_script.current_img_indx > 0)
@@ -166,10 +164,17 @@ private void re_init_image(GameObject ImageCurrent)
             CurrentImage_script.current_img_indx = 0; 
         }
 
+        Transform trash = transform.Find(last_trash);
+
+        List<int> patches = trash.GetComponent<Tinyt>().patches;
+        if ( patches.Count > 0)
+        {
+            patches.RemoveAt(patches.Count-1);
+        }
+
         GameObject ImageCurrent = CurrentImage_script.gameObject;
         if (ImageCurrent != null)
             {
-            Debug.Log(string.Format("This object is not deleted with current ID {0}", CurrentImage_script.current_img_indx));
             ImageCurrent.SetActive(false);
             re_init_image(ImageCurrent);
             }
@@ -179,6 +184,13 @@ private void re_init_image(GameObject ImageCurrent)
                 Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
 
             }
+
+
+
+
+
+        }
+
 
     }
 
@@ -194,7 +206,7 @@ private void re_init_image(GameObject ImageCurrent)
    
     }
 
-    private GameObject createTrash(int N)
+    private GameObject createTrash(int N, Transform CurrentImage)
     {   
     
         GameObject trashInstance = Instantiate(trashPrefab, transform);
@@ -203,6 +215,7 @@ private void re_init_image(GameObject ImageCurrent)
         trashInstance.name = $"{N} Micronuclei";
         TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
         tmpText.text = $"{N}";
+        trashInstance.GetComponent<Tinyt>().Initialize(CurrentImage);
         
         return trashInstance;
     }
@@ -225,7 +238,7 @@ private void re_init_image(GameObject ImageCurrent)
 
         for (int n = 0; n <= 3; n++){
 
-            GameObject trashinstance = createTrash(n);
+            GameObject trashinstance = createTrash(n, CurrentImage_script.transform);
 
             trashList.Add(trashinstance);
         }
@@ -266,7 +279,7 @@ private void re_init_image(GameObject ImageCurrent)
 
 public void CreateBucket()
 {
-    GameObject trashinstance = createTrash(trashList.Count + 1);
+    GameObject trashinstance = createTrash(trashList.Count + 1, CurrentImage_script.transform);
 
     trashList.Add(trashinstance);
 

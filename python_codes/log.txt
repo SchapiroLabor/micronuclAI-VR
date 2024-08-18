@@ -1,0 +1,61 @@
+2024-08-18 12:16:20,250 - INFO - <module> - Line 57 - Reading from standard input
+2024-08-18 12:21:36,961 - INFO - <module> - Line 60 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 12:21:36,961 - INFO - readfromstdin - Line 46 - Reading from standard input
+2024-08-18 12:25:43,724 - INFO - save_as_df - Line 39 - Converting JSON data to DataFrame
+2024-08-18 12:29:34,248 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 12:29:34,248 - INFO - readfromstdin - Line 47 - Reading from standard input
+2024-08-18 12:32:19,751 - INFO - save_as_df - Line 39 - Converting JSON data {} to DataFrame
+2024-08-18 12:33:01,234 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 12:33:01,234 - INFO - readfromstdin - Line 47 - Reading from standard input
+2024-08-18 12:58:52,092 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 12:58:52,092 - INFO - readfromstdin - Line 47 - Reading from standard input
+2024-08-18 13:01:50,675 - INFO - save_as_df - Line 39 - Converting JSON data {'img': ['s01c1_1', 's01c1_10'], 'Micronuclei': [48, 50]} to DataFrame
+2024-08-18 13:06:44,522 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py', '158']
+2024-08-18 13:06:44,522 - INFO - read_from_pipe - Line 21 - Reading from pipe with handle: 158
+2024-08-18 13:10:34,613 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py', '159']
+2024-08-18 13:10:34,613 - INFO - read_from_pipe - Line 21 - Reading from pipe with handle: 159
+2024-08-18 13:22:51,727 - INFO - <module> - Line 61 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:22:51,727 - INFO - readfromstdin - Line 47 - Reading from standard input
+2024-08-18 13:29:56,068 - INFO - save_as_df - Line 39 - Converting JSON data {'img': ['s01c1_1', 's01c1_10'], 'Micronuclei': [48, 50]} to DataFrame
+2024-08-18 13:32:03,584 - INFO - <module> - Line 74 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:32:03,584 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:35:19,452 - INFO - <module> - Line 74 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:35:19,452 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:37:35,007 - INFO - <module> - Line 74 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:37:35,007 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:38:42,825 - INFO - <module> - Line 74 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:38:42,825 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:39:07,245 - INFO - <module> - Line 74 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:39:07,245 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:40:25,899 - INFO - <module> - Line 75 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:40:25,899 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:41:35,662 - INFO - <module> - Line 75 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:41:35,662 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:41:57,105 - INFO - <module> - Line 74 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:41:57,105 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:42:11,215 - INFO - <module> - Line 75 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:42:11,215 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:42:41,125 - INFO - <module> - Line 75 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:42:41,125 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:42:41,125 - INFO - save_as_df - Line 39 - Converting JSON data {'img': ['s01c1_1', 's01c1_11', 's01c1_10'], 'Micronuclei': [48, 49, 50]} to DataFrame
+2024-08-18 13:42:53,245 - INFO - <module> - Line 75 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/python_codes/save_as_df.py']
+2024-08-18 13:42:53,245 - INFO - readtxt - Line 60 - Reading from text file
+2024-08-18 13:42:53,245 - INFO - save_as_df - Line 39 - Converting JSON data {'img': ['s01c1_1', 's01c1_11', 's01c1_10'], 'Micronuclei': [48, 49, 50]} to DataFrame
+2024-08-18 13:46:23,567 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:46:23,567 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 13:46:23,567 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1'], 'Micronuclei': [48]} to DataFrame
+2024-08-18 13:54:07,435 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:54:07,435 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 13:54:07,435 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1'], 'Micronuclei': [48]} to DataFrame
+2024-08-18 13:57:00,053 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 13:57:00,053 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 13:57:00,053 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1'], 'Micronuclei': [48]} to DataFrame
+2024-08-18 14:01:58,878 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 14:01:58,878 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 14:01:58,878 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1'], 'Micronuclei': [48]} to DataFrame
+2024-08-18 14:11:56,543 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 14:11:56,543 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 14:11:56,544 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1'], 'Micronuclei': [48]} to DataFrame
+2024-08-18 14:20:01,615 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
+2024-08-18 14:20:01,615 - INFO - readtxt - Line 61 - Reading from text file
+2024-08-18 14:20:01,615 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1', 's01c1_11', 's01c1_2', 's01c1_13', 's01c1_10', 's01c1_3', 's01c1_15'], 'Micronuclei': [48, 48, 48, 49, 50, 50, 51]} to DataFrame
