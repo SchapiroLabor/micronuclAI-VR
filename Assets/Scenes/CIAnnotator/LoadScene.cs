@@ -12,9 +12,18 @@ using UnityEngine.UIElements;
 public class LoadScene : MonoBehaviour
 {
     // Start is called before the first frame update
+    public GameObject GameManager;
 
     void Start()
     {   
+        // Load GameManaging scriptable object
+        if (GameManager == null)
+        {
+            // Load from path
+            GameManager = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/SceneManager.prefab");
+        }
+
+
         Transform canvas = InitializeMenuPanel();   
     }
 
@@ -108,9 +117,39 @@ public class LoadScene : MonoBehaviour
     }
 
     void OnConfirmButtonClick()
-    {
+    {   
+        if (GameManager == null)
+        {
+            Debug.LogError("GameManager is null");
+
+            if (GameManager.GetComponent<GameManaging>() == null)
+            {
+                Debug.LogError("GameManager.GameManaging is null");
+            }
+        }
+        // Assign the input fields to the GameManager
+        // Get text provided in input field
+
+        List<string> output = transform.Find("InputFields").GetComponent<InputFields>().GetInputFields();
+
+        if (output != null && output.Count == 2)
+        {
+        
+        // Assign the input fields to the GameManager
+        // Get text provided in List<string> output
+        GameManager.GetComponent<GameManaging>().InputFolder = output[0];
+        GameManager.GetComponent<GameManaging>().PythonExecutable = output[1];
+
         // Load the next scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene("CIAnnotator");
+        UnityEngine.SceneManagement.SceneManager.LoadScene("CI-Annotator");
+        }
+
+        else
+        {
+            Debug.Log($"Input fields are empty: {output}");
+        }
+
+
 
     }
 

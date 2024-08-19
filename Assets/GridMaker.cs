@@ -12,12 +12,14 @@ public class GridMaker : MonoBehaviour
 {
     private Camera userCamera;
     private RectTransform rectTransform;
+    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
-    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
+
 
     // Start is called before the first frame update
-    public void Initialize()
-    {
+    public void Initialize(string dataFolder)
+    {   
+
         // Get rect transform of the grid
         rectTransform = GetComponent<RectTransform>();
 
@@ -28,7 +30,7 @@ public class GridMaker : MonoBehaviour
         PositionGrid();
 
         // Init children
-        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform);
+        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform, dataFolder);
         transform.GetComponentInChildren<Trash>().Initialize(transform);
     }
 

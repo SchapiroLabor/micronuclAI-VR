@@ -12,7 +12,8 @@ using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
-using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
+using static InteractableImageStack;
+using System.Web; // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
 {
@@ -21,14 +22,15 @@ public class whole_image : MonoBehaviour
    private GameObject Arrow;
    private float height;
    private float width;
-
+   private string img_path;
    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
 
     // Start is called before the first frame update
-    public void Initialize(Transform parent)
+    public void Initialize(Transform parent, string data_dir)
     {
-
-        read_csv_with_python(parent);
+        this.img_path = Path.GetFullPath(Path.Combine(data_dir, "img.png"));
+        
+        read_csv_with_python(parent, data_dir);
         
         SetTextureOnWholeImage();
 
@@ -48,13 +50,13 @@ public class whole_image : MonoBehaviour
         public int y_max { get; set; }
     }
 
-    private void read_csv_with_python(Transform parent)
+    private void read_csv_with_python(Transform parent, string data_dir)
     {   
 
         string pythonScriptPath = Path.Combine(parent.GetComponent<InteractableImageStack>().cwd, "python_codes", "read_df.py");
         pythonScriptPath = $"\"{pythonScriptPath}\"";
 
-        string output = ReadfromPython(pythonScriptPath, parent.GetComponent<InteractableImageStack>().python_exe);
+        string output = ReadfromPython(pythonScriptPath, parent.GetComponent<InteractableImageStack>().python_exe, parent.GetComponent<InteractableImageStack>().AddQuotesIfRequired(data_dir));
 
         data_dict = ConvertOutputToDictionary(output);
     }
@@ -284,9 +286,8 @@ private void PositionWholeImage()
 
     private Texture2D LoadTexture()
     {
-        string path = "Assets/Resources/whole_img.png";
-        (float width, float height) = GetDimensions(path);
-        byte[] fileData = File.ReadAllBytes(path);
+        (float width, float height) = GetDimensions(img_path);
+        byte[] fileData = File.ReadAllBytes(img_path);
         Texture2D texture = new Texture2D((int)width, (int)height, TextureFormat.R8, false);
         texture.LoadImage(fileData);
         return texture;

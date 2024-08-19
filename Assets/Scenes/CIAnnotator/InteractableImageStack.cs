@@ -22,9 +22,11 @@ public class InteractableImageStack : MonoBehaviour
     private Transform CurrentImage;
     private Transform WholeImage;
     private Transform Trash;
-    public string python_exe = "/home/ibrahim/miniconda3/bin/python";
+    public GameObject GameManager;
+    public string inputfolder;
+    public string python_exe;
     public string cwd;
-    private string python_save2csv = "python_codes/save_as_df.py";
+    private string PythonScript = "python_codes/save_as_df.py";
     private bool Ready2Exit = false;
 
     private void Start()
@@ -49,14 +51,40 @@ public class InteractableImageStack : MonoBehaviour
 
     }
 
+
+    public string AddQuotesIfRequired(string path)
+{
+    /// <summary>
+    /// Adds quotes to a string if required.
+    /// </summary>
+    /// <param name="path">The string to add quotes to.</param>
+    /// <returns>The input string with quotes added if required, or an empty string if the input is null, empty, or whitespace.</returns>
+
+    return !string.IsNullOrWhiteSpace(path) ? 
+        path.Contains(" ") && (!path.StartsWith("\"") && !path.EndsWith("\"")) ? 
+            "\"" + path + "\"" : path : 
+            string.Empty;
+}
+
     private void Initialize()
     {   
+
+        // Load the Game Manager
+        if (GameManager == null)
+        {
+            // Load from path
+            GameManager = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/SceneManager.prefab");
+        }
+
+        inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
+        python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
+        
         // Save workign directory
         cwd = Directory.GetCurrentDirectory();
 
         // Initialize all children using their Initialize method
-        transform.GetComponentInChildren<GridMaker>().Initialize();
-        transform.GetComponentInChildren<whole_image>().Initialize(transform);
+        transform.GetComponentInChildren<GridMaker>().Initialize(inputfolder);
+        transform.GetComponentInChildren<whole_image>().Initialize(transform, inputfolder);
 
         // Get Image, whole image and Trash
         CurrentImage = transform.GetComponentInChildren<ClickNextImage>().transform;
@@ -401,9 +429,9 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
         try
         {
             // Transfer it to terminal environment
-            string script = python_save2csv; // Uri.EscapeDataString();
+            string script = PythonScript; // Uri.EscapeDataString();
 
-            Write2Python(script, python_exe, micronucleiCounts);
+            Write2Python(script, python_exe, cwd, inputfolder, micronucleiCounts);
 
             // Perform any necessary cleanup or saving here
 
@@ -434,7 +462,7 @@ void Update()
     }
 }
 
-        private Vector2 ResizeButton(Transform ImagePatch)
+    private Vector2 ResizeButton(Transform ImagePatch)
 
     {
     
@@ -452,7 +480,8 @@ void Update()
 
 
 
-    public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe, string argument = null)
+    public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
+    string argument = null)
     {   
 
         Debug.Log($"[SERVER] Server handle: {argument}");
@@ -471,10 +500,10 @@ void Update()
         };
     }
 
-    public static string ReadfromPython(string ScriptPath, string python_exe, string server_handle = null)
+    public static string ReadfromPython(string ScriptPath, string python_exe, string argument = null)
     {
         // Create a new process to run the Python script
-        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe, server_handle);
+        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe, argument);
 
         // Start the process
         process.Start();
@@ -487,21 +516,26 @@ void Update()
         process.WaitForExit();
         process.Close();
 
-        Debug.Log(error);
+        if (!string.IsNullOrEmpty(error))
+        {
+            Debug.LogError($"Error from Python script: {error}");
+        }
 
         // Return the output from the Python script
         return output;
     }
 
 
-    public static void Write2Python(string ScriptPath, string python_exe, string message)
+    public void Write2Python(string ScriptPath, string python_exe,
+    string workingdirectory, string data_dir, string message)
     {   
+        string argmuents = $"{AddQuotesIfRequired(workingdirectory)} {AddQuotesIfRequired(data_dir)}";
         // Create a new process to run the Python script
-        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe);
+        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe,
+        argmuents);
 
         // Save message as txt file
-        string directory = System.IO.Path.GetDirectoryName(ScriptPath);
-        string filePath = System.IO.Path.Combine(directory, "message.txt");
+        string filePath = System.IO.Path.Combine(workingdirectory, "message.txt");
         System.IO.File.WriteAllText(filePath, message);
 
         // Redirect the standard output and error to capture them

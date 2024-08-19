@@ -59,3 +59,14 @@
 2024-08-18 14:20:01,615 - INFO - <module> - Line 75 - Python process started with arguments: ['python_codes/save_as_df.py']
 2024-08-18 14:20:01,615 - INFO - readtxt - Line 61 - Reading from text file
 2024-08-18 14:20:01,615 - INFO - save_as_df - Line 40 - Converting JSON data {'img': ['s01c1_1', 's01c1_11', 's01c1_2', 's01c1_13', 's01c1_10', 's01c1_3', 's01c1_15'], 'Micronuclei': [48, 48, 48, 49, 50, 50, 51]} to DataFrame
+2024-08-19 17:57:42,626 - INFO - <module> - Line 80 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended', 'Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data', '{img:[s01c1_1],Micronuclei:[0]}']
+2024-08-19 17:57:42,641 - INFO - readtxt - Line 66 - Reading from text file
+2024-08-19 18:00:59,755 - INFO - <module> - Line 80 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data', '{img:[s01c1_1],Micronuclei:[0]}']
+2024-08-19 18:00:59,756 - INFO - readtxt - Line 66 - Reading from text file
+2024-08-19 18:02:26,060 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data', '{img:[s01c1_1],Micronuclei:[0]}']
+2024-08-19 18:02:26,060 - INFO - readtxt - Line 59 - Reading from text file
+2024-08-19 18:07:57,143 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended', 'Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data']
+2024-08-19 18:07:57,143 - INFO - readtxt - Line 59 - Reading from text file
+2024-08-19 18:09:43,322 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data']
+2024-08-19 18:09:43,322 - INFO - readtxt - Line 59 - Reading from text file
+2024-08-19 18:09:43,322 - INFO - save_as_df - Line 38 - Converting JSON data {'img': ['s01c1_1', 's01c1_10'], 'Micronuclei': [0, 2]} to DataFrame

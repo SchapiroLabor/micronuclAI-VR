@@ -74,7 +74,8 @@ public void SavePatch(int img_indx, List<string> img_names)
     // Add image name and the trash count to a list
     patches_names.Add(img_names[img_indx]);
 
-    keys.Add((int)gameObject.name[0]);
+    // Get first character of the gameobject name
+    keys.Add(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
 }
 
 public void RemovePatch()

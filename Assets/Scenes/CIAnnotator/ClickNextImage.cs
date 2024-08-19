@@ -9,7 +9,8 @@ using System.Linq;
 // Import functions from another script
 using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit.Filtering;
-using UnityEngine.XR.Interaction.Toolkit; // With a static directive, you can access the members of the class by using the class name itself
+using UnityEngine.XR.Interaction.Toolkit;
+using System.Web; // With a static directive, you can access the members of the class by using the class name itself
 
 public class ClickNextImage : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class ClickNextImage : MonoBehaviour
     public Quaternion start_rotation;
     public InteractableImageStack Canvas_script;
 
-   public void Initialize(Transform parent)
+   public void Initialize(Transform parent, string dataFolder)
     {
 
         if (gameObject == null)
@@ -40,7 +41,7 @@ public class ClickNextImage : MonoBehaviour
         PopulateVariables();
 
         // Position and populate the list dedicated to image textures
-        getImageTextures();
+        getImageTextures(dataFolder);
 
         // Initialize the image
         InitializeCurrentImage(current_img_indx);
@@ -123,8 +124,8 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
     float newHeight = outputs[1]*0.4f; // Width
 
     // Get the width and height of the RawImage
-    float width = GetComponent<RawImage>().texture.width;
-    float height = GetComponent<RawImage>().texture.height;
+    float width = rawImage.texture.width;
+    float height = rawImage.texture.height;
 
     // Reduce image size whilst keeping the image aspect ratio
     float aspect_ratio = width/height;
@@ -152,18 +153,51 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
     // Get the start position and rotation of the RawImage
     current_img_indx = 0;
 
-    // Get the RawImage component
-    rawImage = GetComponent<RawImage>();
+    }
+    public (int width, int height) GetDimensions(string filePath)
+    {
+        using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+        {
+            stream.Seek(8, SeekOrigin.Begin);
+
+            byte[] chunkLength = new byte[4];
+            byte[] chunkType = new byte[4];
+            stream.Read(chunkLength, 0, 4);
+            stream.Read(chunkType, 0, 4);
+
+            string type = System.Text.Encoding.ASCII.GetString(chunkType);
+            if (type != "IHDR")
+            {
+                throw new Exception("IHDR chunk not found");
+            }
+
+            byte[] dimensions = new byte[8];
+            stream.Read(dimensions, 0, 8);
+
+            int width = BitConverter.ToInt32(new byte[] { dimensions[3], dimensions[2], dimensions[1], dimensions[0] }, 0);
+            int height = BitConverter.ToInt32(new byte[] { dimensions[7], dimensions[6], dimensions[5], dimensions[4] }, 0);
+
+            return (width, height);
+        }
+    }    private Texture2D LoadImgwithAbsolutePath(string path)
+    {
+
+        // Load the image with absolute path
+        byte[] fileData = File.ReadAllBytes(path);
+        (int width, int height) =GetDimensions(path);
+        Texture2D tex = new Texture2D(width, height);
+        tex.LoadImage(fileData);
+        return tex;
+
 
     }
 
-
-    private void getImageTextures()
+    private void getImageTextures(string dataFolder)
     {
         PositionImageStack();
 
         var ext = new List<string> { "jpg", "gif", "png" };
-        imagePaths = Directory.EnumerateFiles(Application.dataPath + "/Resources/test_imgs", "*", SearchOption.AllDirectories).ToList();
+        imagePaths = Directory.EnumerateFiles(Path.Combine(dataFolder, "patches"),  "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path =>
         {
             string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
@@ -172,12 +206,12 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
 
         foreach (string imagePath in imagePaths)
         {
-            images.Add(Resources.Load<Texture2D>("test_imgs/" + Path.GetFileNameWithoutExtension(imagePath)));
+            images.Add(LoadImgwithAbsolutePath(imagePath));
             img_names.Add(Path.GetFileNameWithoutExtension(imagePath));
         }
 
         N_image = images.Count;
-        Debug.Log(string.Format("Number of images: {0}", img_names.Count));
+        Debug.Log(string.Format("Number of images: {0}", N_image));
     }
 
 
@@ -187,7 +221,10 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
         transform.position = start_position;
         transform.rotation = start_rotation;
 
-        rawImage.texture = images[current_img_indx];
+        // Get the RawImage component
+        GetComponent<RawImage>().texture = images[current_img_indx];
+
+        rawImage = GetComponent<RawImage>();
 
         // Resize the image to be within 40% of the FOV
         ResizeImgtobewithin40percentofFOV(rawImage.transform.position.z);

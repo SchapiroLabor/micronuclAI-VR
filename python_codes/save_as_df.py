@@ -3,16 +3,14 @@ import os
 import json
 import pandas as pd
 import logging
+import re
 
 # Set up logging
 log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "log.txt")
 logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(funcName)s - Line %(lineno)d - %(message)s')
 logger = logging.getLogger(__name__)
 
-data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
 
 def read_from_pipe():
     # Convert the pipe handle from a string to an integer
@@ -33,7 +31,7 @@ def read_from_pipe():
         except json.JSONDecodeError as e:
             logger.error("Failed to decode JSON: %s", e)
 
-def save_as_df(json_data):
+def save_as_df(json_data, data_dir):
 
     try:
         # Convert the JSON data to a pandas DataFrame
@@ -57,9 +55,9 @@ def readfromstdin():
     except json.JSONDecodeError as e:
         logger.error("Failed to decode JSON: %s", e)
 
-def readtxt():
+def readtxt(cwd):
     logger.info("Reading from text file")
-    path = os.path.join(os.path.dirname(data_dir), "message.txt")
+    path = os.path.join(cwd, "message.txt")
     # Read json from txt file
     with open(path, "r") as f:
         data = f.read()
@@ -73,6 +71,11 @@ def readtxt():
 if __name__ == "__main__":
     # The pipe handle is passed as the first argument
     logger.info("Python process started with arguments: %s", sys.argv)
-    data = readtxt()
-    save_as_df(data)
+
+    data_dir = os.path.join(sys.argv[-1], "results")
+
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    save_as_df(readtxt(sys.argv[-2]), data_dir)
     exit(0)
