@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Numerics;
 using TMPro;
 using UnityEditor;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 using static InteractableImageStack;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
+using System.IO;
 using Vector4 = UnityEngine.Vector4;
 
 
@@ -72,7 +72,7 @@ public class SetupButtons : MonoBehaviour
 
     {
 
-    GameObject LocatePatch = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/Button.prefab");
+    GameObject LocatePatch = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
 
     // Instantiate
     LocatePatch = Instantiate(LocatePatch, transform);
@@ -95,7 +95,7 @@ private void setupReverseButton(Transform Trash)
 
     {
 
-    GameObject ReverseButton = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/Button.prefab");
+    GameObject ReverseButton = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
     
     // Instantiate
     ReverseButton = Instantiate(ReverseButton, transform);
@@ -118,7 +118,7 @@ private void setupAddBinButton(Transform Trash, Transform ImagePatch)
 
     {
 
-    GameObject AddBin = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/Button.prefab");
+    GameObject AddBin = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
     AddBin = Instantiate(AddBin, transform);
 
     // Add name

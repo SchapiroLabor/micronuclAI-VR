@@ -6,7 +6,6 @@ using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 using UnityEngine.UI;
 using TMPro;
-using OpenCover.Framework.Model;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
@@ -15,7 +14,7 @@ using Debug = UnityEngine.Debug;
 using System;
 using System.Linq;
 using Newtonsoft.Json;
-using UnityEditor.Build;
+using System.IO;
 public class InteractableImageStack : MonoBehaviour
 {
     public Camera userCamera;  // Reference to the user's camera
@@ -73,7 +72,7 @@ public class InteractableImageStack : MonoBehaviour
         if (GameManager == null)
         {
             // Load from path
-            GameManager = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/SceneManager.prefab");
+            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
         }
 
         inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
@@ -84,12 +83,33 @@ public class InteractableImageStack : MonoBehaviour
 
         // Initialize all children using their Initialize method
         transform.GetComponentInChildren<GridMaker>().Initialize(inputfolder);
-        transform.GetComponentInChildren<whole_image>().Initialize(transform, inputfolder);
-
         // Get Image, whole image and Trash
         CurrentImage = transform.GetComponentInChildren<ClickNextImage>().transform;
-        WholeImage = transform.GetComponentInChildren<whole_image>().transform;
         Trash = transform.GetComponentInChildren<Trash>().transform;
+
+
+        try
+        {
+        transform.GetComponentInChildren<whole_image>().Initialize(transform, inputfolder);
+
+        // Perform any necessary cleanup or saving here
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Multi htread does not work: {ex}");
+
+        }
+
+        finally
+        {
+
+            WholeImage = transform.GetComponentInChildren<whole_image>().transform;
+        }
+        ; 
+
+
+
+        
 
 
         // Instantiate Canvas UI
@@ -180,7 +200,7 @@ public class InteractableImageStack : MonoBehaviour
     public static GameObject CreateGameObject(Transform parent, string prefabPath, Transform transform)
     {
         // Create a new RawImage GameObject from the prefab
-        GameObject instance= Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform.position, transform.rotation);
+        GameObject instance= Instantiate(Resources.Load<GameObject>(prefabPath), transform.position, transform.rotation);
         instance.transform.SetParent(parent);
         return instance;
     }
@@ -206,7 +226,7 @@ public static void ChildIdenticalToParent(GameObject parent, GameObject child)
 private void InstantiateCanvasUI(Transform rawImageTransform, Transform WholeImage, Transform trash)
 {   
     // Create a new Canvas UI GameObject
-    GameObject CanvasUI = CreateGameObject(transform, "Assets/Scenes/CIAnnotator/Canvas UI.prefab", transform);
+    GameObject CanvasUI = CreateGameObject(transform, Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Canvas UI.prefab")), transform);
 
     PositionandResizeCanvasUI(CanvasUI, rawImageTransform);
 
@@ -262,8 +282,8 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
 
     private Transform  SetUICanvasup4ExitButton(Transform parent, Quaternion rotation, Vector3 position)
     {
-        string prefab_path = "Assets/Scenes/CIAnnotator/Canvas UI.prefab";
-        GameObject CanvasUI = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(prefab_path);
+        string prefab_path = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Canvas UI.prefab"));
+        GameObject CanvasUI = Resources.Load<GameObject>(prefab_path);
         CanvasUI.name = "Canvas UI 4 EXIT Button";
         CanvasUI = Instantiate(CanvasUI);
         CanvasUI.transform.SetParent(parent);
@@ -301,7 +321,7 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
 
     {
 
-    GameObject ExitButton = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/Button.prefab");
+    GameObject ExitButton = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
 
     // Instantiate
     ExitButton = Instantiate(ExitButton, Parent);

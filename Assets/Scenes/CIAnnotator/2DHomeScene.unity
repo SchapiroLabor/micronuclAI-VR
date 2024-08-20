@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.12107873, a: 1}
+  m_IndirectSpecularColor: {r: 0.12731749, g: 0.13414757, b: 0.1210787, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -802,6 +802,10 @@ PrefabInstance:
       propertyPath: m_UiScaleMode
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5831384169475219139, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
+      propertyPath: m_Texture
+      value: 
+      objectReference: {fileID: 2800000, guid: 44a33d6d50dd3f64686e126d111cf6b1, type: 3}
     - target: {fileID: 6238067347966632866, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
       propertyPath: m_AnchorMax.x
       value: 1
@@ -892,12 +896,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7507813194102595743, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 844
+      value: 1387
       objectReference: {fileID: 0}
     - target: {fileID: 7507813194102595743, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 312
       objectReference: {fileID: 0}
+    - target: {fileID: 7561137526577926059, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
+      propertyPath: GameManager
+      value: 
+      objectReference: {fileID: 6985184009362120741, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
     - target: {fileID: 7596851702933002187, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -940,6 +948,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8045397871889403936, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
       propertyPath: m_enableAutoSizing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8283569929193342819, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
+      propertyPath: m_CullTransparentMesh
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9065872209977434241, guid: d86ef22592bda8d718e0ba29ff3f45fd, type: 3}
@@ -1702,7 +1714,7 @@ Camera:
   far clip plane: 1000
   field of view: 39.5
   orthographic: 0
-  orthographic size: 0.9225
+  orthographic size: 0.935
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -1727,7 +1739,7 @@ Transform:
   m_GameObject: {fileID: 2076313601}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 444, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

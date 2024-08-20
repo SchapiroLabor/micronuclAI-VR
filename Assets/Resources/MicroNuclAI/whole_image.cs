@@ -28,7 +28,7 @@ public class whole_image : MonoBehaviour
     // Start is called before the first frame update
     public void Initialize(Transform parent, string data_dir)
     {
-        this.img_path = Path.GetFullPath(Path.Combine(data_dir, "img.png"));
+        this.img_path = Path.Combine(data_dir, "img.png");
         
         read_csv_with_python(parent, data_dir);
         
@@ -118,7 +118,7 @@ public class whole_image : MonoBehaviour
 
 private void InitializeIntensityCylinder()
 {
-string prefabPath = "Assets/Scenes/CIAnnotator/Cylinder.prefab";
+string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Cylinder.prefab"));
 Arrow = CreateGameObject(transform, prefabPath, transform);
 Arrow.SetActive(false);
 
@@ -286,10 +286,14 @@ private void PositionWholeImage()
 
     private Texture2D LoadTexture()
     {
-        (float width, float height) = GetDimensions(img_path);
+        
+        
         byte[] fileData = File.ReadAllBytes(img_path);
-        Texture2D texture = new Texture2D((int)width, (int)height, TextureFormat.R8, false);
+        (float width, float height) = GetDimensions(img_path);
+        Debug.Log($"Size of img: {width} {height}");
+        Texture2D texture = new Texture2D((int)width, (int)height);
         texture.LoadImage(fileData);
+
         return texture;
     }
 

@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit.Utilities.Tweenables.Primitives;
-using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using TMPro;
 using Unity.XR.CoreUtils;
@@ -14,6 +13,7 @@ using static InteractableImageStack;
 using System.Numerics; // With a static directive, you can access the members of the class by using the class name itself
 using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector3;
+using System.IO;
 public class Trash : MonoBehaviour
 {
 
@@ -233,7 +233,7 @@ private void re_init_image(GameObject ImageCurrent)
 
         if (trashPrefab == null)
         {
-            trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Scenes/CIAnnotator/trash_text.prefab");
+            trashPrefab = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/trash_text.prefab")));
         }
 
         for (int n = 0; n <= 3; n++){

@@ -11,6 +11,7 @@ using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit.Filtering;
 using UnityEngine.XR.Interaction.Toolkit;
 using System.Web; // With a static directive, you can access the members of the class by using the class name itself
+using System.IO;
 
 public class ClickNextImage : MonoBehaviour
 {
@@ -31,8 +32,8 @@ public class ClickNextImage : MonoBehaviour
 
         if (gameObject == null)
         {   
-            string prefabPath = "Assets/Scenes/CIAnnotator/Image.prefab";
-            Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), parent);
+            string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Image.prefab"));
+            Instantiate(Resources.Load<GameObject>(prefabPath), parent);
             gameObject.SetActive(true);
         }
 
@@ -207,7 +208,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD)
         foreach (string imagePath in imagePaths)
         {
             images.Add(LoadImgwithAbsolutePath(imagePath));
-            img_names.Add(Path.GetFileNameWithoutExtension(imagePath));
+            img_names.Add(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension(imagePath)));
         }
 
         N_image = images.Count;
@@ -256,13 +257,12 @@ private void CreateGameObjectForSecondImage(int N_images)
         // Create subsequent image only when there are more than one images
         if (N_images > 1)
         {   
-            // Step 1: Define the path to the prefab within the Resources folder
-            string prefabPath = "Assets/Scenes/CIAnnotator/SubsequentImage.prefab";
+
             // Create a new RawImage GameObject from the prefab
 
             if (rawImagesubsequentGO == null)
             {
-                rawImagesubsequentGO = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath), transform.position, transform.rotation);
+                rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position, transform.rotation);
                 rawImagesubsequentGO.GetComponent<RawImage>().SetNativeSize();
                 
             }

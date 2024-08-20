@@ -35,7 +35,7 @@ public class InputFields : MonoBehaviour
         GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0.5f);
 
         // Spacing set to 1 % of canvas height
-        // gameObject.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = GetComponent<RectTransform>().sizeDelta.y * 0.01f;
+        //gameObject.GetComponent<UnityEngine.UI.VerticalLayoutGroup>().spacing = MenuPanel.GetComponent<RectTransform>().sizeDelta.y * 0.01f;
 
         // Position canvas at near clip plane
         //transform.localPosition = Vector3.zero;
@@ -45,7 +45,7 @@ public class InputFields : MonoBehaviour
         Transform inputWidget = InitializeInputWidget4Imgs(MenuPanel);
 
         // Initialize input widget for python executable path
-        InitializeInputWidget4PythonExec(inputWidget);
+        InitializeInputWidget4PythonExec(MenuPanel);
 
         return transform;
     }
@@ -58,16 +58,17 @@ public class InputFields : MonoBehaviour
         inputWidget.name = "ImagePath";
 
         // Set anchors to bottom left
-       // inputWidget.GetComponent<RectTransform>().anchorMin = new UnityEngine.Vector2(0, 0);
-    //   inputWidget.GetComponent<RectTransform>().anchorMax = new UnityEngine.Vector2(0, 0);
+        inputWidget.GetComponent<RectTransform>().anchorMin = new UnityEngine.Vector2(0, 0);
+       inputWidget.GetComponent<RectTransform>().anchorMax = new UnityEngine.Vector2(0, 0);
 
         // Set Pivot to centre
-       // inputWidget.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0.5f);
+        inputWidget.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0.0f);
 
-
-
+        UnityEngine.Vector2 size = Canvas.GetComponent<RectTransform>().sizeDelta;
+        // Set position to the centre
+        inputWidget.transform.position = new UnityEngine.Vector2(size.x*0.5f, size.y*0.55f);
         // Set scale to 1
-        inputWidget.localScale = new Vector3(1, 1, 1);
+        inputWidget.localScale = new UnityEngine.Vector3(1, 1, 1);
 
         // Set the text of the placeholder
         inputWidget.GetComponentInChildren<TextMeshProUGUI>().text = "Enter path to Input folder";
@@ -77,6 +78,8 @@ public class InputFields : MonoBehaviour
 
         // Set color of text to grey
         inputWidget.GetComponentInChildren<TextMeshProUGUI>().color = Color.black;
+
+        inputWidget = SetSizeofInputBar(inputWidget, Canvas);
 
 
 
@@ -122,11 +125,15 @@ public class InputFields : MonoBehaviour
         inputWidget.name = "PythonExecPath";
 
                 // Set anchors to bottom left
-        //inputWidget.GetComponent<RectTransform>().anchorMin = new UnityEngine.Vector2(0, 0);
-        //inputWidget.GetComponent<RectTransform>().anchorMax = new UnityEngine.Vector2(0, 0);
+        inputWidget.GetComponent<RectTransform>().anchorMin = new UnityEngine.Vector2(0, 0);
+        inputWidget.GetComponent<RectTransform>().anchorMax = new UnityEngine.Vector2(0, 0);
 
         // Set Pivot to centre
-        //inputWidget.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0.5f);
+        inputWidget.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 1.0f);
+
+        UnityEngine.Vector2 size = Canvas.GetComponent<RectTransform>().sizeDelta;
+        // Set position to the centre
+        inputWidget.transform.position = new UnityEngine.Vector2(size.x*0.5f, size.y*0.54f);
 
 
                 // Set scale to 1
@@ -141,6 +148,8 @@ public class InputFields : MonoBehaviour
 
         // Set color of text to grey
         inputWidget.GetComponentInChildren<TextMeshProUGUI>().color = Color.black;
+
+        inputWidget = SetSizeofInputBar(inputWidget, Canvas);
 
 
         /*
@@ -178,6 +187,20 @@ public class InputFields : MonoBehaviour
 
 
         return inputWidget;
+    }
+
+ Transform SetSizeofInputBar(Transform Inputbar, Transform MenuPanel)
+    {
+
+        // Set size of input bar to 25% of width and 5% of height of MenuPanel
+        Vector2 size = MenuPanel.GetComponent<RectTransform>().sizeDelta;
+
+        Inputbar.GetComponent<RectTransform>().sizeDelta = new Vector2(size.x*0.4f, size.y*0.05f);
+
+        return Inputbar;
+
+
+
     }
 
 public string AddQuotesIfRequired(string path)
