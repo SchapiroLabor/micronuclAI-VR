@@ -284,15 +284,15 @@ private void PositionWholeImage()
     }
 
 
-    private Texture2D LoadTexture()
+    private Texture2D LoadTexture(img_path)
     {
         
-        
-        byte[] fileData = File.ReadAllBytes(img_path);
+        Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
+        /*byte[] fileData = File.ReadAllBytes(img_path);
         (float width, float height) = GetDimensions(img_path);
         Debug.Log($"Size of img: {width} {height}");
         Texture2D texture = new Texture2D((int)width, (int)height);
-        texture.LoadImage(fileData);
+        texture.LoadImage(fileData);*/
 
         return texture;
     }
