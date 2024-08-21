@@ -820,7 +820,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   userCamera: {fileID: 0}
   GameManager: {fileID: 6985184009362120741, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
-  inputfolder: /home/ibrahim/Downloads/CIAnnotator/CIAnnotator/Assets/Scenes/CIAnnotator/PythonCodes
+  inputfolder: 
   python_exe: /home/ibrahim/miniconda3/bin/python
   cwd: 
 --- !u!114 &1646500095

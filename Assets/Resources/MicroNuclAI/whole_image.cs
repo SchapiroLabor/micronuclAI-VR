@@ -32,7 +32,7 @@ public class whole_image : MonoBehaviour
         
         read_csv_with_python(parent, data_dir);
         
-        SetTextureOnWholeImage();
+        SetTextureOnWholeImage(img_path);
 
         PositionWholeImage();
 
@@ -195,9 +195,9 @@ private void DisplayArrow(int current_img_indx)
 
 }
 
-private void SetTextureOnWholeImage()
+private void SetTextureOnWholeImage(string img_path)
     {
-        Texture2D whole_img_texture = LoadTexture();
+        Texture2D whole_img_texture = LoadTexture(img_path);
 
         if (whole_img_texture == null)
         {
@@ -284,15 +284,15 @@ private void PositionWholeImage()
     }
 
 
-    private Texture2D LoadTexture(img_path)
+    private Texture2D LoadTexture(string img_path)
     {
         
-        Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
-        /*byte[] fileData = File.ReadAllBytes(img_path);
+        //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
+        byte[] fileData = File.ReadAllBytes(img_path);
         (float width, float height) = GetDimensions(img_path);
         Debug.Log($"Size of img: {width} {height}");
         Texture2D texture = new Texture2D((int)width, (int)height);
-        texture.LoadImage(fileData);*/
+        texture.LoadImage(fileData);
 
         return texture;
     }

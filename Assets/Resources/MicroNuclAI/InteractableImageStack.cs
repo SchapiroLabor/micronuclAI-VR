@@ -14,7 +14,7 @@ using Debug = UnityEngine.Debug;
 using System;
 using System.Linq;
 using Newtonsoft.Json;
-using System.IO;
+
 public class InteractableImageStack : MonoBehaviour
 {
     public Camera userCamera;  // Reference to the user's camera
@@ -117,10 +117,44 @@ public class InteractableImageStack : MonoBehaviour
 
         // Instanziate Exit Button
         SetupSeperateButton(CurrentImage, transform);
+
+        //
+        StartCoroutine(MyCoroutine(transform, inputfolder, WholeImage, Trash));
         
     }
 
 
+
+    public bool WaitForWholeImage(Transform parent, string inputfolder, Transform WholeImage, Transform Trash)
+    {
+       // Thread worker = new Thread(() => {
+
+        //});
+
+       // worker.Start();
+
+                // Read texture
+        InstantiateCanvasUIandWholeImage( parent,  inputfolder,
+        WholeImage,  Trash);
+
+        return true;
+    }
+
+private System.Collections.IEnumerator MyCoroutine(Transform parent, string inputfolder, Transform WholeImage, Transform Trash)
+{
+    yield return WaitForWholeImage(parent, inputfolder, WholeImage, Trash);
+}
+
+
+    void InstantiateCanvasUIandWholeImage(Transform parent, string inputfolder,
+    Transform WholeImage, Transform Trash)
+    {
+        parent.GetComponentInChildren<whole_image>().Initialize(parent, inputfolder);
+        WholeImage = transform.GetComponentInChildren<whole_image>().transform;
+        // Instantiate Canvas UI and whole image
+        InstantiateCanvasUI(CurrentImage, WholeImage, Trash);
+
+    }
     
 
 
