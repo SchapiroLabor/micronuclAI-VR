@@ -87,67 +87,35 @@ public class InteractableImageStack : MonoBehaviour
         CurrentImage = transform.GetComponentInChildren<ClickNextImage>().transform;
         Trash = transform.GetComponentInChildren<Trash>().transform;
 
-
-        try
-        {
-        transform.GetComponentInChildren<whole_image>().Initialize(transform, inputfolder);
-
-        // Perform any necessary cleanup or saving here
-        }
-        catch (Exception ex)
-        {
-            Debug.Log($"Multi htread does not work: {ex}");
-
-        }
-
-        finally
-        {
-
-            WholeImage = transform.GetComponentInChildren<whole_image>().transform;
-        }
-        ; 
-
-
-
-        
-
-
-        // Instantiate Canvas UI
-        InstantiateCanvasUI(CurrentImage, WholeImage, Trash);
-
         // Instanziate Exit Button
         SetupSeperateButton(CurrentImage, transform);
 
-        //
-        StartCoroutine(MyCoroutine(transform, inputfolder, WholeImage, Trash));
-        
+        // Wait for the whole image to load
+        StartCoroutine(MyCoroutine(transform, inputfolder, Trash));
+
     }
 
 
 
-    public bool WaitForWholeImage(Transform parent, string inputfolder, Transform WholeImage, Transform Trash)
+    public void WaitForWholeImage(Transform parent, string inputfolder, Transform Trash)
     {
-       // Thread worker = new Thread(() => {
 
-        //});
-
-       // worker.Start();
-
-                // Read texture
+        // Read texture
         InstantiateCanvasUIandWholeImage( parent,  inputfolder,
-        WholeImage,  Trash);
+        Trash);
 
-        return true;
     }
 
-private System.Collections.IEnumerator MyCoroutine(Transform parent, string inputfolder, Transform WholeImage, Transform Trash)
+private System.Collections.IEnumerator MyCoroutine(Transform parent, string inputfolder, Transform Trash)
 {
-    yield return WaitForWholeImage(parent, inputfolder, WholeImage, Trash);
+    // Remove the call to WaitForWholeImage since it is not being used
+    WaitForWholeImage(parent, inputfolder, Trash);
+    yield return null;
 }
 
 
     void InstantiateCanvasUIandWholeImage(Transform parent, string inputfolder,
-    Transform WholeImage, Transform Trash)
+     Transform Trash)
     {
         parent.GetComponentInChildren<whole_image>().Initialize(parent, inputfolder);
         WholeImage = transform.GetComponentInChildren<whole_image>().transform;
