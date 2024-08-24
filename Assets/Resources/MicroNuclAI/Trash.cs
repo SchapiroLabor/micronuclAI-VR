@@ -22,16 +22,12 @@ public class Trash : MonoBehaviour
     private List<GameObject> trashList = new List<GameObject>();
     private string last_trash;
 
-    public void Initialize (Transform parent)
 
-{       
 
-    // Set parent
-    transform.parent = parent;
-        
-    CurrentImage_script = transform.parent.GetComponentInChildren<ClickNextImage>();
 
-    // Set the anchors and pivots of the Canvas
+    void Awake()
+    {
+     // Set the anchors and pivots of the Canvas
     SetupAnchorsAndPivots(GetComponent<RectTransform>());
 
     // Set anchors to left bottom
@@ -42,14 +38,28 @@ public class Trash : MonoBehaviour
     // Set pivot to center right
     rectTransform.pivot = new Vector2(1f, 0.5f);
 
-    Vector3 image_position = CurrentImage_script.GetComponent<RectTransform>().position;
-    float width = CurrentImage_script.GetComponent<RectTransform>().rect.width / 2;
+    }
+
+
+
+public void Initialize (Transform parent, Transform CurrentImage, Camera userCamera)
+
+{       
+
+    // Set parent
+    transform.parent = parent;
+
+    // Set CurrentImageScript
+    CurrentImage_script = CurrentImage.GetComponent<ClickNextImage>();
+        
+    Vector3 image_position = CurrentImage.GetComponent<RectTransform>().position;
+    float width = CurrentImage.GetComponent<RectTransform>().rect.width / 2;
     float x_shift = width;
     // Have to use local position becuase world positions provides unexpected results
     Vector3 position = new Vector3(image_position.x - x_shift, image_position.y, image_position.z);
     transform.position = position;
 
-    Vector2 fov = ResizeImgtobewithin60percentofFOV(image_position.z);
+    Vector2 fov = ResizeImgtobewithin60percentofFOV(image_position.z, userCamera);
 
     // Set Grid Layour group spacing to 10% of image width
     GridLayoutGroup gridLayoutGroup = GetComponent<GridLayoutGroup>();
@@ -58,17 +68,17 @@ public class Trash : MonoBehaviour
 
     // Above only works if content size fitters exists
 
-    createBuckets();
+    createBuckets(CurrentImage);
 
         
 
 }
 
-private Vector2 ResizeImgtobewithin60percentofFOV(float WD)
+private Vector2 ResizeImgtobewithin60percentofFOV(float WD, Camera userCamera)
 {
 
     // Get the FOV at the panel height
-    List<float> outputs = GetFOVatWD(WD);
+    List<float> outputs = GetFOVatWD(WD, userCamera);
     
     float newWidth = outputs[0]*0.6f; // Height
     float newHeight = outputs[1]*0.6f; // Width
@@ -222,14 +232,13 @@ private void re_init_image(GameObject ImageCurrent)
 
 
 
-    public void createBuckets()
+    public void createBuckets(Transform CurrentImage)
     {   
-        RawImage rawImagecurrent = CurrentImage_script.GetComponent<RawImage>();
+        RawImage rawImagecurrent = CurrentImage.GetComponent<RawImage>();
 
         if (rawImagecurrent != null){
             var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width)/2;
             
-        
 
         if (trashPrefab == null)
         {
@@ -238,7 +247,7 @@ private void re_init_image(GameObject ImageCurrent)
 
         for (int n = 0; n <= 3; n++){
 
-            GameObject trashinstance = createTrash(n, CurrentImage_script.transform);
+            GameObject trashinstance = createTrash(n, CurrentImage);
 
             trashList.Add(trashinstance);
         }

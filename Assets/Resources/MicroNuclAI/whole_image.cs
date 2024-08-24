@@ -13,32 +13,84 @@ using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
 using static InteractableImageStack;
-using System.Web; // With a static directive, you can access the members of the class by using the class name itself
+using System.Web;
+using System.Runtime.CompilerServices; // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
 {
    List<element>  data_dict;
-
+   private GameObject GameManager;
    private GameObject Arrow;
    private float height;
    private float width;
-   private string img_path;
+   string data_dir;
+   private string python_path;
+   string working_dir;
    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
 
-    // Start is called before the first frame update
-    public void Initialize(Transform parent, string data_dir)
+
+
+
+       // All functions independet of other objects can be placed in even functions Awake, OnEnable, Start
+
+    void Awake()
     {
-        this.img_path = Path.Combine(data_dir, "img.png");
+
+        gameObject.name = "Image";
+
+                // Load the Game Manager
+        if (GameManager == null)
+        {
+            // Load from path
+            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
+        }
+
+
+        // Get the img and python path
+        data_dir = GameManager.GetComponent<GameManaging>().InputFolder;
+        python_path = GameManager.GetComponent<GameManaging>().PythonExecutable;
+        working_dir = Directory.GetCurrentDirectory();
+
+        // Setup anchors and pivots
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        SetupAnchorsAndPivots(rectTransform);
+
+        // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
+        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
+        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
+
+        // Reduce Local Scale
+        rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
+
+        // Plays on background thread
+        InteractableImageStack.ThreadPooling(new Action<string, string, string> (read_csv_with_python),
+        null, working_dir, python_path, data_dir);
         
-        read_csv_with_python(parent, data_dir);
-        
-        SetTextureOnWholeImage(img_path);
+        // Plays on main thread with pauses
+        StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
 
-        PositionWholeImage();
+    }
 
-        PositionImagetitle();
+private System.Collections.IEnumerator MyCoroutine(string img_path)
+{
+    // Remove the call to WaitForWholeImage since it is not being used
+    SetTextureOnWholeImage(img_path);
+    yield return null; // Wait for the next frame
+}
 
-        //InitializeIntensityCylinder();
+
+
+
+    // Start is called before the first frame update
+    public void Initialize(Transform parent, Transform Panel, Camera userCamera)
+    {
+        gameObject.transform.SetParent(parent);
+        gameObject.SetActive(true);
+
+        PositionWholeImage(parent, Panel, userCamera);
+
+        // Should occure after the image is positioned as we are using world coordinates
+        PositionImagetitle(transform.GetChild(0));
     }
 
 
@@ -50,13 +102,15 @@ public class whole_image : MonoBehaviour
         public int y_max { get; set; }
     }
 
-    private void read_csv_with_python(Transform parent, string data_dir)
+    private void read_csv_with_python(string cwd, string data_dir, string python_exe)
     {   
 
-        string pythonScriptPath = Path.Combine(parent.GetComponent<InteractableImageStack>().cwd, "python_codes", "read_df.py");
+        // Execute using System thread pool
+
+        string pythonScriptPath = Path.Combine(cwd, "python_codes", "read_df.py");
         pythonScriptPath = $"\"{pythonScriptPath}\"";
 
-        string output = ReadfromPython(pythonScriptPath, parent.GetComponent<InteractableImageStack>().python_exe, parent.GetComponent<InteractableImageStack>().AddQuotesIfRequired(data_dir));
+        string output = ReadfromPython(pythonScriptPath, python_exe, InteractableImageStack.AddQuotesIfRequired(data_dir));
 
         data_dict = ConvertOutputToDictionary(output);
     }
@@ -204,24 +258,19 @@ private void SetTextureOnWholeImage(string img_path)
             Debug.Log("Whole image texture is null");
         }
 
+        // Size delta must be explicitly matched to the size of the image
         GetComponent<RawImage>().texture = whole_img_texture;
         RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
         rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
-
-        // Reduce Local Scale
-        rectTransform.localScale = new UnityEngine.Vector3(0.1f, 0.1f, 1f);
-
-
-
     }
 
-    private List<float> GetFOVatWD(float WD)
+    private List<float> GetFOVatWD(float WD, Camera userCamera)
     {
         // Pythagoras theorem to calculate the distance
         List<float> holder = new List<float>();
-        float vertical_fov = Camera.main.fieldOfView;
+        float vertical_fov = userCamera.fieldOfView;
         float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  Camera.main.aspect * fov_height;     // Aspect ratio of the camera is width/height
+        float fov_width =  userCamera.aspect * fov_height;     // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
@@ -230,11 +279,11 @@ private void SetTextureOnWholeImage(string img_path)
         return holder;
     }
 
-private void ResizeImgtobewithinFOV(float WD)
+private void ResizeImgtobewithinFOV(float WD, Camera userCamera)
 {
 
     // Get the FOV at the panel height
-    List<float> outputs = GetFOVatWD(WD);
+    List<float> outputs = GetFOVatWD(WD, userCamera);
     float newWidth = outputs[0]*1.5f; // Width
     float newHeight = outputs[1]*1.5f; // Height
 
@@ -257,30 +306,29 @@ private void ResizeImgtobewithinFOV(float WD)
     rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
 }
 
-private void PositionWholeImage()
+private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera userCamera)
     {
-
-        // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
-        SetupAnchorsAndPivots(rectTransform);
-        // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
-        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
-        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
 
-        // Reduce Local Scale
-        rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
+        // Set at the centre of the screen
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        transform.localPosition = Vector3.zero;
 
         // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
-        Vector3 newPosition = FacePlayer(raycast_distance);
-        newPosition.y = transform.parent.GetChild(1).GetComponent<RectTransform>().sizeDelta.y;;
+        float y = Panel.GetComponent<RectTransform>().sizeDelta.y;
+
+        Debug.Log($"The y position of the panel is {y}");
 
         // Set size of the image
-        ResizeImgtobewithinFOV((newPosition.y+newPosition.z)/2);
+        ResizeImgtobewithinFOV((y+transform.position.z)/2, userCamera);
 
+        
         // Set angle of the image to panel at 90°
-        rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
-        rectTransform.transform.position = newPosition;
+        rectTransform.position = new Vector3(rectTransform.position.x, rectTransform.position.y + y, rectTransform.position.z);
 
+        // Last incase, it affects positioning
+        rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
     }
 
 
@@ -324,12 +372,9 @@ private void PositionWholeImage()
         }
     }
 
-    private void PositionImagetitle()
+    private void PositionImagetitle(Transform title)
     {
-
-        //Canvas_script.ChildIdenticalToParent(transform.gameObject, transform.Find("title").gameObject);
-
-        Transform title = transform.Find("title");
+        // Create Title
 
         TMP_Text tmpText = title.GetComponent<TextMeshProUGUI>();
 
@@ -349,6 +394,9 @@ private void PositionWholeImage()
                 // Set all text margins to 0
         tmpText.margin = new UnityEngine.Vector4(0, 0, 0, 0);
     }
+
+
+
 
 
 

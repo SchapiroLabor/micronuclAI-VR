@@ -16,56 +16,74 @@ public class GridMaker : MonoBehaviour
 
 
 
-    // Start is called before the first frame update
-    public void Initialize(string dataFolder)
-    {   
+    void Awake()
+    {
 
-        // Get rect transform of the grid
+                // Get rect transform of the grid
         rectTransform = GetComponent<RectTransform>();
 
         // Get the user's camera
         userCamera = Camera.main;
 
-        // Position the grid
-        PositionGrid();
+        // Positioning should be identical to the canvas
+        // Also, local position is only accurate when used after Start() or Awake()
+        PositionGrid(rectTransform, userCamera, raycast_distance);
 
-        // Init children
-        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform, dataFolder);
-        transform.GetComponentInChildren<Trash>().Initialize(transform);
     }
 
-    void PositionGrid()
+    // Start is called before the first frame update
+    public void Initialize()
+    {   
+
+
+
+        // Init children
+        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform);
+        transform.GetComponentInChildren<Trash>().Initialize(transform, transform.GetComponentInChildren<ClickNextImage>().transform, userCamera);
+    }
+
+
+
+    void PositionGrid(RectTransform rectTransform, Camera userCamera, float WD)
     {   
         // Setup anchors and pivots
-        RectTransform rectTransform = GetComponent<RectTransform>();
         SetupAnchorsAndPivots(rectTransform);
+
+        // Set anchor to the centre of the screen
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+
+        // Set pivot to the centre of the screen
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
         // Set side lengths of the rect transform
         rectTransform.localScale = new UnityEngine.Vector3(1, 1, 1);
 
-        // Set distance from the camera at maximum raycast distance
-        Vector3 newPosition = FacePlayer((raycast_distance * 0.9f)); // 0.9f provides a buffer, incase player moves without knowing and believes interaction is not feasible
-        rectTransform.position = newPosition;
+        rectTransform.localPosition = Vector3.zero;
 
         // Set size of Grid to FOV at the maximum raycast distance
-        List<float> outputs = GetFOVatWD((raycast_distance * 0.9f));
+        List<float> outputs = GetFOVatWD(WD, userCamera);
+
+
 
         rectTransform.sizeDelta = new UnityEngine.Vector2(outputs[1], outputs[0]);
 
     }
 
 
-    private List<float> GetFOVatWD(float WD)
+    private List<float> GetFOVatWD(float WD, Camera userCamera)
     {
         // Pythagoras theorem to calculate the distance
         List<float> holder = new List<float>();
-        float vertical_fov = Camera.main.fieldOfView;
+        float vertical_fov = userCamera.fieldOfView;
         float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  Camera.main.aspect * fov_height; // Aspect ratio of the camera is width/height
+        float fov_width =  userCamera.aspect * fov_height; // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
         holder.Add(WD);
+
+        Debug.Log($"FOV at working distance {WD}: {fov_height}, {fov_width}");
 
         return holder;
     }

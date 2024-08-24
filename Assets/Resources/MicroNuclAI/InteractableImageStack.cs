@@ -7,26 +7,77 @@ using Quaternion = UnityEngine.Quaternion;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
-using System.IO.Pipes;
-using System.Threading;
-using System.Diagnostics;
 using Debug = UnityEngine.Debug;
 using System;
-using System.Linq;
 using Newtonsoft.Json;
 
 public class InteractableImageStack : MonoBehaviour
 {
     public Camera userCamera;  // Reference to the user's camera
-    private Transform CurrentImage;
-    private Transform WholeImage;
-    private Transform Trash;
+    private ClickNextImage CurrentImage;
+    private whole_image WholeImage;
+    private GridMaker Panel;
     public GameObject GameManager;
+    private RectTransform rectTransform;
     public string inputfolder;
     public string python_exe;
     public string cwd;
     private string PythonScript = "python_codes/save_as_df.py";
     private bool Ready2Exit = false;
+    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
+
+    private void Awake()
+    {   
+        // Is played before start and 
+        
+        // Load the Game Manager
+        if (GameManager == null)
+        {
+            // Load from path
+            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
+        }
+
+        // Position Canvas once it is enabled
+        PositionCanvas();
+
+                // Get the input folder and python executable
+        inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
+        python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
+        
+        // Save workign directory
+        cwd = Directory.GetCurrentDirectory();
+
+        // Position the Canvas in front of the camera
+        PositionCanvas();
+     
+    }
+
+    void PositionCanvas()
+    {
+
+        // Setup anchors and pivots
+        rectTransform = GetComponent<RectTransform>();
+        SetupAnchorsAndPivots(rectTransform);
+
+        // Set anchor to the centre of the screen
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+
+        // Set pivot to the centre of the screen
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+        // Set local position to the centre of the screen at a distance of 10 units
+        rectTransform.localPosition = FacePlayer(raycast_distance);
+
+        // Set rotation of the Canvas to face the camera
+        transform.rotation = Quaternion.Euler(Vector3.zero);
+
+        // Set scale to 1
+        transform.localScale = new Vector3(1, 1, 1);
+
+
+    }
+
 
     private void Start()
     {
@@ -42,16 +93,22 @@ public class InteractableImageStack : MonoBehaviour
             canvas.renderMode = RenderMode.WorldSpace;
         }
 
-        // Position the Canvas in front of the camera
-        PositionCanvas();
+        // Get the RawImage, Whole Image, Trash and UserCamera        
+        Panel = transform.GetComponentInChildren<GridMaker>();
+        Panel.Initialize();
+
+        CurrentImage = Panel.GetComponentInChildren<ClickNextImage>();
+
+        WholeImage = transform.GetComponentInChildren<whole_image>();
+        WholeImage.Initialize(transform, Panel.transform, userCamera);
 
         // Initialize the Canvas
-        Initialize();
+        Initialize(CurrentImage.transform, WholeImage.transform, Panel.transform, userCamera);
 
     }
 
 
-    public string AddQuotesIfRequired(string path)
+    static public string AddQuotesIfRequired(string path)
 {
     /// <summary>
     /// Adds quotes to a string if required.
@@ -65,66 +122,21 @@ public class InteractableImageStack : MonoBehaviour
             string.Empty;
 }
 
-    private void Initialize()
+    private void Initialize(Transform CurrentImage, Transform WholeImage, Transform Panel,
+    Camera userCamera)
     {   
-
-        // Load the Game Manager
-        if (GameManager == null)
-        {
-            // Load from path
-            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
-        }
-
-        inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
-        python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
-        
-        // Save workign directory
-        cwd = Directory.GetCurrentDirectory();
-
-        // Initialize all children using their Initialize method
-        transform.GetComponentInChildren<GridMaker>().Initialize(inputfolder);
-        // Get Image, whole image and Trash
-        CurrentImage = transform.GetComponentInChildren<ClickNextImage>().transform;
-        Trash = transform.GetComponentInChildren<Trash>().transform;
+        // Calculate the new position for the Canvas to minimum clipping distance
+        transform.position = FacePlayer(raycast_distance);
+        List<float> outputs = GetFOVatWD(raycast_distance, userCamera);
+        rectTransform.sizeDelta = new Vector2(outputs[1], outputs[0]);
 
         // Instanziate Exit Button
         SetupSeperateButton(CurrentImage, transform);
 
-        // Wait for the whole image to load
-        StartCoroutine(MyCoroutine(transform, inputfolder, Trash));
+        // Set up Exit Button
+        InstantiateCanvasUI(CurrentImage, WholeImage, Panel);
 
     }
-
-
-
-    public void WaitForWholeImage(Transform parent, string inputfolder, Transform Trash)
-    {
-
-        // Read texture
-        InstantiateCanvasUIandWholeImage( parent,  inputfolder,
-        Trash);
-
-    }
-
-private System.Collections.IEnumerator MyCoroutine(Transform parent, string inputfolder, Transform Trash)
-{
-    // Remove the call to WaitForWholeImage since it is not being used
-    WaitForWholeImage(parent, inputfolder, Trash);
-    yield return null;
-}
-
-
-    void InstantiateCanvasUIandWholeImage(Transform parent, string inputfolder,
-     Transform Trash)
-    {
-        parent.GetComponentInChildren<whole_image>().Initialize(parent, inputfolder);
-        WholeImage = transform.GetComponentInChildren<whole_image>().transform;
-        // Instantiate Canvas UI and whole image
-        InstantiateCanvasUI(CurrentImage, WholeImage, Trash);
-
-    }
-    
-
 
     public static void SetupAnchorsAndPivots(RectTransform rectTransform)
     {
@@ -134,13 +146,13 @@ private System.Collections.IEnumerator MyCoroutine(Transform parent, string inpu
         rectTransform.pivot = new Vector2(0.5f, 0.5f);
     }
 
-    public static List<float> GetFOVatWD(float WD)
+    public static List<float> GetFOVatWD(float WD, Camera userCamera)
     {
         // Pythagoras theorem to calculate the distance
         List<float> holder = new List<float>();
-        float vertical_fov = Camera.main.fieldOfView;
+        float vertical_fov = userCamera.fieldOfView;
         float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  Camera.main.aspect * fov_height;     // Aspect ratio of the camera is width/height
+        float fov_width =  userCamera.aspect * fov_height;     // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
@@ -149,15 +161,15 @@ private System.Collections.IEnumerator MyCoroutine(Transform parent, string inpu
         return holder;
     }
 
-    public List<float> GetFOVatNearClipping()
+    public List<float> GetFOVatNearClipping(Camera userCamera)
     {   // Must be near or else the child elements of canvas will not be visible
 
         // Pythagoras theorem to calculate the distance
         List<float> holder = new List<float>();
-        float vertical_fov = Camera.main.fieldOfView;
-        float clipping_distance = Camera.main.nearClipPlane;
+        float vertical_fov = userCamera.fieldOfView;
+        float clipping_distance = userCamera.nearClipPlane;
         float fov_height = (clipping_distance * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  Camera.main.aspect * fov_height; // Aspect ratio of the camera is width/height
+        float fov_width =  userCamera.aspect * fov_height; // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
@@ -176,28 +188,7 @@ private System.Collections.IEnumerator MyCoroutine(Transform parent, string inpu
         return cameraPosition + cameraForward * scaler;
     }
 
-    void PositionCanvas()
-    {
 
-        // Setup anchors and pivots
-        RectTransform rectTransform = GetComponent<RectTransform>();
-        SetupAnchorsAndPivots(rectTransform);
-
-        // Calculate the new position for the Canvas to minimum clipping distance
-        transform.position = FacePlayer(userCamera.nearClipPlane);
-
-        // Set rotation of the Canvas to face the camera
-        transform.rotation = Quaternion.Euler(Vector3.zero);
-
-        // Set scale to 1
-        transform.localScale = new Vector3(1, 1, 1);
-
-        List<float> outputs = GetFOVatNearClipping();
-
-        rectTransform.sizeDelta = new Vector2(outputs[1], outputs[0]);
-
-
-    }
 
     public static GameObject CreateGameObject(Transform parent, string prefabPath, Transform transform)
     {
@@ -407,7 +398,7 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
 
 
         // Only get basename of the image using 
-        
+        Transform Trash = Panel.transform.GetChild(0);
 
         for (int i = 0; i < Trash.childCount; i++)
         {
@@ -443,30 +434,13 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
         // Get the counts of micro nuclei
         string micronucleiCounts = CollectMicroNucleiCounts();
 
+        // Thread pool write to Python
+        ThreadPooling(new Action<string, string, string, string, string> (Write2Python),
+        new Action(OnApplicationQuit), PythonScript, python_exe, cwd, inputfolder, micronucleiCounts);
+
         Debug.Log(micronucleiCounts);
 
-        // Execute on a second thread
-        System.Threading.ThreadPool.QueueUserWorkItem((state) =>
-        {
-        try
-        {
-            // Transfer it to terminal environment
-            string script = PythonScript; // Uri.EscapeDataString();
 
-            Write2Python(script, python_exe, cwd, inputfolder, micronucleiCounts);
-
-            // Perform any necessary cleanup or saving here
-
-            
-        }
-        finally
-        {
-            Debug.Log("Exiting VR application...");
-
-            Ready2Exit = true;
-
-        } 
-        }); 
 
     }
 
@@ -579,6 +553,46 @@ void Update()
         Debug.Log(output);
         Debug.Log(error);
     }
+
+
+    void OnApplicationQuit()
+    {
+        // Set Ready2Exit to true
+        Ready2Exit = true;
+    }
+ public static void ThreadPooling(Delegate method, Action finalAction = null, params object[] args)
+
+ {      // Params array in conjunction with a Delegate to pass a dynamic number of arguments to your method
+        // Params keyword allows the method to accept a variable number of arguments
+        // The method.DynamicInvoke(args) call dynamically invokes the delegate with the provided arguments. 
+        // This makes it possible to pass any number of arguments, as long as they match the delegate's signature.
+
+
+        // Execute on a second thread
+        System.Threading.ThreadPool.QueueUserWorkItem((state) =>
+        {
+        try
+        { // Ensures that any exceptions thrown by method(args) are caught and handled properly within the thread
+
+            method.DynamicInvoke(args);
+
+        }
+        finally
+        { // Will execute regardless of whether an exception is thrown, 
+          //ensuring that cleanup actions like setting Ready2Exit = true and logging the exit message are always performed. 
+          //This is especially important for maintaining the application's state and ensuring resources are cleaned up correctly.
+          
+            finalAction?.Invoke();
+
+        } 
+        }); 
+
+
+
+
+ }
+
+
 
 
 /*
