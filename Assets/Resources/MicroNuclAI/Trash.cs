@@ -102,22 +102,63 @@ private Vector2 ResizeImgtobewithin60percentofFOV(float WD, Camera userCamera)
 
 }
 
-private void re_init_image(GameObject ImageCurrent)
+private void RepositionCurrentImage(GameObject ImageCurrent)
+{
+    ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
+    ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
+}
+private void InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
+{
+    // Display a message to the user that there are no more images to display
+    TMP_Text text = ImageCurrent.GetComponentInChildren<TMP_Text>();
+    text.text = "No more images to display";
+    
+    // Set the text to be at the center of the image
+    text.alignment = TextAlignmentOptions.Center;
+
+    // Position the text at the center of the image
+    text.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+
+    // Text color böack
+    text.color = Color.black;
+
+    // Remove texture from the image
+    ImageCurrent.GetComponent<RawImage>().texture = null;
+
+    Debug.Log($"No more images to display, executed for: {CurrentImage_script.current_img_indx}");
+
+
+}
+
+private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_script, 
+                            int CurrentImageIndex, int N_image, List<Texture2D> images)
 
 {   
 
     if (ImageCurrent == null || ImageCurrent.activeSelf == false)
     {
-    ClickNextImage CurrentImage_script = ImageCurrent.GetComponent<ClickNextImage>();
+    
+    CurrentImage_script.current_img_indx = CurrentImageIndex;
     ImageCurrent.SetActive(true);
-    ImageCurrent.GetComponent<RawImage>().texture = CurrentImage_script.images[CurrentImage_script.current_img_indx];
-    ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
-    ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
-    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImage_script.current_img_indx, CurrentImage_script.N_image);
     closedisplaysecondimg();
+
+    // If current image is index is below N_images, reinitialize the image
+    if (CurrentImageIndex < N_image)
+    {
+    
+    ImageCurrent.GetComponent<RawImage>().texture = images[CurrentImageIndex];
+    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImageIndex, N_image);
+    RepositionCurrentImage(ImageCurrent);
 
     }
 
+    else
+    {
+        InformNoMoreImages(ImageCurrent, CurrentImage_script);
+        RepositionCurrentImage(ImageCurrent);
+
+    }
+    }
     else
     {
         Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
@@ -129,71 +170,71 @@ private void re_init_image(GameObject ImageCurrent)
     public void dispose(string Trash_name)
     {
         last_trash = Trash_name;
-        // Get current image index
-        if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1))
-        {
-            CurrentImage_script.current_img_indx += 1;
-        }
-        else 
-        {
-            CurrentImage_script.current_img_indx = 0; 
-        }
-
-
         GameObject ImageCurrent = CurrentImage_script.gameObject;
+        int CurrentImageIndex = CurrentImage_script.current_img_indx;
+        int N_image = CurrentImage_script.N_image;
+        List<Texture2D> images = CurrentImage_script.images;
 
-        if (ImageCurrent != null)
+        // Get current image index
+        if (CurrentImageIndex < (N_image))
         {
-            ImageCurrent.SetActive(false);
-            re_init_image(ImageCurrent);
+            CurrentImageIndex += 1;
+
+            if (ImageCurrent != null)
+            {
+                ImageCurrent.SetActive(false);
+
+                // If equal or below N_images, reinitialize the image
+                re_init_image(ImageCurrent, CurrentImage_script, CurrentImageIndex, N_image, images);
+
+            }
+            else
+            {
+                Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+            }
+
         }
         else
         {
-            Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+            Debug.Log("No more images to display");
         }
 
+
+
+
+        
     }
 
     public void ReverseDispose()
     {
         if (last_trash != null)
-
         {
+            GameObject currentImage = CurrentImage_script.gameObject;
+            int currentImageIndex = CurrentImage_script.current_img_indx;
 
-
-                // Get current image index
-        if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1) && CurrentImage_script.current_img_indx > 0)
-        {
-            CurrentImage_script.current_img_indx -= 1;
-        }
-        else 
-        {
-            CurrentImage_script.current_img_indx = 0; 
-        }
-
-        Transform trash = transform.Find(last_trash);
-
-        List<int> patches = trash.GetComponent<Tinyt>().patches;
-        if ( patches.Count > 0)
-        {
-            patches.RemoveAt(patches.Count-1);
-        }
-
-        GameObject ImageCurrent = CurrentImage_script.gameObject;
-        if (ImageCurrent != null)
+            // Get current image index
+            if (currentImageIndex < (CurrentImage_script.N_image) && currentImageIndex > 0)
             {
-            ImageCurrent.SetActive(false);
-            re_init_image(ImageCurrent);
+                currentImageIndex -= 1;
+
+            Transform trash = transform.Find(last_trash);
+
+            List<int> patches = trash.GetComponent<Tinyt>().patches;
+            if (patches.Count > 0)
+            {
+                patches.RemoveAt(patches.Count-1);
             }
 
+            if (currentImage != null)
+            {
+                currentImage.SetActive(false);
+                re_init_image(currentImage, CurrentImage_script, currentImageIndex, CurrentImage_script.N_image, CurrentImage_script.images);
+            }
             else
             {
-                Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
-
+                Debug.Log(string.Format("This object appears to be missing {0}", currentImage.name));
             }
-
-
-
+            }
 
 
         }

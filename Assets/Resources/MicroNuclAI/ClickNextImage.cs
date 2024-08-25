@@ -113,39 +113,40 @@ void PositionImageStack()
 
 }
 
-public void PositionResizeText(RectTransform rectTransform, int current_img_indx, int N_image)
+public void PositionResizeText(RectTransform CurrentImage, int current_img_indx, int N_image)
 {
     // Set the anchors and pivots of the Text
-    RectTransform textRectTransform = rectTransform.GetChild(0).GetComponent<RectTransform>();
-    SetupAnchorsAndPivots(textRectTransform);
+    RectTransform textRectTransform = CurrentImage.Find("Image_ID").GetComponent<RectTransform>();
 
     // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
     textRectTransform.anchorMin = new Vector2(0, 0);
     textRectTransform.anchorMax = new Vector2(0, 0);
 
     // Set pivot to bottom center of the Text
-    textRectTransform.pivot = new Vector2(0.5f, 0);
+    textRectTransform.pivot = new Vector2(0.5f, 0.0f);
 
     // Set side lengths of the rect transform
     textRectTransform.localScale = Vector3.one;
 
     // Set the position and rotation of the child transform
-    textRectTransform.SetPositionAndRotation(rectTransform.position, rectTransform.rotation);
+    textRectTransform.SetPositionAndRotation(CurrentImage.position, CurrentImage.rotation);
 
     // Set the size of the Text to be 1/3 of the width of the image
-    textRectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, rectTransform.sizeDelta.y/3);
+    textRectTransform.sizeDelta = new Vector2(CurrentImage.sizeDelta.x, CurrentImage.sizeDelta.y/3);
 
     // Set the font size of the Text same to width of image
-    textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = rectTransform.sizeDelta.x * 0.1f;
+    textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = CurrentImage.sizeDelta.x * 0.1f;
 
     // Set the text of the Text
     textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
 
-    // Position to top center of the RawImage
-    textRectTransform.position = new Vector3(rectTransform.position.x, rectTransform.sizeDelta.y/2, rectTransform.position.z);
-
     // Centre text in the Text
     textRectTransform.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+
+    // Position to top center of the RawImage
+    // Uneexpected behaviour when using localPosition sizeDelta is Gemobject size + parent size from pivot
+    textRectTransform.localPosition = new Vector3((CurrentImage.sizeDelta.x/2) - (CurrentImage.sizeDelta.x*(1 - textRectTransform.pivot.x)),
+    CurrentImage.sizeDelta.y - ((CurrentImage.sizeDelta.y/2)*(1-textRectTransform.pivot.y)), 0);
 
 
 }
@@ -337,19 +338,16 @@ private void DisplaySecondImage()
             
             subsequent_img = current_img_indx;
 
-            if (subsequent_img < (images.Count))
+            if (subsequent_img < (images.Count - 1))
             {
                 subsequent_img += 1;
-            }
-            else
-            {
-                subsequent_img = 0;
-            }
 
             rawImagesubsequentGO.GetComponent<RawImage>().texture = images[subsequent_img];
             PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img, N_image);
             rawImagesubsequentGO.SetActive(true);
-            
+            }
+
+
 
         }
         else

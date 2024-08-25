@@ -100,7 +100,7 @@ public class InteractableImageStack : MonoBehaviour
         CurrentImage = Panel.GetComponentInChildren<ClickNextImage>();
 
         WholeImage = transform.GetComponentInChildren<whole_image>();
-        WholeImage.Initialize(transform, Panel.transform, userCamera);
+        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage);
 
         // Initialize the Canvas
         Initialize(CurrentImage.transform, WholeImage.transform, Panel.transform, userCamera);

@@ -13,14 +13,14 @@ using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
 using static InteractableImageStack;
-using System.Web;
-using System.Runtime.CompilerServices; // With a static directive, you can access the members of the class by using the class name itself
+// With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
 {
    List<element>  data_dict;
    private GameObject GameManager;
    private GameObject Arrow;
+   private ClickNextImage CurrentImage_script;
    private float height;
    private float width;
    string data_dir;
@@ -82,7 +82,7 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
 
     // Start is called before the first frame update
-    public void Initialize(Transform parent, Transform Panel, Camera userCamera)
+    public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage)
 
     {
 
@@ -93,6 +93,9 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
         PositionWholeImage(parent, Panel, userCamera);
         // Should occure after the image is positioned as we are using world coordinates
         PositionImagetitle(transform.GetChild(0));
+
+        // Get CurrentImage
+        CurrentImage_script = CurrentImage;
         
     }
 
@@ -171,18 +174,22 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
     }
 
     public void current_cell_bbox(int patch_indx)
-    {
+    {   
+        if (patch_indx < data_dict.Count)
+        {
         // Get the bounding box of the pixel cluster
         Rect bbox = get_bbox_from_df(patch_indx);
 
         // Color the pixel cluster
         ColorPixelCluster(bbox, Color.red);
+        }
+
     }
 
     public void DisplayPatch()
     {   
-        ClickNextImage CurrentRawImage = transform.parent.GetChild(1).GetComponentInChildren<ClickNextImage>();
-        current_cell_bbox(CurrentRawImage.current_img_indx);
+        Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
+        current_cell_bbox(CurrentImage_script.current_img_indx);
 
         //DisplayArrow(CurrentRawImage.current_img_indx);
 
