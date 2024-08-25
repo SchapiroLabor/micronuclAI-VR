@@ -70,3 +70,6 @@
 2024-08-19 18:09:43,322 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data']
 2024-08-19 18:09:43,322 - INFO - readtxt - Line 59 - Reading from text file
 2024-08-19 18:09:43,322 - INFO - save_as_df - Line 38 - Converting JSON data {'img': ['s01c1_1', 's01c1_10'], 'Micronuclei': [0, 2]} to DataFrame
+2024-08-25 14:31:46,214 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-08-25 14:31:46,215 - INFO - readtxt - Line 59 - Reading from text file
+2024-08-25 14:31:46,215 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame

@@ -111,7 +111,7 @@ private void re_init_image(GameObject ImageCurrent)
     ClickNextImage CurrentImage_script = ImageCurrent.GetComponent<ClickNextImage>();
     ImageCurrent.SetActive(true);
     ImageCurrent.GetComponent<RawImage>().texture = CurrentImage_script.images[CurrentImage_script.current_img_indx];
-    ImageCurrent.GetComponent<RectTransform>().position = CurrentImage_script.start_position;
+    ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
     ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
     CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImage_script.current_img_indx, CurrentImage_script.N_image);
     closedisplaysecondimg();
@@ -127,9 +127,7 @@ private void re_init_image(GameObject ImageCurrent)
 
 // This is executed once the trash object collider is triggered
     public void dispose(string Trash_name)
-
     {
-
         last_trash = Trash_name;
         // Get current image index
         if (CurrentImage_script.current_img_indx < (CurrentImage_script.N_image - 1))
@@ -141,20 +139,20 @@ private void re_init_image(GameObject ImageCurrent)
             CurrentImage_script.current_img_indx = 0; 
         }
 
+
         GameObject ImageCurrent = CurrentImage_script.gameObject;
 
         if (ImageCurrent != null)
-            {
+        {
             ImageCurrent.SetActive(false);
             re_init_image(ImageCurrent);
-            }
+        }
+        else
+        {
+            Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+        }
 
-            else
-            {
-                Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
-
-            }
-
+        Debug.Log("Dispose method executed successfully");
     }
 
     public void ReverseDispose()

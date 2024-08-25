@@ -312,6 +312,8 @@ private void CreateGameObjectForSecondImage(int N_images, Transform CurrentImage
                 
             }
 
+            Debug.Log("RawImageSubsequent is not null");
+
             rawImagesubsequentGO.name = "SubsequentImage";
             rawImagesubsequentGO.transform.SetParent(CurrentImage.parent);
             rawImagesubsequentGO.transform.localPosition = start_position;
