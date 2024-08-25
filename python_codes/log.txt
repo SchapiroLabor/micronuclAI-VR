@@ -73,3 +73,6 @@
 2024-08-25 14:31:46,214 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
 2024-08-25 14:31:46,215 - INFO - readtxt - Line 59 - Reading from text file
 2024-08-25 14:31:46,215 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame
+2024-08-25 15:40:05,302 - INFO - <module> - Line 73 - Python process started with arguments: ['python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-08-25 15:40:05,302 - INFO - readtxt - Line 59 - Reading from text file
+2024-08-25 15:40:05,302 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame

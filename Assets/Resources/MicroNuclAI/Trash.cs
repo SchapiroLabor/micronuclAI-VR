@@ -152,7 +152,6 @@ private void re_init_image(GameObject ImageCurrent)
             Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
         }
 
-        Debug.Log("Dispose method executed successfully");
     }
 
     public void ReverseDispose()

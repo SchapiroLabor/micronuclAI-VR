@@ -64,7 +64,7 @@ public class whole_image : MonoBehaviour
 
         // Plays on background thread
         InteractableImageStack.ThreadPooling(new Action<string, string, string> (read_csv_with_python),
-        null, working_dir, python_path, data_dir);
+        null , working_dir, data_dir, python_path);
         
         // Plays on main thread with pauses
         StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
@@ -83,14 +83,17 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
     // Start is called before the first frame update
     public void Initialize(Transform parent, Transform Panel, Camera userCamera)
+
     {
+
+
         gameObject.transform.SetParent(parent);
         gameObject.SetActive(true);
 
         PositionWholeImage(parent, Panel, userCamera);
-
         // Should occure after the image is positioned as we are using world coordinates
         PositionImagetitle(transform.GetChild(0));
+        
     }
 
 
@@ -110,9 +113,24 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
         string pythonScriptPath = Path.Combine(cwd, "python_codes", "read_df.py");
         pythonScriptPath = $"\"{pythonScriptPath}\"";
 
+
         string output = ReadfromPython(pythonScriptPath, python_exe, InteractableImageStack.AddQuotesIfRequired(data_dir));
 
+
         data_dict = ConvertOutputToDictionary(output);
+
+    }
+
+    public void ConfirmDataDict(List<element> data_dict)
+    {
+        if (data_dict == null)
+        {
+            Debug.Log("Data dictionary is null");
+        }
+        else
+        {   
+            Debug.Log("Data dictionary is not null");
+        }
     }
 
     private List<element> ConvertOutputToDictionary(string output)

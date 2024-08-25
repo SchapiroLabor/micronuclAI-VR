@@ -480,7 +480,7 @@ void Update()
     string argument = null)
     {   
 
-        Debug.Log($"[SERVER] Server handle: {argument}");
+        Debug.Log($"Script is: {ScriptPath}");
         // Create a new process to run the Python script    
         return new System.Diagnostics.Process
         {   
@@ -577,12 +577,18 @@ void Update()
             method.DynamicInvoke(args);
 
         }
+
+        catch (Exception e)
+        { // Catch any exceptions thrown by method(args) and log them
+            Debug.Log($"An error occurred: {e.Message}");
+        }
         finally
         { // Will execute regardless of whether an exception is thrown, 
           //ensuring that cleanup actions like setting Ready2Exit = true and logging the exit message are always performed. 
           //This is especially important for maintaining the application's state and ensuring resources are cleaned up correctly.
-          
-            finalAction?.Invoke();
+            
+            if (finalAction != null)
+            {finalAction?.Invoke();}
 
         } 
         }); 
