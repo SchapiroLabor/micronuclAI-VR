@@ -23,8 +23,6 @@ public class Trash : MonoBehaviour
     private string last_trash;
 
 
-
-
     void Awake()
     {
      // Set the anchors and pivots of the Canvas
@@ -107,25 +105,55 @@ private void RepositionCurrentImage(GameObject ImageCurrent)
     ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
     ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
 }
-private void InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
-{
+private Gameobject InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
+{   
+    // Just set it off
+    ImageCurrent.SetActive(false);
+
+    // Replace with loading and instantiating text object
+    // Load a text object
+    GameObject textObject = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Text (TMP).prefab")));
+
+    // Instantiate the text object
+    GameObject textInstance = Instantiate(textObject, ImageCurrent.transform);
+
+    // Set parent to be that of image's
+    textInstance.transform.parent = ImageCurrent.transform.parent;
+
+    // Set the text object to be active
+    textInstance.SetActive(true);
+
+    // Set the pivot to be at the center of the image
+    textInstance.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
+
+    // Set the anchors to be at the center of the image
+    textInstance.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+    textInstance.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+
+    // Set the text object to be at the center of the image
+    textInstance.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+
+    // Add content size fitter to the text object
+    textInstance.AddComponent<ContentSizeFitter>();
+    // Horizontal and vertical fit to preferred size
+    textInstance.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+    textInstance.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+    // Set font size same as image title
+    textInstance.GetComponent<TextMeshProUGUI>().fontSize = ImageCurrent.GetComponentInChildren<TextMeshProUGUI>().fontSize*0.8f;
+
     // Display a message to the user that there are no more images to display
-    TMP_Text text = ImageCurrent.GetComponentInChildren<TMP_Text>();
-    text.text = "No more images to display";
+    textInstance.GetComponent<TextMeshProUGUI>().text = "No more images to display";
     
     // Set the text to be at the center of the image
-    text.alignment = TextAlignmentOptions.Center;
-
-    // Position the text at the center of the image
-    text.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+    textInstance.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
 
     // Text color böack
-    text.color = Color.black;
-
-    // Remove texture from the image
-    ImageCurrent.GetComponent<RawImage>().texture = null;
+    textInstance.GetComponent<TextMeshProUGUI>().color = Color.white;
 
     Debug.Log($"No more images to display, executed for: {CurrentImage_script.current_img_indx}");
+
+    return textInstance;
 
 
 }
@@ -139,22 +167,28 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
     {
     
     CurrentImage_script.current_img_indx = CurrentImageIndex;
-    ImageCurrent.SetActive(true);
     closedisplaysecondimg();
+
+    GameObject Texinstance;
 
     // If current image is index is below N_images, reinitialize the image
     if (CurrentImageIndex < N_image)
     {
-    
+    ImageCurrent.SetActive(true);
+    Debug.Log(string.Format("Current image index is {0}", CurrentImageIndex));
     ImageCurrent.GetComponent<RawImage>().texture = images[CurrentImageIndex];
     CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImageIndex, N_image);
     RepositionCurrentImage(ImageCurrent);
 
+    if (Texinstance != null)
+    {
+        Destroy(Texinstance);
     }
 
+    }
     else
     {
-        InformNoMoreImages(ImageCurrent, CurrentImage_script);
+        Texinstance = InformNoMoreImages(ImageCurrent, CurrentImage_script);
         RepositionCurrentImage(ImageCurrent);
 
     }
@@ -213,7 +247,7 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
             int currentImageIndex = CurrentImage_script.current_img_indx;
 
             // Get current image index
-            if (currentImageIndex < (CurrentImage_script.N_image) && currentImageIndex > 0)
+            if (currentImageIndex <= (CurrentImage_script.N_image) && currentImageIndex > 0)
             {
                 currentImageIndex -= 1;
 
