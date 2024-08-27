@@ -105,7 +105,7 @@ private void RepositionCurrentImage(GameObject ImageCurrent)
     ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
     ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
 }
-private Gameobject InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
+private GameObject InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
 {   
     // Just set it off
     ImageCurrent.SetActive(false);
@@ -132,6 +132,9 @@ private Gameobject InformNoMoreImages(GameObject ImageCurrent, ClickNextImage Cu
 
     // Set the text object to be at the center of the image
     textInstance.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
+
+    // Set rotation to zero
+    textInstance.GetComponent<RectTransform>().rotation = UnityEngine.Quaternion.Euler(0, 0, 0);
 
     // Add content size fitter to the text object
     textInstance.AddComponent<ContentSizeFitter>();
@@ -169,7 +172,7 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
     CurrentImage_script.current_img_indx = CurrentImageIndex;
     closedisplaysecondimg();
 
-    GameObject Texinstance;
+    GameObject Texinstance = null;
 
     // If current image is index is below N_images, reinitialize the image
     if (CurrentImageIndex < N_image)
@@ -182,6 +185,7 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
 
     if (Texinstance != null)
     {
+            // nEED TO LOOK INTO IF DESTROY ADN CREATE MAY CREATE TOO MUCH OVERHEAD
         Destroy(Texinstance);
     }
 
