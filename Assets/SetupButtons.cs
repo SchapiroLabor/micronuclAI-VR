@@ -131,7 +131,7 @@ private void setupAddBinButton(Transform Trash, Transform ImagePatch)
 
     // Add a listener to the button
     AddBin.GetComponent<Button>().onClick.AddListener(() => Trash.GetComponentInChildren<Trash>().CreateBucket());
-    
+
     }
 
 

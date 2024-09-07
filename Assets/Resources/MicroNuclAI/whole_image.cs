@@ -27,6 +27,8 @@ public class whole_image : MonoBehaviour
    private string python_path;
    string working_dir;
    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
+   private float newWidth;
+    private float newHeight;
 
 
 
@@ -309,8 +311,8 @@ private void ResizeImgtobewithinFOV(float WD, Camera userCamera)
 
     // Get the FOV at the panel height
     List<float> outputs = GetFOVatWD(WD, userCamera);
-    float newWidth = outputs[0]*1.5f; // Width
-    float newHeight = outputs[1]*1.5f; // Height
+    newWidth = outputs[0]*2f; // Width
+    newHeight = outputs[1]*2f; // Height
 
     // Reduce image size whilst keeping the image aspect ratio
     float aspect_ratio = width/height;
@@ -406,18 +408,25 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
         // Position -90° from whole image, this causes its axis to rotated too
         title.GetComponent<RectTransform>().localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
 
-        // Position at whole image height distance in z axis.
-        title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y, transform.position.z  + (GetComponent<RectTransform>().sizeDelta.y/2) * 1.5f);
+        float d_height = GetComponent<RectTransform>().rect.height;
+        float d_width = GetComponent<RectTransform>().rect.width;
 
-        // Set size of text box to be same width but aspect ratio  for height
-        title.GetComponent<RectTransform>().sizeDelta = new UnityEngine.Vector2(GetComponent<RectTransform>().sizeDelta.x, GetComponent<RectTransform>().sizeDelta.y/9);
+        // Position at whole image height distance in z axis.
+        title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y, 
+        transform.position.z  + (height/2) * 1.5f);
 
         tmpText.text = "Whole image";
-        tmpText.fontSize = GetComponent<RectTransform>().sizeDelta.y *0.1f;
+        tmpText.fontSize = newHeight *0.1f;
         tmpText.alignment = TextAlignmentOptions.Center;
 
                 // Set all text margins to 0
         tmpText.margin = new UnityEngine.Vector4(0, 0, 0, 0);
+
+        ContentSizeFitter fitter = title.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+
     }
 
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using System.IO;
 
 public class Tinyt : MonoBehaviour
@@ -35,12 +35,13 @@ public class Tinyt : MonoBehaviour
         // Ensure the material supports emission color by enabling emission
         material.EnableKeyword("_EMISSION");
 
-        Image.GetComponent<XRGrabInteractable>().selectExited.AddListener((args) => Trashifwithinbounds());
+        Image.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectExited.AddListener((args) => Trashifwithinbounds());
+
 
     }
 
     // Update is called once per frame
-    void Update()
+   void Update()
     {
         confirm_if_within_bounds();
     }
@@ -56,7 +57,7 @@ private void confirm_if_within_bounds()
 
         var bounds = renderer.bounds;
 
-        if (bounds.Contains(current_position))
+        if (bounds.Contains(new Vector3(current_position.x, current_position.y, bounds.center.z)))
         {
             change2brightgreen();
         }
@@ -107,7 +108,7 @@ private void Trashifwithinbounds()
 
         var bounds = renderer.bounds;
 
-        if (bounds.Contains(current_position))
+        if (bounds.Contains(new Vector3(current_position.x, current_position.y, bounds.center.z)))
         {
             SavePatch(Image.GetComponent<ClickNextImage>().current_img_indx, Image.GetComponent<ClickNextImage>().img_names);
 

@@ -9,7 +9,7 @@ using System.Linq;
 // Import functions from another script
 using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit.Filtering;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using System.Web;
 using Unity.Mathematics; // With a static directive, you can access the members of the class by using the class name itself
 
@@ -89,7 +89,7 @@ private System.Collections.IEnumerator MyCoroutine(string data_dir)
         CreateGameObjectForSecondImage(N_image, transform);
 
         // Add function to select entered listener
-        GetComponent<XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
+        GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
 
     }
 

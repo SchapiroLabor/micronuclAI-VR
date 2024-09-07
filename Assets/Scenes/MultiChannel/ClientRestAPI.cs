@@ -206,6 +206,9 @@ StartCoroutine(NapariTest());
 
             }
 
+        }
+}
+
 
 
  IEnumerator  GetRequest()
@@ -297,12 +300,6 @@ IEnumerator PutRequest()
                 Debug.Log("Form upload complete!");
             }
         }
-
-     
-
-
-
-
      }
 
   //  catch (Exception ex)
@@ -327,6 +324,8 @@ IEnumerator PutRequest()
         Debug.Log("Error: " + ex.HResult.ToString("X") + " Message: " + ex.ToString());
     } */
 //}
+
+
 
 void GetImgs(string tiff_path)
 {
@@ -355,33 +354,33 @@ void GetImgs(string tiff_path)
 
      StartCoroutine(GetRequest()); //Works like a charm
 
-}
-
-
-
-
-
-
-
 } 
-}
 
-    public bool IsSelectableBy(IXRSelectInteractor interactor)
+
+
+
+
+
+
+
+
+
+    public bool IsSelectableBy(UnityEngine.XR.Interaction.Toolkit.IXRSelectInteractor interactor)
     {
         throw new NotImplementedException();
     }
 
-    public Pose GetAttachPoseOnSelect(IXRSelectInteractor interactor)
+    public Pose GetAttachPoseOnSelect(UnityEngine.XR.Interaction.Toolkit.IXRSelectInteractor interactor)
     {
         throw new NotImplementedException();
     }
 
-    public Pose GetLocalAttachPoseOnSelect(IXRSelectInteractor interactor)
+    public Pose GetLocalAttachPoseOnSelect(UnityEngine.XR.Interaction.Toolkit.IXRSelectInteractor interactor)
     {
         throw new NotImplementedException();
     }
 
-    public Transform GetAttachTransform(IXRInteractor interactor)
+    public Transform GetAttachTransform(UnityEngine.XR.Interaction.Toolkit.IXRInteractor interactor)
     {
         throw new NotImplementedException();
     }
@@ -401,8 +400,10 @@ void GetImgs(string tiff_path)
         throw new NotImplementedException();
     }
 
-    public float GetDistanceSqrToInteractor(IXRInteractor interactor)
+    public float GetDistanceSqrToInteractor(UnityEngine.XR.Interaction.Toolkit.IXRInteractor interactor)
     {
         throw new NotImplementedException();
     }
+
+
 }

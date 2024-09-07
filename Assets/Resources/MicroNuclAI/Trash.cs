@@ -45,7 +45,7 @@ public void Initialize (Transform parent, Transform CurrentImage, Camera userCam
 {       
 
     // Set parent
-    transform.parent = parent;
+    transform.SetParent(parent);
 
     // Set CurrentImageScript
     CurrentImage_script = CurrentImage.GetComponent<ClickNextImage>();

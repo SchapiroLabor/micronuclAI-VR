@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.XR.Interaction.Toolkit;
+
 using UnityEngine.XR.Interaction.Toolkit.UI;
 using System;
 
@@ -16,12 +16,12 @@ public class MultiplexedImage : MonoBehaviour
 
     public void CheckRaycastHitBoth()
     {
-        CheckRaycastHit(leftRayInteractor.GetComponent<XRRayInteractor>());
-        CheckRaycastHit(rightRayInteractor.GetComponent<XRRayInteractor>());
+        CheckRaycastHit(leftRayInteractor.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRRayInteractor>());
+        CheckRaycastHit(rightRayInteractor.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRRayInteractor>());
     }
 
 
-    private void CheckRaycastHit(XRRayInteractor rayInteractor)
+    private void CheckRaycastHit(UnityEngine.XR.Interaction.Toolkit.XRRayInteractor rayInteractor)
     {
         if (rayInteractor && rayInteractor.TryGetCurrent3DRaycastHit(out RaycastHit hit))
         {
@@ -135,7 +135,7 @@ public class MultiplexedImage : MonoBehaviour
 
         GameObject CANVAS = transform.parent.gameObject;
 
-        XRRayInteractor ray = CANVAS.GetComponent<XRRayInteractor>();
+        UnityEngine.XR.Interaction.Toolkit.XRRayInteractor ray = CANVAS.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRRayInteractor>();
         
         RaycastHit hit;
         if (ray.TryGetCurrent3DRaycastHit(out hit))
