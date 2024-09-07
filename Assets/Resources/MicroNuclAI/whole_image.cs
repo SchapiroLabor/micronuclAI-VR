@@ -13,6 +13,7 @@ using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
 using static InteractableImageStack;
+using UnityEngine.XR.Interaction.Toolkit;
 // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
@@ -28,7 +29,9 @@ public class whole_image : MonoBehaviour
    string working_dir;
    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
    private float newWidth;
-    private float newHeight;
+   private float newHeight;
+   
+   public TeleportationProvider teleportationProvider;
 
 
 
@@ -70,6 +73,8 @@ public class whole_image : MonoBehaviour
         
         // Plays on main thread with pauses
         StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
+
+
 
     }
 
@@ -191,10 +196,86 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
     public void DisplayPatch()
     {   
         Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
-        current_cell_bbox(CurrentImage_script.current_img_indx);
+
+        int indx = CurrentImage_script.current_img_indx;
+        current_cell_bbox(indx);
+
+        MovePlayer2PixelPosition(indx);
 
         //DisplayArrow(CurrentRawImage.current_img_indx);
+    }
 
+    private void MovePlayer2PixelPosition(int patch_indx)
+    { 
+        
+           if (patch_indx < data_dict.Count)
+        {
+        // Get the bounding box of the pixel cluster
+        Rect bbox = get_bbox_from_df(patch_indx);
+
+        Debug.Log($"The axes ranges are FOR X {bbox.xMin}, {bbox.xMax} ADN FOR Y {bbox.yMin}, {bbox.yMax}");
+
+        // Get image resize factor
+        float resize_factor_W = newWidth / width;
+        float resize_factor_H = newHeight / height;
+
+    
+        // Get the pixel position of the patch
+        UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2(((bbox.xMin + bbox.xMax)/2)*resize_factor_W, 
+        ((bbox.yMin + bbox.yMax)/2)*resize_factor_H);
+        Debug.Log($"The mid point of the patch is {mid_point_pixel}");
+
+        // Adjust pixel position to anchor
+            // Get pivot position in world coords
+            UnityEngine.Vector3 mid_point_image = transform.TransformPoint(Vector3.zero);
+
+            Debug.Log($"The mid point of the image is {mid_point_image}");
+
+            // Traverse by half the width and height of the image
+            UnityEngine.Vector3 mid_point_world = mid_point_image - new UnityEngine.Vector3(newWidth/2, mid_point_image.y, newHeight/2) + 
+            new UnityEngine.Vector3(mid_point_pixel.x, transform.position.y - 0.5f, mid_point_pixel.y -0.5f); 
+
+
+        Debug.Log($"The mid point of the patch is {mid_point_world}");
+
+        // Create Teleportation request
+        TeleportRequest telepoint = new TeleportRequest();
+        telepoint.destinationPosition = mid_point_world;
+        telepoint.destinationRotation = Quaternion.Euler(0, 0, 0);
+
+        // Move the player to the patch position
+        teleportationProvider.QueueTeleportRequest(telepoint);
+
+    }
+
+    }
+
+    private float GetDistance2ViewCustomFillofFOV(float area, float percentfill)
+    {
+
+        /*The Teleportation Area Interactable is a specialization of the BaseTeleportInteractable class. 
+        It allows the user to select any location on the surface as their destination.
+        The Teleportation Area Interactable is intended to be used by the XR Ray Interactor or any of its specializations. It uses the intersection point of the ray and the area's collision volume to determine the location that the user wants to teleport to. It can also optionally match the user's rotation to the forward direction of the attach transform of the selecting Interactor. The Teleportation Area Interactable has a specialized implementation of the GenerateTeleportRequest method, which generates a teleportation request that is queued with the Teleportation Provider.
+        The following image shows an example of a portion of the Teleportation Area Interactable as it appears in the Inspector:*/
+
+        // Get the FOV at the panel height
+        List<float> outputs = GetFOVatWD(1, Camera.main);
+        float fov_height = outputs[0];
+        float fov_width = outputs[1];
+
+        // Get the area of the image
+        float image_area = width * height;
+
+        // Get the area of the patch
+        float patch_area = area;
+
+        // Get the percentage fill of the patch
+        float patch_fill = patch_area / image_area;
+
+        // Get the distance to view the patch
+        float distance = 1 / (patch_fill * percentfill);
+
+        return distance;
     }
 
 private void InitializeIntensityCylinder()
@@ -356,6 +437,8 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
 
         // Last incase, it affects positioning
         rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
+
+
     }
 
 
