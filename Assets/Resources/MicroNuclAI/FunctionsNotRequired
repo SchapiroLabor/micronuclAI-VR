@@ -1,0 +1,68 @@
+
+private UnityEngine.Vector3 GetArrowPosition(element patch_position)
+{
+    // Get mid point from the bbox of the patch 
+    UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2((patch_position.x_min + patch_position.x_max)/2,
+    (patch_position.y_min + patch_position.y_max)/2) / new UnityEngine.Vector2(width, height);
+
+
+    Debug.Log($"The mid point of the patch is {mid_point_pixel} and the width and height are {width} and {height}");
+
+    float max_x = GetComponent<RectTransform>().rect.width;
+    float max_y = GetComponent<RectTransform>().rect.height;
+
+    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3( mid_point_pixel.x * max_x,
+    mid_point_pixel.y * max_y, transform.InverseTransformPoint(transform.position).z);
+    
+    Debug.Log($"The mid point of the patch is {mid_point_world_with_offset}");
+
+    // Get centre of image in local coords
+    UnityEngine.Vector3 mid_point_world = new UnityEngine.Vector3(max_x/2, max_y/2, transform.InverseTransformPoint(transform.position).z);
+
+    // If image is rotated 90°, then anchor point is not applicable anymore
+    mid_point_world_with_offset = new UnityEngine.Vector3(mid_point_world_with_offset.x, mid_point_world_with_offset.y, mid_point_world_with_offset.z) - mid_point_world;
+
+    return mid_point_world_with_offset;
+}
+
+
+private void DisplayArrow(int current_img_indx)
+{
+    // Get the patch position
+    element patch_position = data_dict[current_img_indx];
+
+    // Get the arrow position and rotation
+    UnityEngine.Vector3 position = GetArrowPosition(patch_position);
+
+    // Position the arrow
+   // PositionArrow(position);
+
+}
+
+    private float GetDistance2ViewCustomFillofFOV(float area, float percentfill)
+    {
+
+        /*The Teleportation Area Interactable is a specialization of the BaseTeleportInteractable class. 
+        It allows the user to select any location on the surface as their destination.
+        The Teleportation Area Interactable is intended to be used by the XR Ray Interactor or any of its specializations. It uses the intersection point of the ray and the area's collision volume to determine the location that the user wants to teleport to. It can also optionally match the user's rotation to the forward direction of the attach transform of the selecting Interactor. The Teleportation Area Interactable has a specialized implementation of the GenerateTeleportRequest method, which generates a teleportation request that is queued with the Teleportation Provider.
+        The following image shows an example of a portion of the Teleportation Area Interactable as it appears in the Inspector:*/
+
+        // Get the FOV at the panel height
+        List<float> outputs = GetFOVatWD(1, Camera.main);
+        float fov_height = outputs[0];
+        float fov_width = outputs[1];
+
+        // Get the area of the image
+        float image_area = width * height;
+
+        // Get the area of the patch
+        float patch_area = area;
+
+        // Get the percentage fill of the patch
+        float patch_fill = patch_area / image_area;
+
+        // Get the distance to view the patch
+        float distance = 1 / (patch_fill * percentfill);
+
+        return distance;
+    }

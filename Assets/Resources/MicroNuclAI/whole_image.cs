@@ -14,6 +14,7 @@ using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
 using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.SocialPlatforms;
 // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
@@ -103,6 +104,9 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
         // Get CurrentImage
         CurrentImage_script = CurrentImage;
+
+        // Initialize Arrow
+        InitializeArrow();
         
     }
 
@@ -180,6 +184,30 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
         return bbox;
     }
 
+    private Vector2 RescalePixelCoords(Vector2 pixel_coords)
+    {        // Get image resize factor
+        float resize_factor_W = newWidth / width;
+        float resize_factor_H = newHeight / height;
+        
+        return new Vector2(pixel_coords.x * resize_factor_W, pixel_coords.y * resize_factor_H);
+    }
+
+    private Vector2 GetPatchMidPoint(Rect bbox)
+    {
+        // Log minimum 
+        Debug.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
+
+        // Get the pixel position of the patch
+        UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax)/2), 
+        ((bbox.yMin + bbox.yMax)/2)));
+
+        Debug.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
+
+        return mid_point_pixel;
+    }
+
+
+
     public void current_cell_bbox(int patch_indx)
     {   
         if (patch_indx < data_dict.Count)
@@ -197,46 +225,62 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
     {   
         Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
 
+
         int indx = CurrentImage_script.current_img_indx;
-        current_cell_bbox(indx);
-
-        MovePlayer2PixelPosition(indx);
-
-        //DisplayArrow(CurrentRawImage.current_img_indx);
-    }
-
-    private void MovePlayer2PixelPosition(int patch_indx)
-    { 
         
-           if (patch_indx < data_dict.Count)
+        if (indx < data_dict.Count)
         {
         // Get the bounding box of the pixel cluster
-        Rect bbox = get_bbox_from_df(patch_indx);
+        Rect bbox = get_bbox_from_df(indx);
 
-        Debug.Log($"The axes ranges are FOR X {bbox.xMin}, {bbox.xMax} ADN FOR Y {bbox.yMin}, {bbox.yMax}");
+        // Color the pixel cluster
+        //ColorPixelCluster(bbox, Color.red);
+        PositionArrow(bbox);
 
-        // Get image resize factor
-        float resize_factor_W = newWidth / width;
-        float resize_factor_H = newHeight / height;
+        MovePlayer2PixelPosition(bbox);
+        }
 
-    
-        // Get the pixel position of the patch
-        UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2(((bbox.xMin + bbox.xMax)/2)*resize_factor_W, 
-        ((bbox.yMin + bbox.yMax)/2)*resize_factor_H);
-        Debug.Log($"The mid point of the patch is {mid_point_pixel}");
+    }
 
-        // Adjust pixel position to anchor
-            // Get pivot position in world coords
-            UnityEngine.Vector3 mid_point_image = transform.TransformPoint(Vector3.zero);
+    private Vector3 Pixel2UnityCoord(UnityEngine.Vector2 pixel_coords, bool child = false)
+    {       
+        Vector3 local_midpoint = Vector3.zero;
 
-            Debug.Log($"The mid point of the image is {mid_point_image}");
-
+            if (child is false)
+            {
+                // Transform local midpoint to world coordinates
+            Vector3 mid_point_image = transform.TransformPoint(local_midpoint);
             // Traverse by half the width and height of the image
-            UnityEngine.Vector3 mid_point_world = mid_point_image - new UnityEngine.Vector3(newWidth/2, mid_point_image.y, newHeight/2) + 
-            new UnityEngine.Vector3(mid_point_pixel.x, transform.position.y - 0.5f, mid_point_pixel.y -0.5f); 
+            UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth/2, mid_point_image.y, newHeight/2) + 
+            new UnityEngine.Vector3(pixel_coords.x, transform.position.y, pixel_coords.y);
+            Debug.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
+            return coords;
+            }
+            else
+            {
+            // Traverse by half the width and height of the image
+            UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth/2,  newHeight/2, 0) + 
+            new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0);
+
+            Debug.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
+
+            return coords;
+            }
 
 
-        Debug.Log($"The mid point of the patch is {mid_point_world}");
+             
+
+            
+    }
+
+    private void MovePlayer2PixelPosition(Rect bbox)
+    { 
+
+        // Get the mid point of the patch
+        UnityEngine.Vector2 mid_point_pixel = GetPatchMidPoint(bbox);
+
+        // Get the mid point in world coordinates
+        UnityEngine.Vector3 mid_point_world = Pixel2UnityCoord(mid_point_pixel) - new UnityEngine.Vector3(0, 0.5f, 0.5f);
 
         // Create Teleportation request
         TeleportRequest telepoint = new TeleportRequest();
@@ -248,114 +292,49 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
     }
 
-    }
 
-    private float GetDistance2ViewCustomFillofFOV(float area, float percentfill)
-    {
 
-        /*The Teleportation Area Interactable is a specialization of the BaseTeleportInteractable class. 
-        It allows the user to select any location on the surface as their destination.
-        The Teleportation Area Interactable is intended to be used by the XR Ray Interactor or any of its specializations. It uses the intersection point of the ray and the area's collision volume to determine the location that the user wants to teleport to. It can also optionally match the user's rotation to the forward direction of the attach transform of the selecting Interactor. The Teleportation Area Interactable has a specialized implementation of the GenerateTeleportRequest method, which generates a teleportation request that is queued with the Teleportation Provider.
-        The following image shows an example of a portion of the Teleportation Area Interactable as it appears in the Inspector:*/
-
-        // Get the FOV at the panel height
-        List<float> outputs = GetFOVatWD(1, Camera.main);
-        float fov_height = outputs[0];
-        float fov_width = outputs[1];
-
-        // Get the area of the image
-        float image_area = width * height;
-
-        // Get the area of the patch
-        float patch_area = area;
-
-        // Get the percentage fill of the patch
-        float patch_fill = patch_area / image_area;
-
-        // Get the distance to view the patch
-        float distance = 1 / (patch_fill * percentfill);
-
-        return distance;
-    }
-
-private void InitializeIntensityCylinder()
+private void InitializeArrow()
 {
-string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Cylinder.prefab"));
-Arrow = CreateGameObject(transform, prefabPath, transform);
+
+Arrow = transform.GetChild(1).gameObject;
+
+if (Arrow == null)
+{string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
+Arrow = CreateGameObject(transform, prefabPath, transform);}
+
 Arrow.SetActive(false);
 
 // Square root area of image
-float estimate_length = math.sqrt((GetComponent<RectTransform>().rect.width * GetComponent<RectTransform>().rect.height));
-Arrow.transform.localScale = new UnityEngine.Vector3(estimate_length*0.1f*0.1f, estimate_length*0.1f , estimate_length*0.1f*0.1f);
+Arrow.transform.localScale = new UnityEngine.Vector3(2,2,1);
 
 // Get the rotation in 150° Angle
-Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
-
-// Anchor to the left bottom corner
-Arrow.GetComponent<RectTransform>().anchorMin = new UnityEngine.Vector2(0, 0);
-Arrow.GetComponent<RectTransform>().anchorMax = new UnityEngine.Vector2(0, 0);
-
-// Pivot should be at centre bottom
-Arrow.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0);
-
-// Set parent to the whole image
-Arrow.transform.SetParent(transform);
-
+//Arrow.transform.rotation = UnityEngine.Quaternion.Euler(90, 180, 0);
 
 }
 
-private void PositionArrow(UnityEngine.Vector3 position)
+private void PositionArrow(Rect bbox)
 {
 
-Arrow.transform.position = transform.TransformPoint(new UnityEngine.Vector3(position.x, position.y, position.z));
+UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
 
-Debug.Log($"The position of the arrow is {Arrow.transform.localPosition}");
+Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
+
+//Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
+
+Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x,   local_coords.y,  local_coords.z);
+
+// Log maximum and minimum local position
+
 
 if (!Arrow.activeSelf){
 Arrow.SetActive(true);
 }
 
-}
-
-private UnityEngine.Vector3 GetArrowPosition(element patch_position)
-{
-    // Get mid point from the bbox of the patch 
-    UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2((patch_position.x_min + patch_position.x_max)/2,
-    (patch_position.y_min + patch_position.y_max)/2) / new UnityEngine.Vector2(width, height);
-
-
-    Debug.Log($"The mid point of the patch is {mid_point_pixel} and the width and height are {width} and {height}");
-
-    float max_x = GetComponent<RectTransform>().rect.width;
-    float max_y = GetComponent<RectTransform>().rect.height;
-
-    UnityEngine.Vector3 mid_point_world_with_offset = new UnityEngine.Vector3( mid_point_pixel.x * max_x,
-    mid_point_pixel.y * max_y, transform.InverseTransformPoint(transform.position).z);
-    
-    Debug.Log($"The mid point of the patch is {mid_point_world_with_offset}");
-
-    // Get centre of image in local coords
-    UnityEngine.Vector3 mid_point_world = new UnityEngine.Vector3(max_x/2, max_y/2, transform.InverseTransformPoint(transform.position).z);
-
-    // If image is rotated 90°, then anchor point is not applicable anymore
-    mid_point_world_with_offset = new UnityEngine.Vector3(mid_point_world_with_offset.x, mid_point_world_with_offset.y, mid_point_world_with_offset.z) - mid_point_world;
-
-    return mid_point_world_with_offset;
-}
-
-
-private void DisplayArrow(int current_img_indx)
-{
-    // Get the patch position
-    element patch_position = data_dict[current_img_indx];
-
-    // Get the arrow position and rotation
-    UnityEngine.Vector3 position = GetArrowPosition(patch_position);
-
-    // Position the arrow
-    PositionArrow(position);
+//Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
 
 }
+
 
 private void SetTextureOnWholeImage(string img_path)
     {
@@ -509,6 +488,17 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+
+    }
+
+    public void Return2Start()
+    {
+        // Cick trigger buttons on both controllers to return to the start position
+        teleportationProvider.QueueTeleportRequest(new TeleportRequest()
+        {
+            destinationPosition = new Vector3(0, 0, 0),
+            destinationRotation = Quaternion.Euler(0, 0, 0)
+        });
 
     }
 
