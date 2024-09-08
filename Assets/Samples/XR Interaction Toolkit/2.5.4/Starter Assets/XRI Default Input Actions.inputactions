@@ -2600,6 +2600,56 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Teleportation",
+            "id": "71c04a6a-5966-44f0-bbd4-b8b6164e530e",
+            "actions": [
+                {
+                    "name": "Return2Start",
+                    "type": "Button",
+                    "id": "009f2918-a5a2-4c72-88ec-59a048440dd3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "One Modifier",
+                    "id": "cf0c561a-d217-4b10-ad35-4d6726815f75",
+                    "path": "OneModifier",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Return2Start",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "modifier",
+                    "id": "d2fab372-1b24-4ee7-badc-cf3f137dc8b0",
+                    "path": "<XRController>{LeftHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Return2Start",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "binding",
+                    "id": "fee2bc9c-2aa9-49eb-960f-d9bc7b6cc7c1",
+                    "path": "<XRController>{RightHand}/{TriggerButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Return2Start",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                }
+            ]
         }
     ],
     "controlSchemes": [

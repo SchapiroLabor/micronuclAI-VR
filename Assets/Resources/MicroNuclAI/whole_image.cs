@@ -14,7 +14,8 @@ using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
 using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.SocialPlatforms;
+using UnityEngine.InputSystem;
+using UnityEngine.XR.Interaction.Toolkit.Inputs;
 // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
@@ -28,11 +29,13 @@ public class whole_image : MonoBehaviour
    string data_dir;
    private string python_path;
    string working_dir;
-   private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!!
-   private float newWidth;
+   private Vector3 start_position; // Default distance to raycast from the camera, please do not change this !!!
+    private Quaternion start_rotation;
+    private float newWidth;
    private float newHeight;
    
    public TeleportationProvider teleportationProvider;
+   public InputActionReference TeleportActionMap;
 
 
 
@@ -77,6 +80,8 @@ public class whole_image : MonoBehaviour
 
 
 
+
+
     }
 
 private System.Collections.IEnumerator MyCoroutine(string img_path)
@@ -107,6 +112,15 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
         // Initialize Arrow
         InitializeArrow();
+
+        // STart position of the player
+        start_position = Camera.main.transform.position;
+        start_rotation = Camera.main.transform.rotation;
+
+
+
+        TeleportActionMap.action.started += ctx => Return2Start();
+
         
     }
 
@@ -491,14 +505,33 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
 
     }
 
-    public void Return2Start()
+    private void OnEnable()
     {
-        // Cick trigger buttons on both controllers to return to the start position
+        // Enable the teleport action
+        TeleportActionMap.action.Enable();
+    }
+
+    private void OnDisable()
+    {
+        // Disable the teleport action
+        TeleportActionMap.action.Disable();
+    }
+
+
+
+
+    public void Return2Start()
+    {   
+        // Execute the function once the action is triggered
+
+
         teleportationProvider.QueueTeleportRequest(new TeleportRequest()
         {
-            destinationPosition = new Vector3(0, 0, 0),
-            destinationRotation = Quaternion.Euler(0, 0, 0)
+            destinationPosition = start_position,
+            destinationRotation = start_rotation
         });
+
+
 
     }
 
