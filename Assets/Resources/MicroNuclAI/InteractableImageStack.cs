@@ -25,6 +25,8 @@ public class InteractableImageStack : MonoBehaviour
     private string PythonScript = "python_codes/save_as_df.py";
     private bool Ready2Exit = false;
     private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
+    public GameObject CanvasUI;
+    public static Logger customLogger;
 
     private void Awake()
     {   
@@ -219,10 +221,14 @@ public static void ChildIdenticalToParent(GameObject parent, GameObject child)
 private void InstantiateCanvasUI(Transform rawImageTransform, Transform WholeImage, Transform trash)
 {   
     // Create a new Canvas UI GameObject
-    GameObject CanvasUI = CreateGameObject(transform, Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Canvas UI.prefab")), transform);
+    //GameObject CanvasUI = CreateGameObject(transform, Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Canvas UI.prefab")), transform);
+
+    // MenuPanel
+    CanvasUI.name = "Canvas UI";
 
     PositionandResizeCanvasUI(CanvasUI, rawImageTransform);
-
+    
+    // Setup all the required buttons
     CanvasUI.GetComponent<SetupButtons>().Initialize(rawImageTransform, CanvasUI.transform.position, CanvasUI.transform.rotation, WholeImage, trash);
     
 }
@@ -580,7 +586,7 @@ void Update()
 
         catch (Exception e)
         { // Catch any exceptions thrown by method(args) and log them
-            Debug.Log($"An error occurred: {e.Message}");
+             customLogger.Log($"An error occurred: {e.Message}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
         }
         finally
         { // Will execute regardless of whether an exception is thrown, 

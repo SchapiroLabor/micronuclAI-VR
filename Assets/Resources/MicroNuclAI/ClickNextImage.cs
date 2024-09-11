@@ -29,6 +29,8 @@ public class ClickNextImage : MonoBehaviour
     public Quaternion start_rotation = Quaternion.Euler(0, 0, 0);
     private Camera userCamera;
     private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
+    public Logger customLogger;
+
 
 
 

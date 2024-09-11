@@ -16,21 +16,15 @@ using Vector4 = UnityEngine.Vector4;
 public class SetupButtons : MonoBehaviour
 
 {   float fontSize;
-    UnityEngine.Vector2 buttonSize;
-    UnityEngine.Vector3 buttonPosition;
-    UnityEngine.Quaternion buttonRoation;
+    private UnityEngine.Vector2 buttonSize;
+    private UnityEngine.Vector3 buttonPosition;
+    private UnityEngine.Quaternion buttonRoation;
+    public GameObject LocatePatch;
 
-    Transform CanvasUI;
 
-    // Start is called before the first frame update
-     public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation,
-     Transform WholeImage, Transform Trash)
+    void Awake()
     {
-     fontSize = ImagePatch.GetComponent<RectTransform>().sizeDelta.x * 0.1f;
-     buttonPosition = position;
-     buttonRoation = rotation;
-
-     // Add content size fitter componet
+             // Add content size fitter componet
     gameObject.AddComponent<ContentSizeFitter>();
     gameObject.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
     gameObject.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -42,6 +36,15 @@ public class SetupButtons : MonoBehaviour
     gameObject.GetComponent<VerticalLayoutGroup>().childForceExpandWidth = false;
     gameObject.GetComponent<VerticalLayoutGroup>().childForceExpandHeight = false;
     gameObject.GetComponent<VerticalLayoutGroup>().spacing = fontSize * 0.2f;
+    }
+
+    // Start is called before the first frame update
+     public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation,
+     Transform WholeImage, Transform Trash)
+    {
+     fontSize = ImagePatch.GetComponent<RectTransform>().sizeDelta.x * 0.1f;
+     buttonPosition = position;
+     buttonRoation = rotation;
 
     buttonSize = ResizeButton(ImagePatch);
 
@@ -72,10 +75,10 @@ public class SetupButtons : MonoBehaviour
 
     {
 
-    GameObject LocatePatch = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
-
+    //GameObject LocatePatch = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Button.prefab")));
+    
     // Instantiate
-    LocatePatch = Instantiate(LocatePatch, transform);
+    //LocatePatch = Instantiate(LocatePatch, transform);
 
     // Set name
     LocatePatch.name = "Locate Patch";
@@ -86,7 +89,7 @@ public class SetupButtons : MonoBehaviour
     LocatePatch.GetComponentInChildren<TextMeshProUGUI>().text = "Locate Patch";
 
     // Add a listener to the button
-    LocatePatch.GetComponent<Button>().onClick.AddListener(() => WholeImage.GetComponentInChildren<whole_image>().DisplayPatch());
+    //LocatePatch.GetComponent<Button>().onClick.AddListener(() => WholeImage.GetComponentInChildren<whole_image>().DisplayPatch());
 
     }
 

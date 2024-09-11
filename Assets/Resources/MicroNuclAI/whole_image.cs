@@ -20,40 +20,45 @@ using UnityEngine.XR.Interaction.Toolkit.Inputs;
 
 public class whole_image : MonoBehaviour
 {
-   List<element>  data_dict;
-   private GameObject GameManager;
-   private GameObject Arrow;
-   private ClickNextImage CurrentImage_script;
-   private float height;
-   private float width;
-   string data_dir;
-   private string python_path;
-   string working_dir;
-   private Vector3 start_position; // Default distance to raycast from the camera, please do not change this !!!
+    List<element> data_dict;
+    private GameObject GameManager;
+    private GameObject Arrow;
+    public ClickNextImage CurrentImage_script;
+    private float height;
+    private float width;
+    string data_dir;
+    private string python_path;
+    string working_dir;
+    private Vector3 start_position; // Default distance to raycast from the camera, please do not change this !!!
     private Quaternion start_rotation;
     private float newWidth;
-   private float newHeight;
-   
-   public TeleportationProvider teleportationProvider;
-   public InputActionReference TeleportActionMap;
+    private float newHeight;
 
+    public TeleportationProvider teleportationProvider;
+    public InputActionReference TeleportActionMap;
+    public Logger customLogger;
 
+    // All functions independet of other objects can be placed in even functions Awake, OnEnable, Start
 
+        public class element
+    {   // X, Y = Width, Height
+        public int x_min { get; set; } 
+        public int x_max { get; set; }
+        public int y_min { get; set; }
+        public int y_max { get; set; }
 
-       // All functions independet of other objects can be placed in even functions Awake, OnEnable, Start
+    }
 
     void Awake()
     {
-
         gameObject.name = "Image";
 
-                // Load the Game Manager
+        // Load the Game Manager
         if (GameManager == null)
         {
             // Load from path
-            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
+            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
         }
-
 
         // Get the img and python path
         data_dir = GameManager.GetComponent<GameManaging>().InputFolder;
@@ -72,43 +77,29 @@ public class whole_image : MonoBehaviour
         rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
 
         // Plays on background thread
-        InteractableImageStack.ThreadPooling(new Action<string, string, string> (read_csv_with_python),
-        null , working_dir, data_dir, python_path);
-        
+        InteractableImageStack.ThreadPooling(new Action<string, string, string>(read_csv_with_python),
+        null, working_dir, data_dir, python_path);
+
         // Plays on main thread with pauses
         StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
-
-
-
-
-
     }
 
-private System.Collections.IEnumerator MyCoroutine(string img_path)
-{
-    // Remove the call to WaitForWholeImage since it is not being used
-    SetTextureOnWholeImage(img_path);
-    yield return null; // Wait for the next frame
-}
-
-
-
+    private System.Collections.IEnumerator MyCoroutine(string img_path)
+    {
+        // Remove the call to WaitForWholeImage since it is not being used
+        SetTextureOnWholeImage(img_path);
+        yield return null; // Wait for the next frame
+    }
 
     // Start is called before the first frame update
     public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage)
-
     {
-
-
         gameObject.transform.SetParent(parent);
         gameObject.SetActive(true);
 
         PositionWholeImage(parent, Panel, userCamera);
         // Should occure after the image is positioned as we are using world coordinates
         PositionImagetitle(transform.GetChild(0));
-
-        // Get CurrentImage
-        CurrentImage_script = CurrentImage;
 
         // Initialize Arrow
         InitializeArrow();
@@ -117,54 +108,35 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
         start_position = Camera.main.transform.position;
         start_rotation = Camera.main.transform.rotation;
 
-
-
-        TeleportActionMap.action.started += ctx => Return2Start();
-
-        
-    }
-
-
-    public class element
-    {   // X, Y = Width, Height
-        public int x_min { get; set; } 
-        public int x_max { get; set; }
-        public int y_min { get; set; }
-        public int y_max { get; set; }
+        //TeleportActionMap.action.started += ctx => Return2Start();
     }
 
     private void read_csv_with_python(string cwd, string data_dir, string python_exe)
-    {   
-
+    {
         // Execute using System thread pool
-
         string pythonScriptPath = Path.Combine(cwd, "python_codes", "read_df.py");
         pythonScriptPath = $"\"{pythonScriptPath}\"";
 
-
         string output = ReadfromPython(pythonScriptPath, python_exe, InteractableImageStack.AddQuotesIfRequired(data_dir));
 
-
         data_dict = ConvertOutputToDictionary(output);
-
     }
 
     public void ConfirmDataDict(List<element> data_dict)
     {
         if (data_dict == null)
         {
-            Debug.Log("Data dictionary is null");
+            customLogger.Log("Data dictionary is null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
         }
         else
-        {   
-            Debug.Log("Data dictionary is not null");
+        {
+            customLogger.Log("Data dictionary is not null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
         }
     }
 
     private List<element> ConvertOutputToDictionary(string output)
     {
         List<element> result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<element>>(output);
-
         return result;
     }
 
@@ -194,102 +166,107 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
         int height = patchData.y_max - patchData.y_min;
         Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
         //Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
-
         return bbox;
     }
 
     private Vector2 RescalePixelCoords(Vector2 pixel_coords)
-    {        // Get image resize factor
+    {
+        // Get image resize factor
         float resize_factor_W = newWidth / width;
         float resize_factor_H = newHeight / height;
-        
         return new Vector2(pixel_coords.x * resize_factor_W, pixel_coords.y * resize_factor_H);
     }
 
     private Vector2 GetPatchMidPoint(Rect bbox)
     {
         // Log minimum 
-        Debug.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
+        customLogger.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
 
         // Get the pixel position of the patch
-        UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax)/2), 
-        ((bbox.yMin + bbox.yMax)/2)));
+        UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax) / 2),
+        ((bbox.yMin + bbox.yMax) / 2)));
 
-        Debug.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
+        customLogger.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
 
         return mid_point_pixel;
     }
 
-
-
     public void current_cell_bbox(int patch_indx)
-    {   
+    {
         if (patch_indx < data_dict.Count)
         {
-        // Get the bounding box of the pixel cluster
-        Rect bbox = get_bbox_from_df(patch_indx);
+            // Get the bounding box of the pixel cluster
+            Rect bbox = get_bbox_from_df(patch_indx);
 
-        // Color the pixel cluster
-        ColorPixelCluster(bbox, Color.red);
+            // Color the pixel cluster
+            ColorPixelCluster(bbox, Color.red);
         }
-
     }
 
     public void DisplayPatch()
-    {   
-        Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
+    {
+        //Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
 
-
+        try
+        {
         int indx = CurrentImage_script.current_img_indx;
-        
+
         if (indx < data_dict.Count)
         {
-        // Get the bounding box of the pixel cluster
-        Rect bbox = get_bbox_from_df(indx);
+            // Get the bounding box of the pixel cluster
+            Rect bbox = get_bbox_from_df(indx);
 
-        // Color the pixel cluster
-        //ColorPixelCluster(bbox, Color.red);
-        PositionArrow(bbox);
+            // Color the pixel cluster
+            //ColorPixelCluster(bbox, Color.red);
+            PositionArrow(bbox);
 
-        MovePlayer2PixelPosition(bbox);
+            //MovePlayer2PixelPosition(bbox);
         }
+
+
+        // Log maximum and minimum local position
+        if (!Arrow.activeSelf)
+        {
+            Arrow.SetActive(true);
+        }
+
+        }
+        catch (Exception e)
+        {
+            customLogger.Log($"Error: {e.Message}", new System.Diagnostics.StackTrace().ToString(), LogType.Error);
+        }
+
 
     }
 
     private Vector3 Pixel2UnityCoord(UnityEngine.Vector2 pixel_coords, bool child = false)
-    {       
+    {
         Vector3 local_midpoint = Vector3.zero;
 
-            if (child is false)
-            {
-                // Transform local midpoint to world coordinates
+        if (child is false)
+        {
+            // Transform local midpoint to world coordinates
             Vector3 mid_point_image = transform.TransformPoint(local_midpoint);
             // Traverse by half the width and height of the image
-            UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth/2, mid_point_image.y, newHeight/2) + 
+            UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth / 2, mid_point_image.y, newHeight / 2) +
             new UnityEngine.Vector3(pixel_coords.x, transform.position.y, pixel_coords.y);
-            Debug.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
+            customLogger.Log($"Pixel to world coordinates are {pixel_coords} and {coords}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
             return coords;
-            }
-            else
-            {
+        }
+        else
+        {
             // Traverse by half the width and height of the image
-            UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth/2,  newHeight/2, 0) + 
+            UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth / 2, newHeight / 2, 0) +
             new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0);
 
-            Debug.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
+            customLogger.Log($"Pixel to local coordinates are {pixel_coords} and {coords}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
 
             return coords;
-            }
-
-
-             
-
-            
+        }
     }
 
     private void MovePlayer2PixelPosition(Rect bbox)
-    { 
-
+    {
         // Get the mid point of the patch
         UnityEngine.Vector2 mid_point_pixel = GetPatchMidPoint(bbox);
 
@@ -303,60 +280,52 @@ private System.Collections.IEnumerator MyCoroutine(string img_path)
 
         // Move the player to the patch position
         teleportationProvider.QueueTeleportRequest(telepoint);
-
     }
 
+    private void InitializeArrow()
+    {
+        Arrow = transform.GetChild(1).gameObject;
 
+        if (Arrow == null)
+        {
+            string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
+            Arrow = CreateGameObject(transform, prefabPath, transform);
+        }
 
-private void InitializeArrow()
-{
+        Arrow.SetActive(false);
 
-Arrow = transform.GetChild(1).gameObject;
+        // Square root area of image
+        Arrow.transform.localScale = new UnityEngine.Vector3(3, 6, 1);
 
-if (Arrow == null)
-{string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
-Arrow = CreateGameObject(transform, prefabPath, transform);}
+        // Get the rotation in 150° Angle
+        //Arrow.transform.rotation = UnityEngine.Quaternion.Euler(90, 180, 0);
+    }
 
-Arrow.SetActive(false);
+    private void PositionArrow(Rect bbox)
+    {
+        UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
+        Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
 
-// Square root area of image
-Arrow.transform.localScale = new UnityEngine.Vector3(2,2,1);
+        Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
+        Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x, local_coords.y, local_coords.z);
+        //Arrow.transform.position = new UnityEngine.Vector3(0, 0, 5);
 
-// Get the rotation in 150° Angle
-//Arrow.transform.rotation = UnityEngine.Quaternion.Euler(90, 180, 0);
+        // Log maximum and minimum local position
+        if (!Arrow.activeSelf)
+        {
+            Arrow.SetActive(true);
+        }
 
-}
+        //Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
+    }
 
-private void PositionArrow(Rect bbox)
-{
-
-UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
-
-Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
-
-//Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
-
-Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x,   local_coords.y,  local_coords.z);
-
-// Log maximum and minimum local position
-
-
-if (!Arrow.activeSelf){
-Arrow.SetActive(true);
-}
-
-//Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
-
-}
-
-
-private void SetTextureOnWholeImage(string img_path)
+    private void SetTextureOnWholeImage(string img_path)
     {
         Texture2D whole_img_texture = LoadTexture(img_path);
 
         if (whole_img_texture == null)
         {
-            Debug.Log("Whole image texture is null");
+            customLogger.Log("Whole image texture is null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
         }
 
         // Size delta must be explicitly matched to the size of the image
@@ -371,7 +340,7 @@ private void SetTextureOnWholeImage(string img_path)
         List<float> holder = new List<float>();
         float vertical_fov = userCamera.fieldOfView;
         float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  userCamera.aspect * fov_height;     // Aspect ratio of the camera is width/height
+        float fov_width = userCamera.aspect * fov_height;     // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
@@ -380,34 +349,32 @@ private void SetTextureOnWholeImage(string img_path)
         return holder;
     }
 
-private void ResizeImgtobewithinFOV(float WD, Camera userCamera)
-{
-
-    // Get the FOV at the panel height
-    List<float> outputs = GetFOVatWD(WD, userCamera);
-    newWidth = outputs[0]*2f; // Width
-    newHeight = outputs[1]*2f; // Height
-
-    // Reduce image size whilst keeping the image aspect ratio
-    float aspect_ratio = width/height;
-
-    // Adjust the dimensions to maintain the aspect ratio
-    if (newWidth > newHeight * aspect_ratio)
+    private void ResizeImgtobewithinFOV(float WD, Camera userCamera)
     {
-        newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+        // Get the FOV at the panel height
+        List<float> outputs = GetFOVatWD(WD, userCamera);
+        newWidth = outputs[0] * 2f; // Width
+        newHeight = outputs[1] * 2f; // Height
+
+        // Reduce image size whilst keeping the image aspect ratio
+        float aspect_ratio = width / height;
+
+        // Adjust the dimensions to maintain the aspect ratio
+        if (newWidth > newHeight * aspect_ratio)
+        {
+            newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+        }
+        else
+        {
+            newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+        }
+
+        // Set width and height of the Canvas
+        RectTransform rectTransform = GetComponent<RectTransform>();
+        rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
     }
-    else
-    {
-        newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
-    }
 
-    // Set width and height of the Canvas
-    RectTransform rectTransform = GetComponent<RectTransform>();
-
-    rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
-}
-
-private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera userCamera)
+    private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera userCamera)
     {
         RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -419,32 +386,26 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
         // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
         float y = Panel.GetComponent<RectTransform>().sizeDelta.y;
 
-        Debug.Log($"The y position of the panel is {y}");
+        customLogger.Log($"The y position of the panel is {y}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
 
         // Set size of the image
-        ResizeImgtobewithinFOV((y+transform.position.z)/2, userCamera);
+        ResizeImgtobewithinFOV((y + transform.position.z) / 2, userCamera);
 
-        
         // Set angle of the image to panel at 90°
         rectTransform.position = new Vector3(rectTransform.position.x, rectTransform.position.y + y, rectTransform.position.z);
 
         // Last incase, it affects positioning
         rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
-
-
     }
-
 
     private Texture2D LoadTexture(string img_path)
     {
-        
         //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
         byte[] fileData = File.ReadAllBytes(img_path);
         (float width, float height) = GetDimensions(img_path);
-        Debug.Log($"Size of img: {width} {height}");
+        customLogger.Log($"Size of img: {width} {height}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
         Texture2D texture = new Texture2D((int)width, (int)height);
         texture.LoadImage(fileData);
-
         return texture;
     }
 
@@ -478,7 +439,6 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
     private void PositionImagetitle(Transform title)
     {
         // Create Title
-
         TMP_Text tmpText = title.GetComponent<TextMeshProUGUI>();
 
         // Position -90° from whole image, this causes its axis to rotated too
@@ -488,21 +448,19 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
         float d_width = GetComponent<RectTransform>().rect.width;
 
         // Position at whole image height distance in z axis.
-        title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y, 
-        transform.position.z  + (height/2) * 1.5f);
+        title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y,
+        transform.position.z + (height / 2) * 1.5f);
 
         tmpText.text = "Whole image";
-        tmpText.fontSize = newHeight *0.1f;
+        tmpText.fontSize = newHeight * 0.1f;
         tmpText.alignment = TextAlignmentOptions.Center;
 
-                // Set all text margins to 0
+        // Set all text margins to 0
         tmpText.margin = new UnityEngine.Vector4(0, 0, 0, 0);
 
         ContentSizeFitter fitter = title.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-
     }
 
     private void OnEnable()
@@ -517,27 +475,13 @@ private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera 
         TeleportActionMap.action.Disable();
     }
 
-
-
-
     public void Return2Start()
-    {   
+    {
         // Execute the function once the action is triggered
-
-
         teleportationProvider.QueueTeleportRequest(new TeleportRequest()
         {
             destinationPosition = start_position,
             destinationRotation = start_rotation
         });
-
-
-
     }
-
-
-
-
-
-
 }
