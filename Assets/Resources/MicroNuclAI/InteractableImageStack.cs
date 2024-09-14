@@ -21,12 +21,14 @@ public class InteractableImageStack : MonoBehaviour
     private RectTransform rectTransform;
     public string inputfolder;
     public string python_exe;
-    public string cwd;
     private string PythonScript = "python_codes/save_as_df.py";
     private bool Ready2Exit = false;
     private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
     public GameObject CanvasUI;
     public static Logger customLogger;
+    string data_dir;
+    private string python_path;
+    public string bboxs;
 
     private void Awake()
     {   
@@ -46,9 +48,7 @@ public class InteractableImageStack : MonoBehaviour
         inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
         python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
         
-        // Save workign directory
-        cwd = Directory.GetCurrentDirectory();
-
+        GetBBoxes(inputfolder, python_exe);
         // Position the Canvas in front of the camera
         PositionCanvas();
      
@@ -79,7 +79,14 @@ public class InteractableImageStack : MonoBehaviour
 
 
     }
+    private void GetBBoxes(string data_dir, string python_path)
+    {
+        
+        // Plays on background thread
+        ThreadPooling(new Action<string, string>(read_csv_with_python),
+        null, data_dir, python_path);
 
+    }
 
     private void Start()
     {
@@ -102,11 +109,23 @@ public class InteractableImageStack : MonoBehaviour
         CurrentImage = Panel.GetComponentInChildren<ClickNextImage>();
 
         WholeImage = transform.GetComponentInChildren<whole_image>();
-        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage);
+        
+        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage, bboxs);
 
         // Initialize the Canvas
         Initialize(CurrentImage.transform, WholeImage.transform, Panel.transform, userCamera);
 
+    }
+
+    private void read_csv_with_python(string data_dir, string python_exe)
+    {
+        // Execute using System thread pool
+        string pythonScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "read_df.py");
+
+         bboxs = ReadfromPython(AddQuotesIfRequired(pythonScriptPath), python_exe, AddQuotesIfRequired(data_dir));
+
+
+        
     }
 
 
@@ -442,9 +461,9 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
 
         // Thread pool write to Python
         ThreadPooling(new Action<string, string, string, string, string> (Write2Python),
-        new Action(OnApplicationQuit), PythonScript, python_exe, cwd, inputfolder, micronucleiCounts);
+        new Action(OnApplicationQuit), PythonScript, python_exe, Application.streamingAssetsPath, inputfolder, micronucleiCounts);
 
-        Debug.Log(micronucleiCounts);
+        
 
 
 
@@ -485,8 +504,8 @@ void Update()
     public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
     string argument = null)
     {   
-
-        Debug.Log($"Script is: {ScriptPath}");
+     
+        
         // Create a new process to run the Python script    
         return new System.Diagnostics.Process
         {   
@@ -501,6 +520,7 @@ void Update()
             }
         };
     }
+
 
     public static string ReadfromPython(string ScriptPath, string python_exe, string argument = null)
     {
@@ -519,8 +539,8 @@ void Update()
         process.Close();
 
         if (!string.IsNullOrEmpty(error))
-        {
-            Debug.LogError($"Error from Python script: {error}");
+        {   Debug.Log($"Error from Python script: {error}");
+    
         }
 
         // Return the output from the Python script
@@ -528,26 +548,29 @@ void Update()
     }
 
 
-    public void Write2Python(string ScriptPath, string python_exe,
+    public static void Write2Python(string ScriptName, string python_exe,
     string workingdirectory, string data_dir, string message)
     {   
-        string argmuents = $"{AddQuotesIfRequired(workingdirectory)} {AddQuotesIfRequired(data_dir)}";
-        // Create a new process to run the Python script
-        System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe,
+  
+        System.IO.File.WriteAllText(System.IO.Path.Combine(data_dir, "results", "message.txt"), message);
+        Debug.Log($"Message written to {System.IO.Path.Combine(data_dir, "message.txt")}");
+        try
+        {
+        string argmuents = AddQuotesIfRequired(workingdirectory) + " " + AddQuotesIfRequired(data_dir);
+
+        System.Diagnostics.Process process = SetupPythonProcess(AddQuotesIfRequired(Path.Combine(workingdirectory, ScriptName)), python_exe,
         argmuents);
 
-        // Save message as txt file
-        string filePath = System.IO.Path.Combine(workingdirectory, "message.txt");
-        System.IO.File.WriteAllText(filePath, message);
 
         // Redirect the standard output and error to capture them
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
 
-        // Start the process
+
+                // Start the process
         process.Start();
 
-        // Read the output and error from the Python script
+        // Read the output from the Python script
         string output = process.StandardOutput.ReadToEnd();
         string error = process.StandardError.ReadToEnd();
 
@@ -555,9 +578,19 @@ void Update()
         process.WaitForExit();
         process.Close();
 
-        // Print the output and error from the Python script
-        Debug.Log(output);
-        Debug.Log(error);
+        if (!string.IsNullOrEmpty(error))
+        {   Debug.Log($"Error from Python script: {error}");
+    
+        }
+
+        }
+        catch (Exception e)
+        {
+            Debug.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
+        }
+
+
+
     }
 
 
@@ -573,20 +606,23 @@ void Update()
         // The method.DynamicInvoke(args) call dynamically invokes the delegate with the provided arguments. 
         // This makes it possible to pass any number of arguments, as long as they match the delegate's signature.
 
-
+        Debug.Log("Function invoked successfully");
         // Execute on a second thread
         System.Threading.ThreadPool.QueueUserWorkItem((state) =>
         {
         try
         { // Ensures that any exceptions thrown by method(args) are caught and handled properly within the thread
-
+        Debug.Log("Function started successfully");
             method.DynamicInvoke(args);
+                       Debug.Log("Function ended successfully");
+
+                       
 
         }
 
         catch (Exception e)
         { // Catch any exceptions thrown by method(args) and log them
-             customLogger.Log($"An error occurred: {e.Message}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+             Debug.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
         }
         finally
         { // Will execute regardless of whether an exception is thrown, 
@@ -595,7 +631,7 @@ void Update()
             
             if (finalAction != null)
             {finalAction?.Invoke();}
-
+            Debug.Log("Function ended successfully");
         } 
         }); 
 

@@ -26,14 +26,12 @@ public class whole_image : MonoBehaviour
     public ClickNextImage CurrentImage_script;
     private float height;
     private float width;
-    string data_dir;
-    private string python_path;
     string working_dir;
     private Vector3 start_position; // Default distance to raycast from the camera, please do not change this !!!
     private Quaternion start_rotation;
     private float newWidth;
     private float newHeight;
-
+    string data_dir;
     public TeleportationProvider teleportationProvider;
     public InputActionReference TeleportActionMap;
     public Logger customLogger;
@@ -53,17 +51,14 @@ public class whole_image : MonoBehaviour
     {
         gameObject.name = "Image";
 
-        // Load the Game Manager
+                        // Load the Game Manager
         if (GameManager == null)
         {
             // Load from path
             GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
         }
-
-        // Get the img and python path
+                // Get the img and python path
         data_dir = GameManager.GetComponent<GameManaging>().InputFolder;
-        python_path = GameManager.GetComponent<GameManaging>().PythonExecutable;
-        working_dir = Directory.GetCurrentDirectory();
 
         // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
@@ -76,13 +71,12 @@ public class whole_image : MonoBehaviour
         // Reduce Local Scale
         rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
 
-        // Plays on background thread
-        InteractableImageStack.ThreadPooling(new Action<string, string, string>(read_csv_with_python),
-        null, working_dir, data_dir, python_path);
+
 
         // Plays on main thread with pauses
         StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
     }
+
 
     private System.Collections.IEnumerator MyCoroutine(string img_path)
     {
@@ -92,7 +86,7 @@ public class whole_image : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage)
+    public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage, string output)
     {
         gameObject.transform.SetParent(parent);
         gameObject.SetActive(true);
@@ -108,19 +102,11 @@ public class whole_image : MonoBehaviour
         start_position = Camera.main.transform.position;
         start_rotation = Camera.main.transform.rotation;
 
+        data_dict = ConvertOutputToDictionary(output);
+
         //TeleportActionMap.action.started += ctx => Return2Start();
     }
 
-    private void read_csv_with_python(string cwd, string data_dir, string python_exe)
-    {
-        // Execute using System thread pool
-        string pythonScriptPath = Path.Combine(cwd, "python_codes", "read_df.py");
-        pythonScriptPath = $"\"{pythonScriptPath}\"";
-
-        string output = ReadfromPython(pythonScriptPath, python_exe, InteractableImageStack.AddQuotesIfRequired(data_dir));
-
-        data_dict = ConvertOutputToDictionary(output);
-    }
 
     public void ConfirmDataDict(List<element> data_dict)
     {
