@@ -11,6 +11,7 @@ using Debug = UnityEngine.Debug;
 using System;
 using Newtonsoft.Json;
 using static Logger;
+using System.Threading.Tasks;
 
 public class InteractableImageStack : MonoBehaviour
 {
@@ -26,10 +27,20 @@ public class InteractableImageStack : MonoBehaviour
     private bool Ready2Exit = false;
     private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
     public GameObject CanvasUI;
-    public static Logger customLogger;
-    string data_dir;
     private string python_path;
-    public string bboxs;
+    public static List<element> data_dict = null;
+    public bool isReady = false;
+
+
+
+            public class element
+    {   // X, Y = Width, Height
+        public int x_min { get; set; } 
+        public int x_max { get; set; }
+        public int y_min { get; set; }
+        public int y_max { get; set; }
+
+    }
 
     private void Awake()
     {   
@@ -49,7 +60,7 @@ public class InteractableImageStack : MonoBehaviour
         inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
         python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
         
-        read_csv_with_python(inputfolder, python_exe);
+        GetBBoxes(inputfolder);
         // Position the Canvas in front of the camera
         PositionCanvas();
      
@@ -80,12 +91,29 @@ public class InteractableImageStack : MonoBehaviour
 
 
     }
-    private void GetBBoxes(string data_dir, string python_path)
+    private void GetBBoxes(string data_dir)
     {
-        
-        // Plays on background thread
-        ThreadPooling(new Action<string, string>(read_csv_with_python),
-        null, data_dir, python_path);
+        isReady = false;
+
+        try
+        {
+            // Create a new list to store the data
+            data_dict = new List<element>();
+            read_csv_with_python(data_dir);
+
+            // Read the CSV file with Python
+            //Task.Run(() => read_csv_with_python(data_dir)).Wait();
+        }
+        catch (Exception e)
+        {
+            Logger.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
+        }
+
+        finally
+        {
+            isReady = true;
+        }
+
 
     }
 
@@ -118,7 +146,7 @@ public class InteractableImageStack : MonoBehaviour
 
     }
     
-private void read_csv_with_python(string data_dir, string python_exe)
+private void read_csv_with_python(string data_dir)
 {
     // Path to the CSV file
     string csvFilePath = Path.Combine(data_dir, "bbox.csv");
@@ -144,24 +172,38 @@ private void read_csv_with_python(string data_dir, string python_exe)
         // Ensure the correct number of values (5 expected)
         if (values.Length != 5)
         {
-            Debug.LogWarning($"Skipping line {i + 1}: Incorrect number of values.");
+            Logger.Log($"Skipping line {i + 1}: Incorrect number of values.");
             continue;
         }
 
         // Try parsing the values to integers and skip if parsing fails
         if (!int.TryParse(values[0], out int label) ||
             !int.TryParse(values[1], out int x1) ||
-            !int.TryParse(values[2], out int y1) ||
-            !int.TryParse(values[3], out int x2) ||
+            !int.TryParse(values[2], out int x2) ||
+            !int.TryParse(values[3], out int y1) ||
             !int.TryParse(values[4], out int y2))
         {
-            Debug.LogWarning($"Skipping line {i + 1}: Parsing error.");
+            Logger.Log($"Skipping line {i + 1}: Parsing error.");
             continue;
         }
 
-        // Log the bounding box information
-        Debug.Log($"BBox {label} is x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}");
+        else
+        {
+        data_dict.Add(new element
+        {
+            x_min = x1,
+            x_max = x2,
+            y_min = y1,
+            y_max = y2
+        });
+        }
+    
+
+
+        
     }
+
+
 }
 
 
@@ -449,12 +491,54 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
             }
             this[key].Add(value);
         }
+
+
+            // Method to save the data to CSV
+    public void SaveToCSV(string filePath)
+    {
+        // Open a StreamWriter to write to the CSV file
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            // Write the header row (dictionary keys)
+            writer.WriteLine(string.Join(",", Keys));
+
+            // Get the maximum number of rows in the dictionary's lists
+            int rowCount = 0;
+            foreach (var list in Values)
+            {
+                rowCount = Mathf.Max(rowCount, list.Count);
+            }
+
+            // Write each row by iterating through the lists in the dictionary
+            for (int i = 0; i < rowCount; i++)
+            {
+                List<string> row = new List<string>();
+
+                foreach (var key in Keys)
+                {
+                    if (i < this[key].Count)
+                    {
+                        row.Add(this[key][i]?.ToString()); // Convert objects to string
+                    }
+                    else
+                    {
+                        row.Add(""); // Add an empty string if no value exists for this row
+                    }
+                }
+
+                writer.WriteLine(string.Join(",", row));
+            }
+        }
+
+        Debug.Log("CSV file saved at: " + filePath);
+    }
+
     }
 
 
 
 
-    private string CollectMicroNucleiCounts()
+    private MicronucleiCounts CollectMicroNucleiCounts()
     {   
         MicronucleiCounts micronucleiCounts = new MicronucleiCounts();
 
@@ -486,19 +570,23 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
         }
 
         // Jsonify the micronucleiCounts
-        string json = JsonConvert.SerializeObject(micronucleiCounts);
-        return json;
+        //string json = JsonConvert.SerializeObject(micronucleiCounts);
+        return micronucleiCounts;
 
     }
 
     private void Exit()
     {
         // Get the counts of micro nuclei
-        string micronucleiCounts = CollectMicroNucleiCounts();
+        MicronucleiCounts micronucleiCounts = CollectMicroNucleiCounts();
 
+        isReady = false;
         // Thread pool write to Python
-        ThreadPooling(new Action<string, string, string, string, string> (Write2Python),
-        new Action(OnApplicationQuit), PythonScript, python_exe, Application.streamingAssetsPath, inputfolder, micronucleiCounts);
+        Write2Python(inputfolder, micronucleiCounts);
+
+        OnApplicationQuit();
+        //ThreadPooling(new Action<string, string, string, string, string> (Write2Python), isReady,
+        //new Action(OnApplicationQuit), PythonScript, python_exe, Application.streamingAssetsPath, inputfolder, micronucleiCounts);
 
         
 
@@ -584,7 +672,7 @@ void Update()
         return output;
     }
 
-
+/*
     public static void Write2Python(string ScriptName, string python_exe,
     string workingdirectory, string data_dir, string message)
     {   
@@ -629,14 +717,34 @@ void Update()
 
 
     }
+*/
 
+void Write2Python(string data_dir,  MicronucleiCounts micronucleiCounts)
+{
+
+        string filename = "output.csv";
+
+        // Create new directory if current one does not exists
+        string results_dir = Path.Combine(data_dir, "results");
+        if (!Directory.Exists(results_dir))
+        {
+            Directory.CreateDirectory(results_dir);
+        }
+
+        string filePath = Path.Combine(results_dir, filename);
+
+        micronucleiCounts.SaveToCSV(filePath);
+
+
+
+}
 
     void OnApplicationQuit()
     {
         // Set Ready2Exit to true
         Ready2Exit = true;
     }
- public static void ThreadPooling(Delegate method, Action finalAction = null, params object[] args)
+ public static void ThreadPooling(Delegate method, bool isReady, Action finalAction = null, params object[] args)
 
  {      // Params array in conjunction with a Delegate to pass a dynamic number of arguments to your method
         // Params keyword allows the method to accept a variable number of arguments
@@ -668,7 +776,7 @@ void Update()
             
             if (finalAction != null)
             {finalAction?.Invoke();}
-            Logger.Log("Function ended successfully");
+            isReady = true;
         } 
         }); 
 

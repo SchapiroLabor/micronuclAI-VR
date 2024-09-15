@@ -21,7 +21,7 @@ using static Logger;
 
 public class whole_image : MonoBehaviour
 {
-    List<element> data_dict;
+  
     private GameObject GameManager;
     private GameObject Arrow;
     public ClickNextImage CurrentImage_script;
@@ -32,21 +32,15 @@ public class whole_image : MonoBehaviour
     private Quaternion start_rotation;
     private float newWidth;
     private float newHeight;
-    string data_dir;
+    static List<element> data;
     public TeleportationProvider teleportationProvider;
     public InputActionReference TeleportActionMap;
+    public string data_dir;
     public Logger customLogger;
 
     // All functions independet of other objects can be placed in even functions Awake, OnEnable, Start
 
-        public class element
-    {   // X, Y = Width, Height
-        public int x_min { get; set; } 
-        public int x_max { get; set; }
-        public int y_min { get; set; }
-        public int y_max { get; set; }
 
-    }
 
     void Awake()
     {
@@ -78,6 +72,13 @@ public class whole_image : MonoBehaviour
         StartCoroutine(MyCoroutine(Path.Combine(data_dir, "img.png")));
     }
 
+    void Update()
+    {
+        if (InteractableImageStack.data_dict != null)
+        {
+            data = InteractableImageStack.data_dict;
+        }
+    }
 
     private System.Collections.IEnumerator MyCoroutine(string img_path)
     {
@@ -144,6 +145,8 @@ public class whole_image : MonoBehaviour
         // Apply all changes to the texture
         originalTexture.Apply();
     }
+
+
 
     private Rect get_bbox_from_df(int patch_indx)
     {

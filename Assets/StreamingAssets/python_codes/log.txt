@@ -7,3 +7,15 @@
 2024-09-14 20:15:52,828 - INFO - <module> - Line 73 - Python process started with arguments: ['C:/Schapiro Lab/ibrahim_hiwi/VRproject/cell_tinder/Assets/StreamingAssets\\python_codes/save_as_df.py', 'C:/Schapiro Lab/ibrahim_hiwi/VRproject/cell_tinder/Assets/StreamingAssets', 'C:\\Schapiro Lab\\ibrahim_hiwi\\VRproject\\test_data']
 2024-09-14 20:15:52,828 - INFO - readtxt - Line 59 - Reading from text file
 2024-09-14 20:15:52,828 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame
+2024-09-15 23:56:26,742 - INFO - <module> - Line 73 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets/python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-09-15 23:56:26,742 - INFO - readtxt - Line 59 - Reading from text file
+2024-09-15 23:56:26,743 - INFO - save_as_df - Line 38 - Converting JSON data {'img': ['MicroNuclAI/s01c1_1', 'MicroNuclAI/s01c1_10'], 'Micronuclei': [0, 1]} to DataFrame
+2024-09-16 00:05:34,225 - INFO - <module> - Line 73 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets/python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-09-16 00:05:34,225 - INFO - readtxt - Line 59 - Reading from text file
+2024-09-16 00:05:34,225 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame
+2024-09-16 00:13:32,039 - INFO - <module> - Line 73 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets/python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-09-16 00:13:32,040 - INFO - readtxt - Line 59 - Reading from text file
+2024-09-16 00:13:32,040 - INFO - save_as_df - Line 38 - Converting JSON data {'img': ['MicroNuclAI/s01c1_1'], 'Micronuclei': [0]} to DataFrame
+2024-09-16 00:14:46,517 - INFO - <module> - Line 73 - Python process started with arguments: ['/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets/python_codes/save_as_df.py', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/Assets/StreamingAssets', '/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data']
+2024-09-16 00:14:46,517 - INFO - readtxt - Line 59 - Reading from text file
+2024-09-16 00:14:46,517 - INFO - save_as_df - Line 38 - Converting JSON data {} to DataFrame

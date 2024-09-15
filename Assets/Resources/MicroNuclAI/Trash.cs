@@ -315,7 +315,7 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
         if (rawImagecurrent != null){
             var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width)/2;
             
-
+        
         if (trashPrefab == null)
         {
             trashPrefab = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/trash_text.prefab")));
@@ -327,7 +327,7 @@ private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_
 
             trashList.Add(trashinstance);
         }
-
+        
 
         // Create Title
         GameObject title = new GameObject("Title");
