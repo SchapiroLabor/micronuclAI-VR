@@ -17,33 +17,21 @@ using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit.Inputs;
 
+
 public class Logger : MonoBehaviour
 {
-    string filename = "";
-    void OnEnable() { Application.logMessageReceived += Log;  }
-    void OnDisable() { Application.logMessageReceived -= Log; }
 
-    public void Log(string logString, string stackTrace, LogType type)
-    {
-        if (filename == "")
-        {
+    public static  void Log(string logString)
+    {   
+
             string d = System.Environment.GetFolderPath(
               System.Environment.SpecialFolder.Desktop) + "/YOUR_LOGS";
             System.IO.Directory.CreateDirectory(d);
-            filename = d + "/your_happy_log.txt";
+            string filename = d + "/your_happy_log.txt";
+
+        using (StreamWriter writer = new StreamWriter(filename, true))
+        {
+            writer.WriteLine(logString);
         }
-
-        try {
-
-
-            // Get the name of the script and the function where the logger was called
-            string scriptName = stackTrace.Substring(stackTrace.IndexOf("at ") + 3, stackTrace.IndexOf(".") - stackTrace.IndexOf("at ") - 3);
-            string functionName = stackTrace.Substring(stackTrace.IndexOf(".") + 1, stackTrace.IndexOf("(") - stackTrace.IndexOf(".") - 1);
-
-            // Log the script name and function name
-            string functionLog = $"{logString} from {scriptName}.{functionName}";
-            System.IO.File.AppendAllText(filename, functionLog + "\n" + $"{stackTrace}");
-        }
-        catch { }
     }
 }

@@ -83,7 +83,7 @@ public class GridMaker : MonoBehaviour
         holder.Add(fov_width);
         holder.Add(WD);
 
-        Debug.Log($"FOV at working distance {WD}: {fov_height}, {fov_width}");
+        Logger.Log($"FOV at working distance {WD}: {fov_height}, {fov_width}");
 
         return holder;
     }

@@ -10,6 +10,7 @@ using System.IO;
 using Debug = UnityEngine.Debug;
 using System;
 using Newtonsoft.Json;
+using static Logger;
 
 public class InteractableImageStack : MonoBehaviour
 {
@@ -48,7 +49,7 @@ public class InteractableImageStack : MonoBehaviour
         inputfolder = GameManager.GetComponent<GameManaging>().InputFolder;
         python_exe = GameManager.GetComponent<GameManaging>().PythonExecutable;
         
-        GetBBoxes(inputfolder, python_exe);
+        read_csv_with_python(inputfolder, python_exe);
         // Position the Canvas in front of the camera
         PositionCanvas();
      
@@ -110,23 +111,59 @@ public class InteractableImageStack : MonoBehaviour
 
         WholeImage = transform.GetComponentInChildren<whole_image>();
         
-        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage, bboxs);
+        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage);
 
         // Initialize the Canvas
         Initialize(CurrentImage.transform, WholeImage.transform, Panel.transform, userCamera);
 
     }
+    
+private void read_csv_with_python(string data_dir, string python_exe)
+{
+    // Path to the CSV file
+    string csvFilePath = Path.Combine(data_dir, "bbox.csv");
+    
+    // Reading the contents of the CSV file
+    string csvData = File.ReadAllText(csvFilePath);
+    
+    // Split the data into lines based on newlines
+    string[] lines = csvData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
 
-    private void read_csv_with_python(string data_dir, string python_exe)
+    // Loop through each line and process it
+    for (int i = 0; i < lines.Length; i++)
     {
-        // Execute using System thread pool
-        string pythonScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "read_df.py");
+        // Skip empty lines or lines without commas
+        if (string.IsNullOrWhiteSpace(lines[i]) || !lines[i].Contains(','))
+        {
+            continue;
+        }
 
-         bboxs = ReadfromPython(AddQuotesIfRequired(pythonScriptPath), python_exe, AddQuotesIfRequired(data_dir));
+        // Split the line into values based on commas
+        string[] values = lines[i].Split(',');
 
+        // Ensure the correct number of values (5 expected)
+        if (values.Length != 5)
+        {
+            Debug.LogWarning($"Skipping line {i + 1}: Incorrect number of values.");
+            continue;
+        }
 
-        
+        // Try parsing the values to integers and skip if parsing fails
+        if (!int.TryParse(values[0], out int label) ||
+            !int.TryParse(values[1], out int x1) ||
+            !int.TryParse(values[2], out int y1) ||
+            !int.TryParse(values[3], out int x2) ||
+            !int.TryParse(values[4], out int y2))
+        {
+            Debug.LogWarning($"Skipping line {i + 1}: Parsing error.");
+            continue;
+        }
+
+        // Log the bounding box information
+        Debug.Log($"BBox {label} is x1: {x1}, y1: {y1}, x2: {x2}, y2: {y2}");
     }
+}
+
 
 
     static public string AddQuotesIfRequired(string path)
@@ -432,14 +469,14 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
 
             if (script.patches.Count == 0)
             {   
-                Debug.Log($"No patches in the image for trash {script.gameObject.name}");
+                Logger.Log($"No patches in the image for trash {script.gameObject.name}");
                 continue;
             }
             else
             {
             for (int j = 0; j < script.patches.Count; j++)
             {
-                Debug.Log($"Micronuclei count for {script.patches_names[j]} is {script.keys[j]}");
+                Logger.Log($"Micronuclei count for {script.patches_names[j]} is {script.keys[j]}");
                 micronucleiCounts.AddMicronuclei("img", script.patches_names[j]);
                 micronucleiCounts.AddMicronuclei("Micronuclei", script.keys[j]);
             }
@@ -539,7 +576,7 @@ void Update()
         process.Close();
 
         if (!string.IsNullOrEmpty(error))
-        {   Debug.Log($"Error from Python script: {error}");
+        {   Logger.Log($"Error from Python script: {error}");
     
         }
 
@@ -553,7 +590,7 @@ void Update()
     {   
   
         System.IO.File.WriteAllText(System.IO.Path.Combine(data_dir, "results", "message.txt"), message);
-        Debug.Log($"Message written to {System.IO.Path.Combine(data_dir, "message.txt")}");
+        Logger.Log($"Message written to {System.IO.Path.Combine(data_dir, "message.txt")}");
         try
         {
         string argmuents = AddQuotesIfRequired(workingdirectory) + " " + AddQuotesIfRequired(data_dir);
@@ -579,14 +616,14 @@ void Update()
         process.Close();
 
         if (!string.IsNullOrEmpty(error))
-        {   Debug.Log($"Error from Python script: {error}");
+        {   Logger.Log($"Error from Python script: {error}");
     
         }
 
         }
         catch (Exception e)
         {
-            Debug.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
+            Logger.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
         }
 
 
@@ -606,15 +643,15 @@ void Update()
         // The method.DynamicInvoke(args) call dynamically invokes the delegate with the provided arguments. 
         // This makes it possible to pass any number of arguments, as long as they match the delegate's signature.
 
-        Debug.Log("Function invoked successfully");
+        Logger.Log("Function invoked successfully");
         // Execute on a second thread
         System.Threading.ThreadPool.QueueUserWorkItem((state) =>
         {
         try
         { // Ensures that any exceptions thrown by method(args) are caught and handled properly within the thread
-        Debug.Log("Function started successfully");
+        Logger.Log("Function started successfully");
             method.DynamicInvoke(args);
-                       Debug.Log("Function ended successfully");
+                       Logger.Log("Function ended successfully");
 
                        
 
@@ -622,7 +659,7 @@ void Update()
 
         catch (Exception e)
         { // Catch any exceptions thrown by method(args) and log them
-             Debug.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
+             Logger.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
         }
         finally
         { // Will execute regardless of whether an exception is thrown, 
@@ -631,7 +668,7 @@ void Update()
             
             if (finalAction != null)
             {finalAction?.Invoke();}
-            Debug.Log("Function ended successfully");
+            Logger.Log("Function ended successfully");
         } 
         }); 
 
@@ -656,12 +693,12 @@ void Update()
             new AnonymousPipeServerStream(PipeDirection.Out,
             HandleInheritability.Inheritable))
         {
-            Debug.Log($"[SERVER] Current TransmissionMode: {pipeServer.TransmissionMode}.");
+            Logger.Log($"[SERVER] Current TransmissionMode: {pipeServer.TransmissionMode}.");
 
             // Pass the client process a handle to the server and execute it
             System.Diagnostics.Process pipeClient = SetupPythonProcess(ScriptPath, python_exe, pipeServer.GetClientHandleAsString());
 
-            Debug.Log($"[SERVER] Client handle: {pipeServer.GetClientHandleAsString()}");
+            Logger.Log($"[SERVER] Client handle: {pipeServer.GetClientHandleAsString()}");
             pipeClient.Start();
             // Remove the client handle from the local variable list to free up memory
             pipeServer.DisposeLocalCopyOfClientHandle(); 
@@ -701,7 +738,7 @@ void Update()
             // or disconnected.
             catch (IOException e)
             {
-                Debug.Log($"[SERVER] Error: {e.Message}");
+                Logger.Log($"[SERVER] Error: {e.Message}");
             }
         
                 // Read the output and error from the Python script
@@ -712,7 +749,7 @@ void Update()
         pipeClient.Close();
 
                 // Print the output and error from the Python script
-        Debug.Log(output);
+        Logger.Log(output);
         Debug.LogError(error);
 
         }

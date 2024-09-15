@@ -16,6 +16,7 @@ using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit.Inputs;
+using static Logger;
 // With a static directive, you can access the members of the class by using the class name itself
 
 public class whole_image : MonoBehaviour
@@ -86,7 +87,7 @@ public class whole_image : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage, string output)
+    public void Initialize(Transform parent, Transform Panel, Camera userCamera, ClickNextImage CurrentImage)
     {
         gameObject.transform.SetParent(parent);
         gameObject.SetActive(true);
@@ -102,7 +103,7 @@ public class whole_image : MonoBehaviour
         start_position = Camera.main.transform.position;
         start_rotation = Camera.main.transform.rotation;
 
-        data_dict = ConvertOutputToDictionary(output);
+        //data_dict = ConvertOutputToDictionary(output);
 
         //TeleportActionMap.action.started += ctx => Return2Start();
     }
@@ -112,11 +113,11 @@ public class whole_image : MonoBehaviour
     {
         if (data_dict == null)
         {
-            customLogger.Log("Data dictionary is null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+            Logger.Log("Data dictionary is null");
         }
         else
         {
-            customLogger.Log("Data dictionary is not null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+            Logger.Log("Data dictionary is not null");
         }
     }
 
@@ -166,13 +167,13 @@ public class whole_image : MonoBehaviour
     private Vector2 GetPatchMidPoint(Rect bbox)
     {
         // Log minimum 
-        customLogger.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+        Logger.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
 
         // Get the pixel position of the patch
         UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax) / 2),
         ((bbox.yMin + bbox.yMax) / 2)));
 
-        customLogger.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+        Logger.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
 
         return mid_point_pixel;
     }
@@ -219,7 +220,7 @@ public class whole_image : MonoBehaviour
         }
         catch (Exception e)
         {
-            customLogger.Log($"Error: {e.Message}", new System.Diagnostics.StackTrace().ToString(), LogType.Error);
+            Logger.Log($"Error: {e.Message}");
         }
 
 
@@ -236,7 +237,7 @@ public class whole_image : MonoBehaviour
             // Traverse by half the width and height of the image
             UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth / 2, mid_point_image.y, newHeight / 2) +
             new UnityEngine.Vector3(pixel_coords.x, transform.position.y, pixel_coords.y);
-            customLogger.Log($"Pixel to world coordinates are {pixel_coords} and {coords}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+            Logger.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
             return coords;
         }
         else
@@ -245,7 +246,7 @@ public class whole_image : MonoBehaviour
             UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth / 2, newHeight / 2, 0) +
             new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0);
 
-            customLogger.Log($"Pixel to local coordinates are {pixel_coords} and {coords}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+            Logger.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
 
             return coords;
         }
@@ -311,7 +312,7 @@ public class whole_image : MonoBehaviour
 
         if (whole_img_texture == null)
         {
-            customLogger.Log("Whole image texture is null", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+            Logger.Log("Whole image texture is null");
         }
 
         // Size delta must be explicitly matched to the size of the image
@@ -372,8 +373,6 @@ public class whole_image : MonoBehaviour
         // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
         float y = Panel.GetComponent<RectTransform>().sizeDelta.y;
 
-        customLogger.Log($"The y position of the panel is {y}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
-
         // Set size of the image
         ResizeImgtobewithinFOV((y + transform.position.z) / 2, userCamera);
 
@@ -389,7 +388,7 @@ public class whole_image : MonoBehaviour
         //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
         byte[] fileData = File.ReadAllBytes(img_path);
         (float width, float height) = GetDimensions(img_path);
-        customLogger.Log($"Size of img: {width} {height}", new System.Diagnostics.StackTrace().ToString(), LogType.Log);
+        Logger.Log($"Size of img: {width} {height}");
         Texture2D texture = new Texture2D((int)width, (int)height);
         texture.LoadImage(fileData);
         return texture;
