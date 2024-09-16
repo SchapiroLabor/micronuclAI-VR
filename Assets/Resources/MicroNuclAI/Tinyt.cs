@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using static Logger;
 using System.IO;
 
 public class Tinyt : MonoBehaviour
@@ -16,6 +16,10 @@ public class Tinyt : MonoBehaviour
     public List<int> patches = new List<int>();
     public List<string> patches_names = new List<string>();
     public List<int> keys = new List<int>();
+    private float img_height;
+    private float img_width;
+    private float intersecting_diameter;
+    private Bounds bounds;  
 
 
     
@@ -29,22 +33,34 @@ public class Tinyt : MonoBehaviour
         material = GetComponent<Renderer>().material;
         originalColor = material.color;
         
-        // Assuming the original emission is set and needs to be stored
-        originalEmissionColor = material.GetColor("_EmissionColor");
-        
         // Ensure the material supports emission color by enabling emission
         material.EnableKeyword("_EMISSION");
 
+                // Assuming the original emission is set and needs to be stored
+        originalEmissionColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+
+        GetComponent<Renderer>().material.SetColor("_EmissionColor",originalEmissionColor );
+
+        // Log if emission is on
+        Logger.Log("Emission enabled: " + material.IsKeywordEnabled("_EMISSION"));
+
+
         Image.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectExited.AddListener((args) => Trashifwithinbounds());
 
+        // Get the image height and width
+        img_height = Image.GetComponent<RectTransform>().rect.height;
+        img_width = Image.GetComponent<RectTransform>().rect.width;
 
     }
+
+
 
     // Update is called once per frame
    void Update()
     {
         confirm_if_within_bounds();
     }
+    
 
 
 private void confirm_if_within_bounds()
@@ -53,11 +69,16 @@ private void confirm_if_within_bounds()
     if (Image != null&& this != null)
     {   
         Vector3 current_position = Image.transform.position;
+
+        Bounds img_bounds = new Bounds(new Vector3(current_position.x, current_position.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
+
+        // Confrim if bounding box intersects with renderer bounds
+
         Collider renderer = GetComponent<MeshCollider>();
 
-        var bounds = renderer.bounds;
+        bounds = renderer.bounds;
 
-        if (bounds.Contains(new Vector3(current_position.x, current_position.y, bounds.center.z)))
+        if (bounds.Intersects(img_bounds))
         {
             change2brightgreen();
         }
@@ -106,6 +127,9 @@ private void Trashifwithinbounds()
         Vector3 current_position = Image.transform.position;
         Collider renderer = GetComponent<MeshCollider>();
 
+        //  Confirm if image area is intersecting with the trash area
+        
+
         var bounds = renderer.bounds;
 
         if (bounds.Contains(new Vector3(current_position.x, current_position.y, bounds.center.z)))
@@ -122,9 +146,11 @@ private void Trashifwithinbounds()
     private void change2brightgreen()
     {         // Ensure the material supports emission color by enabling emission
             GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
-
+Color color = new Color(0f, 1f, 0f, 1f);
             // Set the emission color to a bright green
-            GetComponent<Renderer>().material.SetColor("_EmissionColor", new Color(0f, 1f, 0f, 1f));
+            GetComponent<Renderer>().material.SetColor("_EmissionColor", color);
+            
+            Logger.Log($"Emission color on : {color}");
             //transform.parent.GetComponent<Trash>().dispose();}
     }
 
@@ -132,8 +158,10 @@ private void Trashifwithinbounds()
         // Call this method to revert to the original color and emission
     private void RevertToOriginalColor()
     {
-        material.color = originalColor;
+        
         material.SetColor("_EmissionColor", originalEmissionColor);
+
+            Logger.Log($"Emission color off : {originalEmissionColor}");
     }
 
 
