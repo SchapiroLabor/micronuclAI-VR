@@ -560,9 +560,10 @@ private void PositionandResizeCanvasUI(GameObject CanvasUI, Transform rawImageTr
             {
             for (int j = 0; j < script.patches.Count; j++)
             {
-                Logger.Log($"Micronuclei count for {script.patches_names[j]} is {script.keys[j]}");
+
                 micronucleiCounts.AddMicronuclei("img", script.patches_names[j]);
                 micronucleiCounts.AddMicronuclei("Micronuclei", script.keys[j]);
+                micronucleiCounts.AddMicronuclei("Patch ID", script.patches[j]);
             }
             }
 

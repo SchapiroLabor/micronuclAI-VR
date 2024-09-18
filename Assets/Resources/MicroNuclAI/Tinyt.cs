@@ -13,6 +13,7 @@ public class Tinyt : MonoBehaviour
     private Color originalEmissionColor;
     private Material material;
     private GameObject Image;
+    public List<int> cell_ids = new List<int>();
     public List<int> patches = new List<int>();
     public List<string> patches_names = new List<string>();
     public List<int> keys = new List<int>();
@@ -68,9 +69,9 @@ private void confirm_if_within_bounds()
 
     if (Image != null&& this != null)
     {   
-        Vector3 current_position = Image.transform.position;
+        Bounds temp = Image.GetComponent<BoxCollider>().bounds;
 
-        Bounds img_bounds = new Bounds(new Vector3(current_position.x, current_position.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
+        Bounds img_bounds = new Bounds(new Vector3(temp.center.x, temp.center.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
 
         // Confrim if bounding box intersects with renderer bounds
 
@@ -99,6 +100,7 @@ public void SavePatch(int img_indx, List<string> img_names)
 
     // Get first character of the gameobject name
     keys.Add(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
+
 }
 
 public void RemovePatch()
@@ -120,11 +122,8 @@ private void Trashifwithinbounds()
 {
     GameObject Image = transform.parent.parent.Find("Image").gameObject;
 
-    InteractableImageStack Canvas_script = Image.transform.parent.parent.GetComponent<InteractableImageStack>();
-
     if (Image != null)
     {
-        Vector3 current_position = Image.transform.position;
         Collider renderer = GetComponent<MeshCollider>();
 
         //  Confirm if image area is intersecting with the trash area
@@ -132,7 +131,11 @@ private void Trashifwithinbounds()
 
         var bounds = renderer.bounds;
 
-        if (bounds.Contains(new Vector3(current_position.x, current_position.y, bounds.center.z)))
+        Bounds temp = Image.GetComponent<BoxCollider>().bounds;
+
+        Bounds img_bounds = new Bounds(new Vector3(temp.center.x, temp.center.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
+
+        if (bounds.Intersects(img_bounds))
         {
             SavePatch(Image.GetComponent<ClickNextImage>().current_img_indx, Image.GetComponent<ClickNextImage>().img_names);
 

@@ -44,5 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d301a8c7eb7bf528929e69ef7113cb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  InputFolder: C:\Schapiro Lab\ibrahim_hiwi\VRproject\test_data
+  InputFolder: /media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/data/test_data
   PythonExecutable: C:\Users\SchapiroSaber\anaconda3\envs\CellTinder\python.exe

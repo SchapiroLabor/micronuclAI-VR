@@ -132,15 +132,19 @@ public class LoadScene : MonoBehaviour
         // Assign the input fields to the GameManager
         // Get text provided in input field
 
+
+
         List<string> output = transform.Find("InputFields").GetComponent<InputFields>().GetInputFields();
 
-        if (output != null && output.Count == 2)
+        bool valid = output.Exists(q => q != null);
+
+        if (valid)
         {
         
         // Assign the input fields to the GameManager
         // Get text provided in List<string> output
         GameManager.GetComponent<GameManaging>().InputFolder = output[0];
-        GameManager.GetComponent<GameManaging>().PythonExecutable = output[1];
+        GameManager.GetComponent<GameManaging>().PythonExecutable = null;
 
         // Load the next scene
         UnityEngine.SceneManagement.SceneManager.LoadScene("CI-Annotator");

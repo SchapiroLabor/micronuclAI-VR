@@ -135,3 +135,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LocatePatch: {fileID: 0}
+  Canvas_script: {fileID: 0}

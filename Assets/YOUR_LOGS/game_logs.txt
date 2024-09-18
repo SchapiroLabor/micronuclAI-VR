@@ -1,0 +1,11 @@
+input not null
+input name: ImagePath
+input anchors: (0.00, 0.00)
+input pivot: (0.50, 0.00)
+input size: (1022.00, 378.00)
+input position: (511.00, 189.00, 0.00)
+input scale: (1.00, 1.00, 1.00)
+input text: Enter path to Input folder
+input overflow: True
+input color: RGBA(0.000, 0.000, 0.000, 1.000)
+input size: (408.80, 18.90)
