@@ -155,7 +155,7 @@ public class whole_image : MonoBehaviour
         int width = patchData.x_max - patchData.x_min;
         int height = patchData.y_max - patchData.y_min;
         Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
-        //Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
+        Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
         return bbox;
     }
 

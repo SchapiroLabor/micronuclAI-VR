@@ -190,11 +190,11 @@ private string ConfirmContentsinDataFolder(string InputFolder, TMP_InputField in
             // Confrim if whole image, mask, patch folder and bbox file exists
             if (!File.Exists(Path.Combine(InputFolder, "img.png")) || 
             !File.Exists(Path.Combine(InputFolder, "mask.tif")) || 
-            !File.Exists(Path.Combine(InputFolder, "bbox.csv")))
+            !File.Exists(Path.Combine(InputFolder, "bbox.txt")))
             {
                 inputfield.text = "";
                 inputfield.placeholder.GetComponent<TextMeshProUGUI>().text = 
-                "Please try again, ensure img.png, mask, bbox.csv exist";
+                "Please try again, ensure img.png, mask, bbox.txt exist";
                 return null;
             }
 

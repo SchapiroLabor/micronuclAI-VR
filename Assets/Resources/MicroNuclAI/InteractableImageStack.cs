@@ -149,7 +149,7 @@ public class InteractableImageStack : MonoBehaviour
 private void read_csv_with_python(string data_dir)
 {
     // Path to the CSV file
-    string csvFilePath = Path.Combine(data_dir, "bbox.csv");
+    string csvFilePath = Path.Combine(data_dir, "bbox.txt");
     
     // Reading the contents of the CSV file
     string csvData = File.ReadAllText(csvFilePath);
@@ -178,10 +178,10 @@ private void read_csv_with_python(string data_dir)
 
         // Try parsing the values to integers and skip if parsing fails
         if (!int.TryParse(values[0], out int label) ||
-            !int.TryParse(values[1], out int x1) ||
-            !int.TryParse(values[2], out int x2) ||
-            !int.TryParse(values[3], out int y1) ||
-            !int.TryParse(values[4], out int y2))
+            !int.TryParse(values[3], out int x1) ||
+            !int.TryParse(values[4], out int x2) ||
+            !int.TryParse(values[1], out int y1) ||
+            !int.TryParse(values[2], out int y2))
         {
             Logger.Log($"Skipping line {i + 1}: Parsing error.");
             continue;
