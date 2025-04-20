@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 // Import functions from another script
-using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit.Filtering;
 
 using System.Web;
-using Unity.Mathematics; // With a static directive, you can access the members of the class by using the class name itself
+using Unity.Mathematics;
+using NonGOSripts; // With a static directive, you can access the members of the class by using the class name itself
 
 
 public class ClickNextImage : MonoBehaviour
@@ -29,7 +29,6 @@ public class ClickNextImage : MonoBehaviour
     public Quaternion start_rotation = Quaternion.Euler(0, 0, 0);
     private Camera userCamera;
     private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
-    public Logger customLogger;
 
 
 
@@ -41,45 +40,45 @@ public class ClickNextImage : MonoBehaviour
         // Function plays when the script is loaded
 
         if (gameObject == null)
-        {   
-            string prefabPath = Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/Image.prefab"));
+        {
+            string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Image.prefab"));
             Instantiate(Resources.Load<GameObject>(prefabPath));
         }
 
         gameObject.name = "Image";
 
-                // Load the Game Manager
+        // Load the Game Manager
         if (GameManager == null)
         {
             // Load from path
-            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
+            GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
         }
 
-    userCamera = Camera.main;
+        userCamera = Camera.main;
 
-    // Function plays when the script is loaded
-    PopulateVariables();
+        // Function plays when the script is loaded
+        PopulateVariables();
 
-    // Start the coroutine
-    StartCoroutine(MyCoroutine(GameManager.GetComponent<GameManaging>().InputFolder));
+        // Start the coroutine
+        StartCoroutine(MyCoroutine(GameManager.GetComponent<GameManaging>().InputFolder));
 
 
-    // Initialize the image
-    InitializeCurrentImage(current_img_indx, userCamera, start_position, start_rotation);
+        // Initialize the image
+        InitializeCurrentImage(current_img_indx, userCamera, start_position, start_rotation);
 
     }
 
-private System.Collections.IEnumerator MyCoroutine(string data_dir)
-{
-    // Remove the call to WaitForWholeImage since it is not being used
-    getImageTextures(data_dir);
-    yield return null; // Wait for the next frame
-}
+    private System.Collections.IEnumerator MyCoroutine(string data_dir)
+    {
+        // Remove the call to WaitForWholeImage since it is not being used
+        getImageTextures(data_dir);
+        yield return null; // Wait for the next frame
+    }
 
 
 
 
-   public void Initialize(Transform parent)
+    public void Initialize(Transform parent)
     {
 
         gameObject.transform.SetParent(parent);
@@ -98,101 +97,101 @@ private System.Collections.IEnumerator MyCoroutine(string data_dir)
 
 
 
-void PositionImageStack()
-{   
-    // Set the anchors and pivots of the Image
-    SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
-
-    // Set the anchors to the centre of the screen
-    transform.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
-    transform.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
-
-    // Set the pivot to the centre of the screen
-    transform.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
-
-    // Set side lengths of the rect transform
-    transform.localScale = new UnityEngine.Vector3(1, 1, 1);
-
-}
-
-public void PositionResizeText(RectTransform CurrentImage, int current_img_indx, int N_image)
-{
-    // Set the anchors and pivots of the Text
-    RectTransform textRectTransform = CurrentImage.Find("Image_ID").GetComponent<RectTransform>();
-
-    // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
-    textRectTransform.anchorMin = new Vector2(0, 0);
-    textRectTransform.anchorMax = new Vector2(0, 0);
-
-    // Set pivot to bottom center of the Text
-    textRectTransform.pivot = new Vector2(0.5f, 0.0f);
-
-    // Set side lengths of the rect transform
-    textRectTransform.localScale = Vector3.one;
-
-    // Set the position and rotation of the child transform
-    textRectTransform.SetPositionAndRotation(CurrentImage.position, CurrentImage.rotation);
-
-    // Set the size of the Text to be 1/3 of the width of the image
-    textRectTransform.sizeDelta = new Vector2(CurrentImage.sizeDelta.x, CurrentImage.sizeDelta.y/3);
-
-    // Set the font size of the Text same to width of image
-    textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = CurrentImage.sizeDelta.x * 0.1f;
-
-    // Set the text of the Text
-    textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
-
-    // Centre text in the Text
-    textRectTransform.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
-
-    // Position to top center of the RawImage
-    // Uneexpected behaviour when using localPosition sizeDelta is Gemobject size + parent size from pivot
-    textRectTransform.localPosition = new Vector3((CurrentImage.sizeDelta.x/2) - (CurrentImage.sizeDelta.x*(1 - textRectTransform.pivot.x)),
-    CurrentImage.sizeDelta.y - ((CurrentImage.sizeDelta.y/2)*(1-textRectTransform.pivot.y)), 0);
-
-
-}
-
-private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
-{
-
-    // Get the FOV at the panel height
-    List<float> outputs = GetFOVatWD(WD, userCamera);
-    
-    float newWidth = outputs[0]*0.4f; // Height
-    float newHeight = outputs[1]*0.4f; // Width
-
-    // Get the width and height of the RawImage
-    float width = rawImage.texture.width;
-    float height = rawImage.texture.height;
-
-    // Reduce image size whilst keeping the image aspect ratio
-    float aspect_ratio = width/height;
-
-    // Adjust the dimensions to maintain the aspect ratio
-    if (newWidth > newHeight * aspect_ratio)
+    void PositionImageStack()
     {
-        newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
-    }
-    else
-    {
-        newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+        // Set the anchors and pivots of the Image
+        HelperFunctions.SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
+
+        // Set the anchors to the centre of the screen
+        transform.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
+        transform.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 0.5f);
+
+        // Set the pivot to the centre of the screen
+        transform.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 0.5f);
+
+        // Set side lengths of the rect transform
+        transform.localScale = new UnityEngine.Vector3(1, 1, 1);
+
     }
 
-    // Set width and height of the Canvas
-    RectTransform rectTransform = GetComponent<RectTransform>();
+    public void PositionResizeText(RectTransform CurrentImage, int current_img_indx, int N_image)
+    {
+        // Set the anchors and pivots of the Text
+        RectTransform textRectTransform = CurrentImage.Find("Image_ID").GetComponent<RectTransform>();
 
-    rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+        // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
+        textRectTransform.anchorMin = new Vector2(0, 0);
+        textRectTransform.anchorMax = new Vector2(0, 0);
 
-    Debug.Log($"The size of the image is: {newWidth}, {newHeight}");
+        // Set pivot to bottom center of the Text
+        textRectTransform.pivot = new Vector2(0.5f, 0.0f);
 
-}
+        // Set side lengths of the rect transform
+        textRectTransform.localScale = Vector3.one;
+
+        // Set the position and rotation of the child transform
+        textRectTransform.SetPositionAndRotation(CurrentImage.position, CurrentImage.rotation);
+
+        // Set the size of the Text to be 1/3 of the width of the image
+        textRectTransform.sizeDelta = new Vector2(CurrentImage.sizeDelta.x, CurrentImage.sizeDelta.y / 3);
+
+        // Set the font size of the Text same to width of image
+        textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = CurrentImage.sizeDelta.x * 0.1f;
+
+        // Set the text of the Text
+        textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
+
+        // Centre text in the Text
+        textRectTransform.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
+
+        // Position to top center of the RawImage
+        // Uneexpected behaviour when using localPosition sizeDelta is Gemobject size + parent size from pivot
+        textRectTransform.localPosition = new Vector3((CurrentImage.sizeDelta.x / 2) - (CurrentImage.sizeDelta.x * (1 - textRectTransform.pivot.x)),
+        CurrentImage.sizeDelta.y - ((CurrentImage.sizeDelta.y / 2) * (1 - textRectTransform.pivot.y)), 0);
+
+
+    }
+
+    private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
+    {
+
+        // Get the FOV at the panel height
+        List<float> outputs = HelperFunctions.GetFOVatWD(WD, userCamera);
+
+        float newWidth = outputs[0] * 0.4f; // Height
+        float newHeight = outputs[1] * 0.4f; // Width
+
+        // Get the width and height of the RawImage
+        float width = rawImage.texture.width;
+        float height = rawImage.texture.height;
+
+        // Reduce image size whilst keeping the image aspect ratio
+        float aspect_ratio = width / height;
+
+        // Adjust the dimensions to maintain the aspect ratio
+        if (newWidth > newHeight * aspect_ratio)
+        {
+            newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+        }
+        else
+        {
+            newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
+        }
+
+        // Set width and height of the Canvas
+        RectTransform rectTransform = GetComponent<RectTransform>();
+
+        rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+
+        Debug.Log($"The size of the image is: {newWidth}, {newHeight}");
+
+    }
 
     private void PopulateVariables()
     {
 
-    // Get the start position and rotation of the RawImage
-    current_img_indx = 0;
+        // Get the start position and rotation of the RawImage
+        current_img_indx = 0;
 
     }
     public (int width, int height) GetDimensions(string filePath)
@@ -220,12 +219,13 @@ private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
 
             return (width, height);
         }
-    }    private Texture2D LoadImgwithAbsolutePath(string path)
+    }
+    private Texture2D LoadImgwithAbsolutePath(string path)
     {
 
         // Load the image with absolute path
         byte[] fileData = File.ReadAllBytes(path);
-        (int width, int height) =GetDimensions(path);
+        (int width, int height) = GetDimensions(path);
         Texture2D tex = new Texture2D(width, height);
         bool isLoaded = tex.LoadImage(fileData);
 
@@ -246,7 +246,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
         PositionImageStack();
 
         var ext = new List<string> { "jpg", "gif", "png" };
-        imagePaths = Directory.EnumerateFiles(Path.Combine(dataFolder, "patches"),  "*", SearchOption.AllDirectories).ToList();
+        imagePaths = Directory.EnumerateFiles(Path.Combine(dataFolder, "patches"), "*", SearchOption.AllDirectories).ToList();
         imagePaths = imagePaths.Where(path =>
         {
             string extension = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
@@ -256,7 +256,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
         foreach (string imagePath in imagePaths)
         {
             images.Add(LoadImgwithAbsolutePath(imagePath));
-            img_names.Add(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension(imagePath)));
+            img_names.Add(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension(imagePath)));
         }
 
         N_image = images.Count;
@@ -286,7 +286,7 @@ private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
 
         // Set non maskable to true
         rawImage.GetComponent<RawImage>().maskable = false;
-        
+
     }
 
     private void SetColliderSize(RawImage rawImage)
@@ -299,20 +299,20 @@ private void ResizeImgtobewithin40percentofFOV(float WD, Camera userCamera)
 
 
 
-private void CreateGameObjectForSecondImage(int N_images, Transform CurrentImage)
+    private void CreateGameObjectForSecondImage(int N_images, Transform CurrentImage)
     {
 
         // Create subsequent image only when there are more than one images
         if (N_images > 1)
-        {   
+        {
 
             // Create a new RawImage GameObject from the prefab
 
             if (rawImagesubsequentGO == null)
             {
-                rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI",Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position, transform.rotation);
+                rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position, transform.rotation);
                 rawImagesubsequentGO.GetComponent<RawImage>().SetNativeSize();
-                
+
             }
 
             Debug.Log("RawImageSubsequent is not null");
@@ -333,20 +333,20 @@ private void CreateGameObjectForSecondImage(int N_images, Transform CurrentImage
         }
     }
 
-private void DisplaySecondImage()
-{
+    private void DisplaySecondImage()
+    {
         if (this.gameObject != null && rawImagesubsequentGO != null)
         {
-            
+
             subsequent_img = current_img_indx;
 
             if (subsequent_img < (images.Count - 1))
             {
                 subsequent_img += 1;
 
-            rawImagesubsequentGO.GetComponent<RawImage>().texture = images[subsequent_img];
-            PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img, N_image);
-            rawImagesubsequentGO.SetActive(true);
+                rawImagesubsequentGO.GetComponent<RawImage>().texture = images[subsequent_img];
+                PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img, N_image);
+                rawImagesubsequentGO.SetActive(true);
             }
 
 

@@ -12,16 +12,16 @@ using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
-using static InteractableImageStack;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit.Inputs;
-using static Logger;
+using static SchapiroLabLog;
+using NonGOSripts;
 // With a static directive, you can access the members of the class by using the class name itself
 
-public class whole_image : MonoBehaviour
+public class WholeImage : MonoBehaviour
 {
-  
+
     private GameObject GameManager;
     private GameObject Arrow;
     public ClickNextImage CurrentImage_script;
@@ -32,11 +32,10 @@ public class whole_image : MonoBehaviour
     private Quaternion start_rotation;
     private float newWidth;
     private float newHeight;
-    static List<element> data;
+    /* static List<element> data; */
     public TeleportationProvider teleportationProvider;
     public InputActionReference TeleportActionMap;
     public string data_dir;
-    public Logger customLogger;
 
     // All functions independet of other objects can be placed in even functions Awake, OnEnable, Start
 
@@ -46,18 +45,18 @@ public class whole_image : MonoBehaviour
     {
         gameObject.name = "Image";
 
-                        // Load the Game Manager
+        // Load the Game Manager
         if (GameManager == null)
         {
             // Load from path
             GameManager = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab")));
         }
-                // Get the img and python path
+        // Get the img and python path
         data_dir = GameManager.GetComponent<GameManaging>().InputFolder;
 
         // Setup anchors and pivots
         RectTransform rectTransform = GetComponent<RectTransform>();
-        SetupAnchorsAndPivots(rectTransform);
+        HelperFunctions.SetupAnchorsAndPivots(rectTransform);
 
         // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
         transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
@@ -74,10 +73,10 @@ public class whole_image : MonoBehaviour
 
     void Update()
     {
-        if (InteractableImageStack.data_dict != null)
-        {
-            data = InteractableImageStack.data_dict;
-        }
+        /*         if (InteractableImageStack.data_dict != null)
+                {
+                    data = InteractableImageStack.data_dict;
+                } */
     }
 
     private System.Collections.IEnumerator MyCoroutine(string img_path)
@@ -110,23 +109,23 @@ public class whole_image : MonoBehaviour
     }
 
 
-    public void ConfirmDataDict(List<element> data_dict)
-    {
-        if (data_dict == null)
+    /*     public void ConfirmDataDict(List<element> data_dict)
         {
-            Logger.Log("Data dictionary is null");
+            if (data_dict == null)
+            {
+                SchapiroLabLog.Log("Data dictionary is null");
+            }
+            else
+            {
+                SchapiroLabLog.Log("Data dictionary is not null");
+            }
         }
-        else
-        {
-            Logger.Log("Data dictionary is not null");
-        }
-    }
 
-    private List<element> ConvertOutputToDictionary(string output)
-    {
-        List<element> result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<element>>(output);
-        return result;
-    }
+        private List<element> ConvertOutputToDictionary(string output)
+        {
+            List<element> result = Newtonsoft.Json.JsonConvert.DeserializeObject<List<element>>(output);
+            return result;
+        } */
 
     private void ColorPixelCluster(Rect pixelCluster, Color newColor)
     {
@@ -148,16 +147,16 @@ public class whole_image : MonoBehaviour
 
 
 
-    private Rect get_bbox_from_df(int patch_indx)
-    {
-        // Get the bounding box of the pixel cluster
-        element patchData = data_dict[patch_indx];
-        int width = patchData.x_max - patchData.x_min;
-        int height = patchData.y_max - patchData.y_min;
-        Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
-        Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
-        return bbox;
-    }
+    /*     private Rect get_bbox_from_df(int patch_indx)
+        {
+            // Get the bounding box of the pixel cluster
+            element patchData = data_dict[patch_indx];
+            int width = patchData.x_max - patchData.x_min;
+            int height = patchData.y_max - patchData.y_min;
+            Rect bbox = new Rect(patchData.x_min, patchData.y_min, width, height);
+            Debug.Log($"The axes ranges are FOR X {patchData.x_min}, {patchData.x_max} ADN FOR Y {patchData.y_min}, {patchData.y_max}");
+            return bbox;
+        } */
 
     private Vector2 RescalePixelCoords(Vector2 pixel_coords)
     {
@@ -170,64 +169,64 @@ public class whole_image : MonoBehaviour
     private Vector2 GetPatchMidPoint(Rect bbox)
     {
         // Log minimum 
-        Logger.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
+        SchapiroLabLog.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
 
         // Get the pixel position of the patch
         UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax) / 2),
         ((bbox.yMin + bbox.yMax) / 2)));
 
-        Logger.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
+        SchapiroLabLog.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
 
         return mid_point_pixel;
     }
 
-    public void current_cell_bbox(int patch_indx)
-    {
-        if (patch_indx < data_dict.Count)
+    /*     public void current_cell_bbox(int patch_indx)
         {
-            // Get the bounding box of the pixel cluster
-            Rect bbox = get_bbox_from_df(patch_indx);
+            if (patch_indx < data_dict.Count)
+            {
+                // Get the bounding box of the pixel cluster
+                Rect bbox = get_bbox_from_df(patch_indx);
 
-            // Color the pixel cluster
-            ColorPixelCluster(bbox, Color.red);
-        }
-    }
+                // Color the pixel cluster
+                ColorPixelCluster(bbox, Color.red);
+            }
+        } */
 
-    public void DisplayPatch()
-    {
-        //Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
-
-        try
+    /*     public void DisplayPatch()
         {
-        int indx = CurrentImage_script.current_img_indx;
+            //Debug.Log("Displaying patch: " + CurrentImage_script.current_img_indx.ToString());
 
-        if (indx < data_dict.Count)
-        {
-            // Get the bounding box of the pixel cluster
-            Rect bbox = get_bbox_from_df(indx);
+            try
+            {
+                int indx = CurrentImage_script.current_img_indx;
 
-            // Color the pixel cluster
-            //ColorPixelCluster(bbox, Color.red);
-            PositionArrow(bbox);
+                if (indx < data_dict.Count)
+                {
+                    // Get the bounding box of the pixel cluster
+                    Rect bbox = get_bbox_from_df(indx);
 
-            //MovePlayer2PixelPosition(bbox);
-        }
+                    // Color the pixel cluster
+                    //ColorPixelCluster(bbox, Color.red);
+                    PositionArrow(bbox);
 
-
-        // Log maximum and minimum local position
-        if (!Arrow.activeSelf)
-        {
-            Arrow.SetActive(true);
-        }
-
-        }
-        catch (Exception e)
-        {
-            Logger.Log($"Error: {e.Message}");
-        }
+                    //MovePlayer2PixelPosition(bbox);
+                }
 
 
-    }
+                // Log maximum and minimum local position
+                if (!Arrow.activeSelf)
+                {
+                    Arrow.SetActive(true);
+                }
+
+            }
+            catch (Exception e)
+            {
+                SchapiroLabLog.Log($"Error: {e.Message}");
+            }
+
+
+        } */
 
     private Vector3 Pixel2UnityCoord(UnityEngine.Vector2 pixel_coords, bool child = false)
     {
@@ -240,7 +239,7 @@ public class whole_image : MonoBehaviour
             // Traverse by half the width and height of the image
             UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth / 2, mid_point_image.y, newHeight / 2) +
             new UnityEngine.Vector3(pixel_coords.x, transform.position.y, pixel_coords.y);
-            Logger.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
+            SchapiroLabLog.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
             return coords;
         }
         else
@@ -249,7 +248,7 @@ public class whole_image : MonoBehaviour
             UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth / 2, newHeight / 2, 0) +
             new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0);
 
-            Logger.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
+            SchapiroLabLog.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
 
             return coords;
         }
@@ -276,11 +275,11 @@ public class whole_image : MonoBehaviour
     {
         Arrow = transform.GetChild(1).gameObject;
 
-        if (Arrow == null)
-        {
-            string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
-            Arrow = CreateGameObject(transform, prefabPath, transform);
-        }
+        /*         if (Arrow == null)
+                {
+                    string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
+                    Arrow = HelperFunctions.CreateGameObject(transform, prefabPath, transform);
+                } */
 
         Arrow.SetActive(false);
 
@@ -315,7 +314,7 @@ public class whole_image : MonoBehaviour
 
         if (whole_img_texture == null)
         {
-            Logger.Log("Whole image texture is null");
+            SchapiroLabLog.Log("Whole image texture is null");
         }
 
         // Size delta must be explicitly matched to the size of the image
@@ -391,7 +390,7 @@ public class whole_image : MonoBehaviour
         //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
         byte[] fileData = File.ReadAllBytes(img_path);
         (float width, float height) = GetDimensions(img_path);
-        Logger.Log($"Size of img: {width} {height}");
+        SchapiroLabLog.Log($"Size of img: {width} {height}");
         Texture2D texture = new Texture2D((int)width, (int)height);
         texture.LoadImage(fileData);
         return texture;

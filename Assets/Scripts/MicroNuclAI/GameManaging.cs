@@ -5,6 +5,6 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "GameManaging", menuName = "ScriptableObjects/GameManaging")]
 public class GameManaging : MonoBehaviour
 {
-    public string InputFolder = "/media/ibrahim/Extended Storage/OneDrive/Internship/VR_schapiro/repos/cell_tinder/test_data/";
-    public string PythonExecutable = "/home/ibrahim/miniconda3/bin/python";
+    public string InputFolder = "";
+    public string PythonExecutable = @"C:\Users\ibrah\AppData\Local\Microsoft\WindowsApps\python.exe";
 }

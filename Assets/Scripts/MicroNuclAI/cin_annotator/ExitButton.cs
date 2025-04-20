@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static InteractableImageStack;
 public class ExitButton : MonoBehaviour
 {
     GameObject CanvasUI;
@@ -12,3 +11,8 @@ public class ExitButton : MonoBehaviour
 
 
 }
+
+/*         string nicerTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+        CellexalLog.Log("Application quit on " + nicerTime);
+        CellexalLog.Log("Goodbye.");
+        CellexalLog.LogBacklog(); */

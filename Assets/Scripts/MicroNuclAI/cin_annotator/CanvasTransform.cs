@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+namespace CinAnnotator
+{
 public class CanvasTransform : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -13,10 +16,10 @@ public class CanvasTransform : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
-        private void setCanvasPosition()
+    private void setCanvasPosition()
     {
         float Width = GetComponent<RectTransform>().rect.width;
         float Height = GetComponent<RectTransform>().rect.height;
@@ -25,7 +28,7 @@ public class CanvasTransform : MonoBehaviour
         transform.position = canvas_position;
 
     }
-        float CalculateViewingDistance(float objectSize, float visualAngle)
+    float CalculateViewingDistance(float objectSize, float visualAngle)
     {
         // Convert visual angle from degrees to radians
         float thetaRadians = visualAngle * Mathf.Deg2Rad;
@@ -35,4 +38,5 @@ public class CanvasTransform : MonoBehaviour
 
         return viewingDistance;
     }
+}
 }

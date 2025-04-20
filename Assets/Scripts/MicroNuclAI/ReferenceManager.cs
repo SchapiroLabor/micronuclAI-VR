@@ -1,5 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +32,17 @@ public class ReferenceManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        string outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Output");
+
+        if (!Directory.Exists(outputDirectory))
+        {
+            SchapiroLabLog.Log("Created directory " + SchapiroLabLog.FixFilePath(outputDirectory));
+            Directory.CreateDirectory(outputDirectory);
+        }
     }
+
+
+
 }
 

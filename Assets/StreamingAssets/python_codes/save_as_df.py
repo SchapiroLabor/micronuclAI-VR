@@ -74,8 +74,10 @@ if __name__ == "__main__":
 
     data_dir = os.path.join(sys.argv[-1], "results")
 
-    if not os.path.exists(data_dir):
+    print("Played")
+
+"""     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
-    save_as_df(readtxt(data_dir), data_dir)
-    exit(0)
+    save_as_df(readtxt(data_dir), data_dir) """
+    

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-using static Logger;
 using System.IO;
 
 public class Tinyt : MonoBehaviour
@@ -43,7 +42,7 @@ public class Tinyt : MonoBehaviour
         GetComponent<Renderer>().material.SetColor("_EmissionColor",originalEmissionColor );
 
         // Log if emission is on
-        Logger.Log("Emission enabled: " + material.IsKeywordEnabled("_EMISSION"));
+        SchapiroLabLog.Log("Emission enabled: " + material.IsKeywordEnabled("_EMISSION"));
 
 
         Image.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectExited.AddListener((args) => Trashifwithinbounds());
@@ -153,7 +152,7 @@ Color color = new Color(0f, 1f, 0f, 1f);
             // Set the emission color to a bright green
             GetComponent<Renderer>().material.SetColor("_EmissionColor", color);
             
-            Logger.Log($"Emission color on : {color}");
+            SchapiroLabLog.Log($"Emission color on : {color}");
             //transform.parent.GetComponent<Trash>().dispose();}
     }
 
@@ -164,7 +163,7 @@ Color color = new Color(0f, 1f, 0f, 1f);
         
         material.SetColor("_EmissionColor", originalEmissionColor);
 
-            Logger.Log($"Emission color off : {originalEmissionColor}");
+            SchapiroLabLog.Log($"Emission color off : {originalEmissionColor}");
     }
 
 

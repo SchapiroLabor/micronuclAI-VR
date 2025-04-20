@@ -6,7 +6,7 @@ using Vector3 = UnityEngine.Vector3;
 using Vector2 = UnityEngine.Vector2;
 using Quaternion = UnityEngine.Quaternion;
 // Import functions from another script
-using static InteractableImageStack; // With a static directive, you can access the members of the class by using the class name itself
+using NonGOSripts; // With a static directive, you can access the members of the class by using the class name itself
 
 public class GridMaker : MonoBehaviour
 {
@@ -19,7 +19,7 @@ public class GridMaker : MonoBehaviour
     void Awake()
     {
 
-                // Get rect transform of the grid
+        // Get rect transform of the grid
         rectTransform = GetComponent<RectTransform>();
 
         // Get the user's camera
@@ -29,11 +29,13 @@ public class GridMaker : MonoBehaviour
         // Also, local position is only accurate when used after Start() or Awake()
         PositionGrid(rectTransform, userCamera, raycast_distance);
 
+        Initialize();
+
     }
 
     // Start is called before the first frame update
     public void Initialize()
-    {   
+    {
 
 
 
@@ -45,9 +47,9 @@ public class GridMaker : MonoBehaviour
 
 
     void PositionGrid(RectTransform rectTransform, Camera userCamera, float WD)
-    {   
+    {
         // Setup anchors and pivots
-        SetupAnchorsAndPivots(rectTransform);
+        HelperFunctions.SetupAnchorsAndPivots(rectTransform);
 
         // Set anchor to the centre of the screen
         rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -77,13 +79,13 @@ public class GridMaker : MonoBehaviour
         List<float> holder = new List<float>();
         float vertical_fov = userCamera.fieldOfView;
         float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
-        float fov_width =  userCamera.aspect * fov_height; // Aspect ratio of the camera is width/height
+        float fov_width = userCamera.aspect * fov_height; // Aspect ratio of the camera is width/height
 
         holder.Add(fov_height);
         holder.Add(fov_width);
         holder.Add(WD);
 
-        Logger.Log($"FOV at working distance {WD}: {fov_height}, {fov_width}");
+        SchapiroLabLog.Log($"FOV at working distance {WD}: {fov_height}, {fov_width}");
 
         return holder;
     }

@@ -1,0 +1,153 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using Vector3 = UnityEngine.Vector3;
+using Vector2 = UnityEngine.Vector2;
+using Quaternion = UnityEngine.Quaternion;
+using UnityEngine.UI;
+using TMPro;
+using System.IO;
+using Debug = UnityEngine.Debug;
+using System;
+using Newtonsoft.Json;
+using static SchapiroLabLog;
+using System.Threading.Tasks;
+using UnityEditor.PackageManager;
+
+
+namespace NonGOSripts
+{
+    static class HelperFunctions
+    {
+
+        public static void SetupAnchorsAndPivots(RectTransform rectTransform)
+        {
+            // Set the anchors and pivots of the Canvas
+            rectTransform.anchorMin = new Vector2(0, 0);
+            rectTransform.anchorMax = new Vector2(1, 1);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        }
+
+        public static List<float> GetFOVatWD(float WD, Camera userCamera)
+        {
+            // Pythagoras theorem to calculate the distance
+            List<float> holder = new List<float>();
+            float vertical_fov = userCamera.fieldOfView;
+            float fov_height = (WD * Mathf.Tan(vertical_fov * 0.5f)) * 2;
+            float fov_width = userCamera.aspect * fov_height;     // Aspect ratio of the camera is width/height
+
+            holder.Add(fov_height);
+            holder.Add(fov_width);
+            holder.Add(WD);
+
+            return holder;
+        }
+
+        public static List<float> GetFOVatNearClipping(Camera userCamera)
+        {   // Must be near or else the child elements of canvas will not be visible
+
+            // Pythagoras theorem to calculate the distance
+            List<float> holder = new List<float>();
+            float vertical_fov = userCamera.fieldOfView;
+            float clipping_distance = userCamera.nearClipPlane;
+            float fov_height = (clipping_distance * Mathf.Tan(vertical_fov * 0.5f)) * 2;
+            float fov_width = userCamera.aspect * fov_height; // Aspect ratio of the camera is width/height
+
+            holder.Add(fov_height);
+            holder.Add(fov_width);
+            holder.Add(clipping_distance);
+
+            return holder;
+        }
+
+
+        public static Vector3 FacePlayer(float scaler)
+        {
+            // Face the player
+            Vector3 cameraPosition = new Vector3(0, 0, 0);
+            Vector3 cameraForward = new Vector3(0, 0, 1);
+
+            return cameraPosition + cameraForward * scaler;
+        }
+
+
+        /*         public static GameObject CreateGameObject(Transform parent, string prefabPath, Transform transform)
+                {
+                    // Create a new RawImage GameObject from the prefab
+                    GameObject instance = Instantiate(Resources.Load<GameObject>(prefabPath), transform.position, transform.rotation);
+                    instance.transform.SetParent(parent);
+                    return instance;
+                } */
+
+        /*
+            private void read_csv_with_csharp(string csvFilePath)
+            {
+
+                // Reading the contents of the CSV file
+                string csvData = File.ReadAllText(csvFilePath);
+
+                // Split the data into lines based on newlines
+                string[] lines = csvData.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+                // Loop through each line and process it
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    // Skip empty lines or lines without commas
+                    if (string.IsNullOrWhiteSpace(lines[i]) || !lines[i].Contains(','))
+                    {
+                        continue;
+                    }
+
+                    // Split the line into values based on commas
+                    string[] values = lines[i].Split(',');
+
+                    // Ensure the correct number of values (5 expected)
+                    if (values.Length != 5)
+                    {
+                        SchapiroLabLog.Log($"Skipping line {i + 1}: Incorrect number of values.");
+                        continue;
+                    }
+
+                    // Try parsing the values to integers and skip if parsing fails
+                    if (!int.TryParse(values[0], out int label) ||
+                        !int.TryParse(values[3], out int x1) ||
+                        !int.TryParse(values[4], out int x2) ||
+                        !int.TryParse(values[1], out int y1) ||
+                        !int.TryParse(values[2], out int y2))
+                    {
+                        SchapiroLabLog.Log($"Skipping line {i + 1}: Parsing error.");
+                        continue;
+                    }
+
+                    else
+                    {
+                        data_dict.Add(new element
+                        {
+                            x_min = x1,
+                            x_max = x2,
+                            y_min = y1,
+                            y_max = y2
+                        });
+                    }
+                }
+            }
+
+            void Write2CSV(string data_dir, MicronucleiCounts micronucleiCounts)
+            {
+
+                string filename = "output.csv";
+
+                // Create new directory if current one does not exists
+                string results_dir = Path.Combine(data_dir, "results");
+                if (!Directory.Exists(results_dir))
+                {
+                    Directory.CreateDirectory(results_dir);
+                }
+
+                string filePath = Path.Combine(results_dir, filename);
+
+                micronucleiCounts.SaveToCSVcsharp(filePath);
+            }
+        */
+    }
+}
