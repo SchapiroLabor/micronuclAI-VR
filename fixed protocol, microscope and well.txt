@@ -1,3 +1,0 @@
-fixed protocol, microscope and wellplate script, work frame main() function
-
-now working on making the sequence of widget creation efficient with efficient widget switching
