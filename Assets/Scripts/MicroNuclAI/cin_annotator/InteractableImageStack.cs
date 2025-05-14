@@ -10,12 +10,24 @@ using System.Threading.Tasks;
 using General;
 using System.Threading;
 using UnityEditor.ShaderGraph.Internal;
-
+using Unity.VisualScripting;
+using UnityEngine.UIElements;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine.Events;
+using Unity.PlasticSCM.Editor.WebApi;
 
 namespace CinAnnotator
 {
     public class InteractableImageStack : MonoBehaviour
     {
+        [Serializable]
+        public class MyChangeEvent : UnityEvent<bool>
+        {
+            public bool value;
+        }
+
+        [SerializeField] MyChangeEvent PythonWorkerEvent = new MyChangeEvent(); // Event to be triggered when the value changes
         public Camera userCamera;  // Reference to the user's camera
         [SerializeField] private ClickNextImage CurrentImage;
         [SerializeField] private WholeImage WholeImage;
@@ -24,13 +36,21 @@ namespace CinAnnotator
         private RectTransform rectTransform;
         private string inputfolder;
         private string python_exe;
-
+        public DataFrame bbox_dict;
         private string PythonScript = "python_codes/save_as_df.py";
         private bool Ready2Exit = false;
         private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
         public GameObject CanvasUI;
         public static List<element> data_dict = null;
         public bool isReady = false;
+
+        //VisualElement PythonToggle = new VisualElement();
+
+        [SerializeField] Toggle PythonToggle;
+
+        string processName;
+
+
 
         public class element
         {   // X, Y = Width, Height
@@ -41,7 +61,7 @@ namespace CinAnnotator
 
         }
 
-        private async Task Awake()
+        void Awake()
         {
             // Is played before start and 
 
@@ -57,8 +77,12 @@ namespace CinAnnotator
             //PositionCanvas();
 
             // Get the input folder and python executable
-            inputfolder = gameManaging.InputFolder;
-            python_exe = @"C:\Users\ibrah\AppData\Local\Microsoft\WindowsApps\python.exe"; //gameManaging.PythonExecutable;
+            //inputfolder = gameManaging.InputFolder;
+            //PythonToggle = new Toggle("Test Toggle");
+            //PythonToggle.name = "Python Toggle";
+
+            //PythonToggle.RegisterValueChangedCallback(PythonProcessStartCallback);
+
 
             /* GetBBoxes(inputfolder); */
 
@@ -66,34 +90,102 @@ namespace CinAnnotator
             /*             Action<object> initPythonAction = (args) => PythonIPC.InitPython(args as string);
                         StartCoroutine(BuildCoroutine(initPythonAction, python_exe)); */
 
-            Action<object> initPythonAction = (args) => PythonIPC.InitPython(args as string);
+
+        }
+        void PythonProcessStartCallback()
+        {
+
+            if (PythonWorkerEvent.value == true)
+            {
+                // Start the Python process here
+                Debug.Log($"Process started here evetn function successfully.");
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Wait for process {"processName"} to finish";
+
+            }
+            else if (PythonWorkerEvent.value == false)
+            {
+                // Stop the Python process here
+                Debug.Log($"Process stopped here evetn function successfully.");
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
+            }
+            else
+            {
+                Debug.Log($"Process failed to start.");
+            }
 
 
-            string output = (string)await RunTask(initPythonAction, python_exe); // Wait for the task to complete
-            Debug.Log(output); // Log the output of the task
-
-            Debug.Log("Other stuff");
         }
 
-        public async Task<object> MakeTask(Delegate func, params object[] args)
+        private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
         {
-            object output = func.DynamicInvoke(args);
-            return output;
+            // Set the value of the event and invoke it
+            PythonWorkerEvent.value = Value;
+            PythonWorkerEvent.Invoke(Value);
         }
 
-        public async Task<object> RunTask(Delegate func, params object[] args)
+
+
+
+        [Serializable]
+        public class DataFrame
         {
-            Task<object> output = MakeTask(func, args);
+            public List<int> X1;
+            public List<int> X2;
+            public List<int> Y1;
+            public List<int> Y2;
+        }
+        private void Start()
+        {
+            if (userCamera == null)
+            {
+                userCamera = Camera.main;  // Use the main camera if no camera is assigned
+            }
+
+            // Ensure the Canvas is using World Space
+            Canvas canvas = GetComponent<Canvas>();
+            if (canvas.renderMode != RenderMode.WorldSpace)
+            {
+                canvas.renderMode = RenderMode.WorldSpace;
+            }
+
+            inputfolder = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data";
+            python_exe = @"D:\OneDrive\Desktop\Internship\VR_schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
+
+            PreprocessPatches(inputfolder, python_exe);
+        }
+
+
+
+        private async Task PreprocessPatches(string inputfolder, string python_exe)
+        {
+            // Call as lambda function
+            // evt.previousValue is read-only and cannot be set. Remove this line.
+            SendPythonProcessEvent(PythonWorkerEvent, true);
+            var output = RunTask(() => Image2Bboxes(python_exe, inputfolder)); // Wait for the task to complete
             await output;
-            return output;
 
+            string result = output.Result.ToString();
+
+            // We are awaiting beyond the await output statement but Main thread is not blocked
+            bbox_dict = JsonUtility.FromJson<DataFrame>(result);
+            SendPythonProcessEvent(PythonWorkerEvent, false);
         }
 
 
-        public IEnumerator<object> BuildCoroutine(Delegate func, params object[] args)
+
+        public Task<object> RunTask(Func<object> func)
+        {
+            var output = Task<object>.Run(() =>
+            {
+                return func();
+            });
+            return output;
+        }
+
+        public IEnumerator<object> BuildCoroutine(Action func)
         {
             // Use if no return is required !!!!
-            Thread thread = new Thread(() => func.DynamicInvoke(args));
+            Thread thread = new Thread(() => func());
             thread.Start();
             // The yield return null line is the point where 
             // execution pauses and resumes in the following frame
@@ -129,6 +221,24 @@ namespace CinAnnotator
 
 
         }
+
+        public static string Image2Bboxes(string python_exe, string imagepath)
+        {
+            string processName = MethodBase.GetCurrentMethod().Name;
+            string ScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "read_df.py");
+
+            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, imagepath);
+
+            // Start the process
+            process.Start();
+
+            string python_exe_new = PythonIPC.GetStdOutputFromConsole(process);
+
+            return python_exe_new;
+
+        }
+
+
         private void GetBBoxes(string data_dir)
         {
             isReady = false;
@@ -155,34 +265,6 @@ namespace CinAnnotator
 
         }
 
-        private void Start()
-        {
-            if (userCamera == null)
-            {
-                userCamera = Camera.main;  // Use the main camera if no camera is assigned
-            }
-
-            // Ensure the Canvas is using World Space
-            Canvas canvas = GetComponent<Canvas>();
-            if (canvas.renderMode != RenderMode.WorldSpace)
-            {
-                canvas.renderMode = RenderMode.WorldSpace;
-            }
-
-            // Get the RawImage, Whole Image, Trash and UserCamera        
-            /*             Panel = transform.GetComponentInChildren<GridMaker>();
-                        Panel.Initialize(); */
-
-            /*             CurrentImage = Panel.GetComponentInChildren<ClickNextImage>();
-
-                        WholeImage = transform.GetComponentInChildren<WholeImage>();
-
-                        WholeImage.Initialize(transform, Panel.transform, userCamera, CurrentImage); */
-
-            /*             // Initialize the Canvas
-                        Initialize(CurrentImage.transform, WholeImage.transform, Panel.transform, userCamera); */
-
-        }
 
         private void Initialize(Transform CurrentImage, Transform WholeImage, Transform Panel,
         Camera userCamera)

@@ -6,26 +6,27 @@ import argparse as ap
 import tifffile as tiff
 
 
-def main(args):
+def main(save_dir, mask_path, img_path, n, max_side, target_size,
+         target_a_ratio):
 
-    save_dir = os.path.join(args.save_dir)
+    save_dir = os.path.join(save_dir)
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
     # Create a BBoxes object
-    all_boxes = BBoxes.from_mask(args.mask_path, args.img_path)
+    all_boxes = BBoxes.from_mask(mask_path, img_path)
 
     # Expand the bounding boxes
-    all_boxes = all_boxes.expand(n=args.n)
+    all_boxes = all_boxes.expand(n=n)
 
     # Remove the bounding boxes that are located on the edge of the image
     all_boxes = all_boxes.remove_from_edge()
 
     # Filter the bounding boxes by the sides
     filtered_boxes = all_boxes.filter("sides", np.less_equal,
-                                      (args.max_side, args.max_side))
+                                      (max_side, max_side))
 
-    filtered_boxes.image = tiff.imread(args.img_path)
+    filtered_boxes.image = tiff.imread(img_path)
 
     # Save your bounding boxes
     np.savetxt(os.path.join(save_dir, "bbox.txt"), filtered_boxes.bboxes,
@@ -33,8 +34,8 @@ def main(args):
 
 
     # Get resize factors to resize the bounding boxes to a given size
-    resize_factors = filtered_boxes.calculate_resizing_factor(desired_ratio=args.target_a_ratio, size=(args.target_size,
-                                                                args.target_size))
+    resize_factors = filtered_boxes.calculate_resizing_factor(
+        desired_ratio=target_a_ratio, size=(target_size,target_size))
 
     patch_dir = os.path.join(save_dir, "patches")
     if not os.path.exists(patch_dir):
@@ -43,8 +44,8 @@ def main(args):
     patch_dir = os.path.join(patch_dir, "img")
 
     # Extract the bounding boxes as images
-    filtered_boxes.extract(resize_factors, size=(args.target_size,
-                                                 args.target_size),
+    filtered_boxes.extract(resize_factors, size=(target_size,
+                                                 target_size),
                            output=patch_dir, rescale_intensity=True)
 
 # After

@@ -1,0 +1,4 @@
+[console_scripts]
+get-average-iou = mask2bbox.scripts.get_average_iou:main
+isolate-cells = mask2bbox.scripts.isolate_cells:main
+isolate-cells-from-file = mask2bbox.scripts.isolate_cells_from_file:main

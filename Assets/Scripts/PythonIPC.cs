@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices.WindowsRuntime;
+using UnityEngine.UIElements;
 
 
 // If admin rights are needed
@@ -24,6 +25,50 @@ namespace General
     static class PythonIPC
     {
         // Use this code for windows to get python path: get-command python | ForEach-Object -Process {write-host $_.Definition}
+
+
+        public static string InitPython(string python_exe)
+        {
+            string ScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "init_python.py");
+
+            Debug.Log($"Initialising Python env with: {python_exe} with arguments: {ScriptPath}");
+            // Create a new process to run the Python script
+
+            string venv_dir = Path.Combine(Application.dataPath, "venv");
+
+            Debug.Log($"Python venv dir: {venv_dir}");
+
+
+            System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe, venv_dir);
+
+            // Start the process
+            process.Start();
+
+            process.StandardInput.Write(python_exe);
+
+            string python_exe_new = GetStdOutputFromConsole(process);
+
+            return python_exe_new;
+
+        }
+
+
+        static void PythonProcessEndCallback(ChangeEvent<bool> evt, GameObject textField, string processName)
+        {
+            if (evt.newValue == false)
+            {
+                SchapiroLabLog.Log($"Process {processName} ended successfully.");
+                // Get the text field to update
+                textField.GetComponent<TMP_Text>().text = $"";
+                textField.SetActive(true);
+            }
+            else
+            {
+                SchapiroLabLog.Log($"Process {processName} failed to start.");
+            }
+
+        }
+
         public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
         string argument = null)
         {
@@ -45,24 +90,6 @@ namespace General
             };
         }
 
-        public static string InitPython(string python_exe)
-        {
-            string ScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "init_python.py");
-
-            Debug.Log($"Initialising Python env with: {python_exe} with arguments: {ScriptPath}");
-            // Create a new process to run the Python script
-            System.Diagnostics.Process process = SetupPythonProcess(ScriptPath, python_exe, null);
-
-            // Start the process
-            process.Start();
-
-            process.StandardInput.Write(python_exe);
-
-            string python_exe_new = GetStdOutputFromConsole(process);
-
-            return python_exe_new;
-
-        }
         public static string GetStdOutputFromConsole(Process process)
         {
             // Read the output from the Python script
@@ -267,5 +294,23 @@ namespace General
 
                 } */
     }
+
+    // Declare classes related to Event functions
+
+    /* From source: https://gamedevbeginner.com/events-and-delegates-in-unity/#event_based_systems
+    
+        While Unity Events can be a great way to manage relationships between local scripts and components,
+         you probably won’t want to connect two remote objects in this way.
+
+    Hooking up scripts in the Inspector requires you to make a manual connection which may not work well for different objects in the scene, 
+    especially if they’re created as the game runs.
+
+    Meaning that, when connecting events between unrelated objects, you may find it more useful to use event delegates instead.
+
+    By using scriptable objects to create a common event variable, two unrelated game objects can react to the same 
+    event without needing to know about each other.
+    Which allows you to create Unity Event style functionality, but between any objects in the scene.
+    */
+
 
 }
