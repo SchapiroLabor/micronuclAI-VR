@@ -1,17 +1,9 @@
 import python_codes.unity_functions as uf
-<<<<<<< Updated upstream
 from flask import Flask, request, jsonify
 import napari as npi
 import tifffile as tf
 import numpy as np
-=======
-from flask import Flask, request
-import napari as npi
-import tifffile as tf
-import numpy as np
 
-
->>>>>>> Stashed changes
 app = Flask(__name__)
 # img = np.moveaxis(tf.imread(r"/media/ibrahim/Extended Storage/cloud/Internship/shapiro/exemplar-001_Ch1_DAPI.tif"), 0, -1)
 # viewer = npi.Viewer(title="Test", show=True)

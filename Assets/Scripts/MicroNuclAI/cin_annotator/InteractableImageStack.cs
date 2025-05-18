@@ -16,6 +16,8 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine.Events;
 using Unity.PlasticSCM.Editor.WebApi;
+using TMPro;
+using Unity.XR.CoreUtils;
 
 namespace CinAnnotator
 {
@@ -43,6 +45,8 @@ namespace CinAnnotator
         public GameObject CanvasUI;
         public static List<element> data_dict = null;
         public bool isReady = false;
+
+        [SerializeField] GameObject load_indicator;
 
         //VisualElement PythonToggle = new VisualElement();
 
@@ -93,19 +97,23 @@ namespace CinAnnotator
 
         }
         void PythonProcessStartCallback()
-        {
+        { // Added as callback in the Editor. For some reason cannot be added in script.
 
             if (PythonWorkerEvent.value == true)
             {
-                // Start the Python process here
-                Debug.Log($"Process started here evetn function successfully.");
-                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Wait for process {"processName"} to finish";
-
+                // Create text field to state image is loading
+                load_indicator.GetComponent<TMP_Text>().text = $"Please wait until loading ended";
+                load_indicator.GetComponent<TMP_Text>().fontSize = 20;
+                GameObject image = GameObject.Find("Panel").GetNamedChild("Image");
+                Vector3 image_position = image.transform.position;
+                load_indicator.transform.position = image_position;
+                load_indicator.SetActive(true);
             }
             else if (PythonWorkerEvent.value == false)
             {
                 // Stop the Python process here
-                Debug.Log($"Process stopped here evetn function successfully.");
+                // Create text field to state image is loading
+                load_indicator.SetActive(false);
                 // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
             }
             else
@@ -120,7 +128,7 @@ namespace CinAnnotator
         {
             // Set the value of the event and invoke it
             PythonWorkerEvent.value = Value;
-            PythonWorkerEvent.Invoke(Value);
+            PythonWorkerEvent.Invoke(Value); // Why add it to the invoke function ?
         }
 
 
@@ -128,11 +136,13 @@ namespace CinAnnotator
 
         [Serializable]
         public class DataFrame
-        {
+        {   // Get the BBOX, index and image path
             public List<int> X1;
             public List<int> X2;
             public List<int> Y1;
             public List<int> Y2;
+            public List<int> Index;
+            public List<int> Image_path;
         }
         private void Start()
         {
