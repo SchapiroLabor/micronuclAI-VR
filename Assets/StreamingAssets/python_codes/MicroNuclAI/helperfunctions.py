@@ -2,6 +2,12 @@ import json
 import pandas as pd
 from . import logger
 
+def read_from_json(config_file) -> dict:
+    import json
+
+    with open(config_file, "r") as f:
+        json_args = json.load(f)
+    return json_args
 
 def parsejson(data: str | bytes | bytearray) -> dict:
     """

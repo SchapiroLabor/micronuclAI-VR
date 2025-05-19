@@ -1,12 +1,13 @@
 import configargparse
 import os
 import inspect
-from . import logger
 import argparse
 import types
 import glob
+import sys
 
-
+default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                    "python_config.json")
 
 class CustomArgumentParser(configargparse.ArgumentParser):
 
@@ -20,7 +21,7 @@ class CustomArgumentParser(configargparse.ArgumentParser):
     """
 
     def __init__(self, ignore_unknown_config_file_keys=True,
-                 default_config_files=[os.path.join(os.getcwd(), "python_config.json")],
+                 default_config_files=[default_path],
                  **kwargs):
         
         #TODO Confirm if unification of multiple instances to single config is feasible
@@ -29,8 +30,10 @@ class CustomArgumentParser(configargparse.ArgumentParser):
                  default_config_files=default_config_files,
                  **kwargs)
         
-        self.add_argument('-c', '--my-config', required=False, is_config_file=True, help='config file path')
-        self.add_argument("-w", "--write-out-my-config", required=True, default=os.path.join(os.getcwd(), "python_config.json"), 
+        self.add_argument('-c', '--my-config', required=False,
+                          is_config_file=True, help='config file path')
+        self.add_argument("-w", "--write-out-my-config", required=True,
+                          default=default_config_files, 
                  help='write out config file path')
         
         self.variables_dict = {}
@@ -38,85 +41,87 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         self.arguments_key = "arguments"
         self.variables_key = "variables"
 
-        def _open_config_files(self, command_line_args):
-            """Tries to parse config file path(s) from within command_line_args.
-            Returns a list of opened config files, including files specified on the
-            commandline as well as any default_config_files specified in the
-            constructor that are present on disk.
+    def _open_config_files(self, command_line_args):
+        """Tries to parse config file path(s) from within command_line_args.
+        Returns a list of opened config files, including files specified on the
+        commandline as well as any default_config_files specified in the
+        constructor that are present on disk.
 
-            Args:
-                command_line_args: List of all args
-            
-            Returns:
-                list[IO]: open config files
-            """
-            # open any default config files
+        Args:
+            command_line_args: List of all args
+        
+        Returns:
+            list[IO]: open config files
+        """
+        # open any default config files
 
-            try:
-                config_files = []
-                for files in map(glob.glob, map(os.path.expanduser, self._default_config_files)):
-                    for f in files:
-                        config_files.append(self._config_file_open_func(f)[self.arguments_key])
+        try:
+            config_files = []
+            for files in map(glob.glob, map(os.path.expanduser, self._default_config_files)):
+                for f in files:
+                    config_files.append(self._config_file_open_func(f)[self.arguments_key])
 
-            except Exception as e:
-                logger.error("Unable to open default config file(s): %s. Error: %s")
+        except Exception as e:
+            sys.stderr.write(
+                "Unable to open default config file(s): %s. Error: %s\n" % (
+                    self._default_config_files, str(e)))
 
-            # list actions with is_config_file_arg=True. Its possible there is more
-            # than one such arg.
-            user_config_file_arg_actions = [
-                a for a in self._actions if getattr(a, "is_config_file_arg", False)]
+        # list actions with is_config_file_arg=True. Its possible there is more
+        # than one such arg.
+        user_config_file_arg_actions = [
+            a for a in self._actions if getattr(a, "is_config_file_arg", False)]
 
-            if not user_config_file_arg_actions:
-                return config_files
-
-            for action in user_config_file_arg_actions:
-                # try to parse out the config file path by using a clean new
-                # ArgumentParser that only knows this one arg/action.
-                arg_parser = argparse.ArgumentParser(
-                    prefix_chars=self.prefix_chars,
-                    add_help=False)
-
-                arg_parser._add_action(action)
-
-                # make parser not exit on error by replacing its error method.
-                # Otherwise it sys.exits(..) if, for example, config file
-                # is_required=True and user doesn't provide it.
-                def error_method(self, message):
-                    pass
-                arg_parser.error = types.MethodType(error_method, arg_parser)
-
-                # check whether the user provided a value
-                parsed_arg = arg_parser.parse_known_args(args=command_line_args)
-                if not parsed_arg:
-                    continue
-                namespace, _ = parsed_arg
-                user_config_file = getattr(namespace, action.dest, None)
-
-                if not user_config_file:
-                    continue
-
-                # open user-provided config file
-                user_config_file = os.path.expanduser(user_config_file)
-                try:
-                    stream = self._config_file_open_func(user_config_file)
-                except Exception as e:
-                    if len(e.args) == 2:  # OSError
-                        errno, msg = e.args
-                    else:
-                        msg = str(e)
-                    # close previously opened config files
-                    for config_file in config_files:
-                        try:
-                            config_file.close()
-                        except Exception:
-                            pass
-                    self.error("Unable to open config file: %s. Error: %s" % (
-                        user_config_file, msg
-                    ))
-
-                config_files += [stream]
-
+        if not user_config_file_arg_actions:
             return config_files
+
+        for action in user_config_file_arg_actions:
+            # try to parse out the config file path by using a clean new
+            # ArgumentParser that only knows this one arg/action.
+            arg_parser = argparse.ArgumentParser(
+                prefix_chars=self.prefix_chars,
+                add_help=False)
+
+            arg_parser._add_action(action)
+
+            # make parser not exit on error by replacing its error method.
+            # Otherwise it sys.exits(..) if, for example, config file
+            # is_required=True and user doesn't provide it.
+            def error_method(self, message):
+                pass
+            arg_parser.error = types.MethodType(error_method, arg_parser)
+
+            # check whether the user provided a value
+            parsed_arg = arg_parser.parse_known_args(args=command_line_args)
+            if not parsed_arg:
+                continue
+            namespace, _ = parsed_arg
+            user_config_file = getattr(namespace, action.dest, None)
+
+            if not user_config_file:
+                continue
+
+            # open user-provided config file
+            user_config_file = os.path.expanduser(user_config_file)
+            try:
+                stream = self._config_file_open_func(user_config_file)
+            except Exception as e:
+                if len(e.args) == 2:  # OSError
+                    errno, msg = e.args
+                else:
+                    msg = str(e)
+                # close previously opened config files
+                for config_file in config_files:
+                    try:
+                        config_file.close()
+                    except Exception:
+                        pass
+                self.error("Unable to open config file: %s. Error: %s" % (
+                    user_config_file, msg
+                ))
+
+            config_files += [stream]
+
+        return config_files
 
     def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False):
         """Write the given settings to output files.
