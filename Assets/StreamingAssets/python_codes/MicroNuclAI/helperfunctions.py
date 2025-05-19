@@ -2,12 +2,14 @@ import json
 import pandas as pd
 from . import logger
 
+
 def read_from_json(config_file) -> dict:
     import json
 
     with open(config_file, "r") as f:
         json_args = json.load(f)
     return json_args
+
 
 def parsejson(data: str | bytes | bytearray) -> dict:
     """
@@ -25,7 +27,7 @@ def parsejson(data: str | bytes | bytearray) -> dict:
     Logs:
         An error message if JSON decoding fails.
     """
-        # Attempt to parse the JSON data
+    # Attempt to parse the JSON data
     try:
         json_data = json.loads(data)
         return json_data
@@ -35,7 +37,7 @@ def parsejson(data: str | bytes | bytearray) -> dict:
 
 def dataframe2json(df: pd.DataFrame, orient: str = "records") -> str:
     """Convert a pandas DataFrame to JSON format.
-    
+
         Args:
         df: Pandas dataframe
 
@@ -74,5 +76,3 @@ def dataframe2json(df: pd.DataFrame, orient: str = "records") -> str:
     # Convert the DataFrame to JSON
     json_data = df.to_json(orient=orient)
     return json_data
-
-

@@ -1,9 +1,9 @@
 import sys
 import os
-import json
 import pandas as pd
-from helperfunctions import parsejson, read_from_json
+from .helperfunctions import parsejson, read_from_json
 from . import logger
+
 
 def readtxt(cwd) -> dict:
     logger.info("Reading from text file")
@@ -13,12 +13,14 @@ def readtxt(cwd) -> dict:
         data = f.read()
     return parsejson(data)
 
+
 def readfromstdin() -> dict:
     logger.info("Reading from standard input")
     # This method takes way too long to read from stdin input
     # Read from stdin
     data = sys.stdin.read()
     return parsejson(data)
+
 
 def read_from_pipe():
     # Convert the pipe handle from a string to an integer
@@ -32,6 +34,7 @@ def read_from_pipe():
         # Read the entire content from the pipe
         data = pipe.read()
 
+
 def save_as_df(json_data, data_dir):
 
     try:
@@ -44,7 +47,6 @@ def save_as_df(json_data, data_dir):
         logger.error("Failed to convert JSON data to DataFrame: %s", e)
 
 
-
 if __name__ == "__main__":
     # The pipe handle is passed as the first argument
     logger.info("Python process started with arguments: %s", sys.argv)
@@ -55,9 +57,4 @@ if __name__ == "__main__":
 
     save_as_df(json_data, os.path.dirname(json_data_path))
 
-    
-    
     # Log to standard output file, so to have complete log from all processes
-
-    
-
