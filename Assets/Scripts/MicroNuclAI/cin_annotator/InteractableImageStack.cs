@@ -40,10 +40,9 @@ namespace CinAnnotator
         private string python_exe;
         public DataFrame bbox_dict;
         private string PythonScript = "python_codes/save_as_df.py";
-        private bool Ready2Exit = false;
         private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
         public GameObject CanvasUI;
-        public static List<element> data_dict = null;
+        public static List<myjson_element> Data_dict = null;
         public bool isReady = false;
 
         [SerializeField] GameObject load_indicator;
@@ -52,16 +51,16 @@ namespace CinAnnotator
 
         [SerializeField] Toggle PythonToggle;
 
-        string processName;
-
-
-
-        public class element
+        public class myjson_element
         {   // X, Y = Width, Height
-            public int x_min { get; set; }
-            public int x_max { get; set; }
-            public int y_min { get; set; }
-            public int y_max { get; set; }
+            // ["N", "X1", "X2", "Y1", "Y2"]
+
+            public int N { get; set; }
+            public int X1 { get; set; }
+            public int X2 { get; set; }
+            public int Y1 { get; set; }
+            public int Y2 { get; set; }
+            public int[] whole_slide_img_shape { get; set; }
 
         }
 
@@ -74,7 +73,8 @@ namespace CinAnnotator
             if (gameManaging == null)
             {
                 // Load from path
-                gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab"))).GetComponent<GameManaging>();
+                gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
+                Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab"))).GetComponent<GameManaging>();
             }
 
             // Position Canvas once it is enabled
@@ -256,7 +256,7 @@ namespace CinAnnotator
             try
             {
                 // Create a new list to store the data
-                data_dict = new List<element>();
+                Data_dict = new List<myjson_element>();
                 //read_csv_with_csharp(data_dir);
 
                 // Read the CSV file with Python
