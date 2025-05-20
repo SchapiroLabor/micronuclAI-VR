@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine.UIElements;
+using System.Collections.Concurrent;
 
 
 // If admin rights are needed
@@ -22,6 +23,7 @@ using UnityEngine.UIElements;
 
 namespace General
 {
+
     static class PythonIPC
     {
         // Use this code for windows to get python path: get-command python | ForEach-Object -Process {write-host $_.Definition}
@@ -57,14 +59,14 @@ namespace General
         {
             if (evt.newValue == false)
             {
-                SchapiroLabLog.Log($"Process {processName} ended successfully.");
+                Debug.Log($"Process {processName} ended successfully.");
                 // Get the text field to update
                 textField.GetComponent<TMP_Text>().text = $"";
                 textField.SetActive(true);
             }
             else
             {
-                SchapiroLabLog.Log($"Process {processName} failed to start.");
+                Debug.Log($"Process {processName} failed to start.");
             }
 
         }
@@ -72,7 +74,7 @@ namespace General
         public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
         string argument = null)
         {
-            Debug.Log($"Running Python script: {ScriptPath} with arguments: {argument}");
+            ThreadSafeLogger.Log($"Running Python script: {ScriptPath} with arguments: {argument}");
 
             // Create a new process to run the Python script    
             return new System.Diagnostics.Process
@@ -102,13 +104,13 @@ namespace General
 
             if (!string.IsNullOrEmpty(error))
             {
-                Debug.Log($"Error from Python script: {error}");
+                ThreadSafeLogger.Log($"Error from Python script: {error}");
 
             }
 
             // Return the output from the Python script
 
-            Debug.Log($"Python script output: {output}");
+            ThreadSafeLogger.Log($"Python script output: {output}");
             return output.ToString();
         }
 

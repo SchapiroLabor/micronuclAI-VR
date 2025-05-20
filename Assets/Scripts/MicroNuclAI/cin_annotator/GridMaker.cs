@@ -12,7 +12,7 @@ public class GridMaker : MonoBehaviour
 {
     private Camera userCamera;
     private RectTransform rectTransform;
-    private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
+    public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
 
 
@@ -29,44 +29,23 @@ public class GridMaker : MonoBehaviour
         // Also, local position is only accurate when used after Start() or Awake()
         PositionGrid(rectTransform, userCamera, raycast_distance);
 
-        Initialize();
 
     }
-
-    // Start is called before the first frame update
-    public void Initialize()
-    {
-
-
-
-        // Init children
-        transform.GetComponentInChildren<ClickNextImage>().Initialize(transform);
-        transform.GetComponentInChildren<Trash>().Initialize(transform, transform.GetComponentInChildren<ClickNextImage>().transform, userCamera);
-    }
-
-
 
     void PositionGrid(RectTransform rectTransform, Camera userCamera, float WD)
     {
-        // Setup anchors and pivots
-        HelperFunctions.SetupAnchorsAndPivots(rectTransform);
 
         // Set anchor to the centre of the screen
-        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMin = new UnityEngine.Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new UnityEngine.Vector2(0.5f, 0.5f);
 
         // Set pivot to the centre of the screen
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new UnityEngine.Vector2(0.5f, 0.5f);
 
-        // Set side lengths of the rect transform
-        rectTransform.localScale = new UnityEngine.Vector3(1, 1, 1);
-
-        rectTransform.localPosition = Vector3.zero;
+        rectTransform.localPosition = new UnityEngine.Vector3(0, 0, WD);
 
         // Set size of Grid to FOV at the maximum raycast distance
         List<float> outputs = GetFOVatWD(WD, userCamera);
-
-
 
         rectTransform.sizeDelta = new UnityEngine.Vector2(outputs[1], outputs[0]);
 

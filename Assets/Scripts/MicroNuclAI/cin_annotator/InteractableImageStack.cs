@@ -9,47 +9,50 @@ using System;
 using System.Threading.Tasks;
 using General;
 using System.Threading;
-using UnityEditor.ShaderGraph.Internal;
-using Unity.VisualScripting;
-using UnityEngine.UIElements;
-using System.Reflection;
-using UnityEditor;
 using UnityEngine.Events;
-using Unity.PlasticSCM.Editor.WebApi;
-using TMPro;
 using Unity.XR.CoreUtils;
+using static NonGOSripts.HelperFunctions;
+using Unity.Tutorials.Core.Editor;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Palmmedia.ReportGenerator.Core;
 
 namespace CinAnnotator
 {
     public class InteractableImageStack : MonoBehaviour
     {
+        public Camera userCamera;  // Reference to the user's camera
+        public string ImgPath = "D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png";
+
+        [SerializeField] private GridMaker _gridMaker;
+        [SerializeField] private GameManaging _gameManaging;
         [Serializable]
         public class MyChangeEvent : UnityEvent<bool>
         {
             public bool value;
         }
-
-        [SerializeField] MyChangeEvent PythonWorkerEvent = new MyChangeEvent(); // Event to be triggered when the value changes
-        public Camera userCamera;  // Reference to the user's camera
-        [SerializeField] private ClickNextImage CurrentImage;
-        [SerializeField] private WholeImage WholeImage;
-        [SerializeField] private GridMaker Panel;
-        [SerializeField] private GameManaging gameManaging;
-        private RectTransform rectTransform;
-        private string inputfolder;
-        private string python_exe;
-        public DataFrame bbox_dict;
-        private string PythonScript = "python_codes/save_as_df.py";
-        private float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
-        public GameObject CanvasUI;
-        public static List<myjson_element> Data_dict = null;
-        public bool isReady = false;
-
+        [SerializeField] public MyChangeEvent PythonWorkerEvent = new MyChangeEvent();
         [SerializeField] GameObject load_indicator;
+        public DataFrame bbox_dict;
 
-        //VisualElement PythonToggle = new VisualElement();
+        [Header("Add to config file. Used to set world font size")]
+        private float textfontsize = 0.1f; // Default font size for the text field
+        [Header("Add to config file")]
+        private string PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
+        [Header("Add to config file")]
+        public string inputfolder;
+        [Header("Add to config file")]
+        private string python_exe;
 
-        [SerializeField] Toggle PythonToggle;
+        [Header("Add to config file")]
+        public string MaskPath = "";
+
+        [Header("Add to config file")]
+        public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
+
+        private bool done = false;
+
+
+
 
         public class myjson_element
         {   // X, Y = Width, Height
@@ -70,12 +73,18 @@ namespace CinAnnotator
 
             // Load the Game Manager
             // Why do we need to load the GameManaging scriptable object here?
-            if (gameManaging == null)
+            if (_gameManaging == null)
             {
                 // Load from path
-                gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
+                _gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
                 Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab"))).GetComponent<GameManaging>();
             }
+
+            // TODO: First pop up loading screen to 
+            // indicate image loading and processing in python
+            // Then load other gameobjects etc.
+            PythonWorkerEvent.AddListener(delegate { PythonProcessStartCallback(); });
+
 
             // Position Canvas once it is enabled
             //PositionCanvas();
@@ -90,49 +99,7 @@ namespace CinAnnotator
 
             /* GetBBoxes(inputfolder); */
 
-            // Test python subprocess
-            /*             Action<object> initPythonAction = (args) => PythonIPC.InitPython(args as string);
-                        StartCoroutine(BuildCoroutine(initPythonAction, python_exe)); */
-
-
         }
-        void PythonProcessStartCallback()
-        { // Added as callback in the Editor. For some reason cannot be added in script.
-
-            if (PythonWorkerEvent.value == true)
-            {
-                // Create text field to state image is loading
-                load_indicator.GetComponent<TMP_Text>().text = $"Please wait until loading ended";
-                load_indicator.GetComponent<TMP_Text>().fontSize = 20;
-                GameObject image = GameObject.Find("Panel").GetNamedChild("Image");
-                Vector3 image_position = image.transform.position;
-                load_indicator.transform.position = image_position;
-                load_indicator.SetActive(true);
-            }
-            else if (PythonWorkerEvent.value == false)
-            {
-                // Stop the Python process here
-                // Create text field to state image is loading
-                load_indicator.SetActive(false);
-                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
-            }
-            else
-            {
-                Debug.Log($"Process failed to start.");
-            }
-
-
-        }
-
-        private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
-        {
-            // Set the value of the event and invoke it
-            PythonWorkerEvent.value = Value;
-            PythonWorkerEvent.Invoke(Value); // Why add it to the invoke function ?
-        }
-
-
-
 
         [Serializable]
         public class DataFrame
@@ -142,7 +109,7 @@ namespace CinAnnotator
             public List<int> Y1;
             public List<int> Y2;
             public List<int> Index;
-            public List<int> Image_path;
+            public List<string> Image_path;
         }
         private void Start()
         {
@@ -158,60 +125,25 @@ namespace CinAnnotator
                 canvas.renderMode = RenderMode.WorldSpace;
             }
 
+            PositionCanvas();
+
             inputfolder = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data";
             python_exe = @"D:\OneDrive\Desktop\Internship\VR_schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
 
-            PreprocessPatches(inputfolder, python_exe);
+            ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonWorkerEvent,
+            this);
+
+            PreprocessPatches(tws);
+
+            Debug.Log($"Python script output: {ImgPath} {ImgPath.IsNullOrEmpty().ToString()}");
+
         }
 
-
-
-        private async Task PreprocessPatches(string inputfolder, string python_exe)
-        {
-            // Call as lambda function
-            // evt.previousValue is read-only and cannot be set. Remove this line.
-            SendPythonProcessEvent(PythonWorkerEvent, true);
-            var output = RunTask(() => Image2Bboxes(python_exe, inputfolder)); // Wait for the task to complete
-            await output;
-
-            string result = output.Result.ToString();
-
-            // We are awaiting beyond the await output statement but Main thread is not blocked
-            bbox_dict = JsonUtility.FromJson<DataFrame>(result);
-            SendPythonProcessEvent(PythonWorkerEvent, false);
-        }
-
-
-
-        public Task<object> RunTask(Func<object> func)
-        {
-            var output = Task<object>.Run(() =>
-            {
-                return func();
-            });
-            return output;
-        }
-
-        public IEnumerator<object> BuildCoroutine(Action func)
-        {
-            // Use if no return is required !!!!
-            Thread thread = new Thread(() => func());
-            thread.Start();
-            // The yield return null line is the point where 
-            // execution pauses and resumes in the following frame
-            while (thread.IsAlive)
-            {
-                yield return null;
-            }
-        }
-
-        // Place all the positioning functions into their respective gameobjects to make this neat.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         void PositionCanvas()
         {
 
             // Setup anchors and pivots
-            rectTransform = GetComponent<RectTransform>();
-            NonGOSripts.HelperFunctions.SetupAnchorsAndPivots(rectTransform);
+            RectTransform rectTransform = GetComponent<RectTransform>();
 
             // Set anchor to the centre of the screen
             rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
@@ -232,32 +164,197 @@ namespace CinAnnotator
 
         }
 
-        public static string Image2Bboxes(string python_exe, string imagepath)
+
+        void PythonProcessStartCallback()
+        { // Added as callback in the Editor. For some reason cannot be added in script.
+
+            if (PythonWorkerEvent.value == true)
+            {
+                // Create text field to state image is loading
+                GameObject image = GameObject.Find("Panel").GetNamedChild("Image");
+                CreateLoadingWidget(image.transform, "Assets/Scenes/CIAnnotator/Textbox.prefab", textfontsize);
+
+            }
+            else if (PythonWorkerEvent.value == false)
+            {
+                // Stop the Python process here
+                // Create text field to state image is loading
+                Destroy(load_indicator);
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
+            }
+            else
+            {
+                Debug.Log($"Process failed to start.");
+            }
+        }
+
+
+
+        /*
+                private async Task PreprocessPatches(string inputfolder, string python_exe, string python_script = "read_df.py")
+                {
+                    // Call as lambda function
+                    // evt.previousValue is read-only and cannot be set. Remove this line.
+                    SendPythonProcessEvent(PythonWorkerEvent, true);
+                    var output = RunTask(() => Image2bbox_dict(python_exe, inputfolder, python_script)); // Wait for the task to complete
+                    await output;
+
+                    string result = output.Result.ToString();
+
+                    // We are awaiting beyond the await output statement but Main thread is not blocked
+                    //bbox_dict = JsonUtility.FromJson<DataFrame>(result);
+                    ThreadSafeLogger.Log($"Python script output: {result}");
+                    SendPythonProcessEvent(PythonWorkerEvent, false);
+                }
+        */
+        public class ThreadWithState
         {
-            string processName = MethodBase.GetCurrentMethod().Name;
-            string ScriptPath = Path.Combine(Application.streamingAssetsPath, "python_codes", "read_df.py");
+            // State information used in the task.
+            private string _python_exe;
+            private string _inputfolder;
+            private string _python_script;
+            private MyChangeEvent _pythonWorkerEvent;
+            public DataFrame output;
+            public InteractableImageStack _InteractableImageStack;
 
-            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, imagepath);
+            // The constructor obtains the state information.
+            public ThreadWithState(string python_exe, string inputfolder, string python_script, MyChangeEvent PythonWorkerEvent,
+            InteractableImageStack _interactableImageStack)
+            {
+                _python_exe = python_exe;
+                _inputfolder = inputfolder;
+                _python_script = python_script;
+                //_pythonWorkerEvent = PythonWorkerEvent;
+                _InteractableImageStack = _interactableImageStack;
+            }
 
-            // Start the process
-            process.Start();
+            // The thread procedure performs the task, such as formatting
+            // and printing a document.
+            public void ThreadProc()
+            {
 
-            string python_exe_new = PythonIPC.GetStdOutputFromConsole(process);
+                string ScriptPath = Path.Combine(Application.streamingAssetsPath, _python_script);
 
-            return python_exe_new;
+                System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, _inputfolder);
+
+                // Start the process
+                process.Start();
+
+                string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+
+                string result = json_bbox_dict.ToString();
+
+                // We are awaiting beyond the await output statement but Main thread is not blocked
+                _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(result);
+                ThreadSafeLogger.Log($"Python script output: {result}");
+
+            }
+
+            // Unity API is not thread safe, so cannot use it in worker thread. Use indirect variables to pass data
+        }
+
+        void Update()
+        {
+            if (bbox_dict != null & !done)
+            {
+                SendPythonProcessEvent(PythonWorkerEvent, true);
+                done = true;
+            }
 
         }
+
+        private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
+        {
+            // Set the value of the event and invoke it
+            PythonWorkerEvent.value = Value;
+            PythonWorkerEvent.Invoke(Value); // Why add it to the invoke function ?
+        }
+
+        private void PreprocessPatches(ThreadWithState tws)
+        {
+            // Call as lambda function
+            // evt.previousValue is read-only and cannot be set. Remove this line.
+
+            // Create a thread to execute the task, and then
+            // start the thread.
+            Thread t = new(new ThreadStart(tws.ThreadProc));
+            t.Start();
+            Console.WriteLine("Main thread does some work, then waits.");
+            t.Join();
+            Console.WriteLine(
+                "Independent task has completed; main thread ends.");
+
+        }
+
+        /*
+            public string Image2bbox_dict()
+            {
+                SendPythonProcessEvent(PythonWorkerEvent, true);
+
+                string ScriptPath = Path.Combine(Application.streamingAssetsPath, python_script);
+
+                System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, inputfolder);
+
+                // Start the process
+                process.Start();
+
+                string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+
+                string result = json_bbox_dict.ToString();
+
+                // We are awaiting beyond the await output statement but Main thread is not blocked
+                //bbox_dict = JsonUtility.FromJson<DataFrame>(result);
+                ThreadSafeLogger.Log($"Python script output: {result}");
+
+                SendPythonProcessEvent(PythonWorkerEvent, false);
+
+                return json_bbox_dict;
+
+            }
+
+
+            private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
+            {
+                // Set the value of the event and invoke it
+                PythonWorkerEvent.value = Value;
+                PythonWorkerEvent.Invoke(Value); // Why add it to the invoke function ?
+            }
+
+
+
+            public Task<object> RunTask(Func<object> func)
+            {
+                var output = Task<object>.Run(() =>
+                {
+                    return func();
+                });
+                return output;
+            }
+
+            public IEnumerator<object> BuildCoroutine(Action func)
+            {
+                // Use if no return is required !!!!
+                Thread thread = new Thread(() => func());
+                thread.Start();
+                // The yield return null line is the point where 
+                // execution pauses and resumes in the following frame
+                while (thread.IsAlive)
+                {
+                    yield return null;
+                }
+            }
+
+                */
+
+        // Place all the positioning functions into their respective gameobjects to make this neat.!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
         private void GetBBoxes(string data_dir)
         {
-            isReady = false;
-
+            // TODO: Add indicator to state loading is done
             try
             {
-                // Create a new list to store the data
-                Data_dict = new List<myjson_element>();
-                //read_csv_with_csharp(data_dir);
 
                 // Read the CSV file with Python
                 Task.Run(() => read_csv_with_python(data_dir)).Wait();
@@ -267,29 +364,7 @@ namespace CinAnnotator
                 SchapiroLabLog.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
             }
 
-            finally
-            {
-                isReady = true;
-            }
-
-
         }
-
-
-        private void Initialize(Transform CurrentImage, Transform WholeImage, Transform Panel,
-        Camera userCamera)
-        {
-            // Calculate the new position for the Canvas to minimum clipping distance
-            transform.position = NonGOSripts.HelperFunctions.FacePlayer(raycast_distance);
-            List<float> outputs = NonGOSripts.HelperFunctions.GetFOVatWD(raycast_distance, userCamera);
-            rectTransform.sizeDelta = new Vector2(outputs[1], outputs[0]);
-
-            /*             // Instanziate Exit Button
-                        SetupSeperateButton(CurrentImage, transform); */
-
-        }
-
-
 
 
         // Define dictionary class to store the counts of micro nuclei
@@ -356,7 +431,7 @@ namespace CinAnnotator
 
 
             // Only get basename of the image using 
-            Transform Trash = Panel.transform.GetChild(0);
+            Transform Trash = _gridMaker.transform.GetChild(0);
 
             for (int i = 0; i < Trash.childCount; i++)
             {

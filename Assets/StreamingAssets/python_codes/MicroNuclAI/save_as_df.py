@@ -51,10 +51,12 @@ if __name__ == "__main__":
     # The pipe handle is passed as the first argument
     logger.info("Python process started with arguments: %s", sys.argv)
 
-    json_data_path = sys.argv[-1]
+#    json_data_path = sys.argv[-1]
 
-    json_data = read_from_json(json_data_path)
+#   json_data = read_from_json(json_data_path)
 
-    save_as_df(json_data, os.path.dirname(json_data_path))
+#   save_as_df(json_data, os.path.dirname(json_data_path))
+
+    sys.stdout.write("Python process started with arguments: %s\n" % sys.argv)
 
     # Log to standard output file, so to have complete log from all processes

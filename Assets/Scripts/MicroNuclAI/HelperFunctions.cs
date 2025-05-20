@@ -71,13 +71,70 @@ namespace NonGOSripts
         }
 
 
-        /*         public static GameObject CreateGameObject(Transform parent, string prefabPath, Transform transform)
-                {
-                    // Create a new RawImage GameObject from the prefab
-                    GameObject instance = Instantiate(Resources.Load<GameObject>(prefabPath), transform.position, transform.rotation);
-                    instance.transform.SetParent(parent);
-                    return instance;
-                } */
+        public static float LocalToWorldAxis(Transform transform, float localValue, string axis)
+        {
+
+            /// <summary>
+            /// Converts a local-space float to world-space distance along a given axis.
+            /// </summary>
+            /// <param name="transform">The Transform to use</param>
+            /// <param name="localValue">The value in local units</param>
+            /// <param name="axis">"x", "y", or "z"</param>
+            /// <returns>World-space magnitude along that axis</returns>
+            Vector3 local = axis switch
+            {
+                "x" => new Vector3(localValue, 0f, 0f),
+                "y" => new Vector3(0f, localValue, 0f),
+                "z" => new Vector3(0f, 0f, localValue),
+                _ => throw new System.ArgumentException("Axis must be 'x', 'y', or 'z'")
+            };
+
+            Vector3 worldOffset = transform.TransformVector(local);  // Only scale/rotation
+            return worldOffset.magnitude * Mathf.Sign(localValue);
+        }
+
+
+
+        public static float SetFontSizeByWorldHeight(TMP_Text tmp, float targetWorldHeight)
+        {   /// <summary>
+            /// Sets the TMP fontSize so the text height in world space equals targetWorldHeight.
+            /// </summary>
+            // Get scale from local to world
+            float worldScaleY = tmp.transform.lossyScale.y;
+
+            // TMP uses pointSize relative to lineHeight
+            float fontLineHeight = tmp.font.faceInfo.lineHeight;
+            float pointSize = tmp.font.faceInfo.pointSize;
+
+            // Compute fontSize needed to reach desired world height
+            float fontSize = (targetWorldHeight / worldScaleY) * (pointSize / fontLineHeight);
+
+            return fontSize;
+
+
+
+        }
+
+
+        public static GameObject CreateGameObject(Transform parent, string prefabPath)
+        {
+            // Create a new RawImage GameObject from the prefab
+            GameObject instance = Resources.Load<GameObject>(prefabPath);
+            instance.transform.SetParent(parent);
+            return instance;
+        }
+
+        public static void CreateLoadingWidget(Transform parent, string prefabPath, float textfontsize)
+        {
+            // Create a new RawImage GameObject from the prefab
+            GameObject load_indicator = CreateGameObject(parent, prefabPath);
+            load_indicator.GetComponentInChildren<TMP_Text>().text = $"Please wait until loading ended";
+            load_indicator.GetComponentInChildren<TMP_Text>().fontSize = SetFontSizeByWorldHeight(load_indicator.GetComponentInChildren<TMP_Text>(),
+            textfontsize);
+            load_indicator.transform.position = parent.position;
+            load_indicator.SetActive(true);
+        }
+
 
         /*
             private void read_csv_with_csharp(string csvFilePath)
