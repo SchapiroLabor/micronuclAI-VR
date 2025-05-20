@@ -74,7 +74,7 @@ namespace General
         public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
         string argument = null)
         {
-            ThreadSafeLogger.Log($"Running Python script: {ScriptPath} with arguments: {argument}");
+            Debug.Log($"Running Python script: {ScriptPath} with arguments: {argument}");
 
             // Create a new process to run the Python script    
             return new System.Diagnostics.Process
@@ -104,13 +104,13 @@ namespace General
 
             if (!string.IsNullOrEmpty(error))
             {
-                ThreadSafeLogger.Log($"Error from Python script: {error}");
+                Debug.Log($"Error from Python script: {error}");
 
             }
 
             // Return the output from the Python script
 
-            ThreadSafeLogger.Log($"Python script output: {output}");
+            Debug.Log($"Python script output: {output}");
             return output.ToString();
         }
 

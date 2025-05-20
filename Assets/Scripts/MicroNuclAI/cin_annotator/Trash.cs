@@ -40,13 +40,15 @@ namespace CinAnnotator
             // Set pivot to center right
             rectTransform.pivot = new Vector2(1f, 0.5f);
 
+        }
 
-            _interactableImageStack.PythonWorkerEvent.AddListener(delegate { Initialize(); });
-
+        void PythonProcessOnFalse()
+        {
+            Initialize();
         }
 
 
-        
+
         void Initialize()
         {
 

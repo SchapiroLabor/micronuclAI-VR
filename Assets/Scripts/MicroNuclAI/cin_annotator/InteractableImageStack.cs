@@ -15,6 +15,7 @@ using static NonGOSripts.HelperFunctions;
 using Unity.Tutorials.Core.Editor;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Palmmedia.ReportGenerator.Core;
+using System.Collections;
 
 namespace CinAnnotator
 {
@@ -133,7 +134,22 @@ namespace CinAnnotator
             ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonWorkerEvent,
             this);
 
-            PreprocessPatches(tws);
+            //StartCoroutine(PreprocessPatches(tws));
+
+            /*
+            string ScriptPath = Path.Combine(Application.streamingAssetsPath, PythonScript);
+
+            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, inputfolder);
+
+            // Start the process
+            process.Start();
+
+            string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+
+            string result = json_bbox_dict.ToString();
+
+            // We are awaiting beyond the await output statement but Main thread is not blocked
+            bbox_dict = JsonUtility.FromJson<DataFrame>(result); */
 
             Debug.Log($"Python script output: {ImgPath} {ImgPath.IsNullOrEmpty().ToString()}");
 
@@ -164,22 +180,34 @@ namespace CinAnnotator
 
         }
 
+        void PythonProcessOnTrue()
+        {
+            // Create text field to state image is loading
+            CreateLoadingWidget(transform, load_indicator, textfontsize);
+        }
+
+        void PythonProcessOnFalse()
+        {
+            load_indicator.SetActive(false);
+        }
+
 
         void PythonProcessStartCallback()
         { // Added as callback in the Editor. For some reason cannot be added in script.
 
             if (PythonWorkerEvent.value == true)
             {
+                // Start the Python process here
                 // Create text field to state image is loading
-                GameObject image = GameObject.Find("Panel").GetNamedChild("Image");
-                CreateLoadingWidget(image.transform, "Assets/Scenes/CIAnnotator/Textbox.prefab", textfontsize);
+                PythonProcessOnTrue();
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} started";
 
             }
             else if (PythonWorkerEvent.value == false)
             {
                 // Stop the Python process here
                 // Create text field to state image is loading
-                Destroy(load_indicator);
+                PythonProcessOnFalse();
                 // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
             }
             else
@@ -253,15 +281,7 @@ namespace CinAnnotator
             // Unity API is not thread safe, so cannot use it in worker thread. Use indirect variables to pass data
         }
 
-        void Update()
-        {
-            if (bbox_dict != null & !done)
-            {
-                SendPythonProcessEvent(PythonWorkerEvent, true);
-                done = true;
-            }
 
-        }
 
         private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
         {
@@ -270,19 +290,25 @@ namespace CinAnnotator
             PythonWorkerEvent.Invoke(Value); // Why add it to the invoke function ?
         }
 
-        private void PreprocessPatches(ThreadWithState tws)
+        private IEnumerator PreprocessPatches(ThreadWithState tws)
         {
             // Call as lambda function
             // evt.previousValue is read-only and cannot be set. Remove this line.
 
             // Create a thread to execute the task, and then
             // start the thread.
+
+            SendPythonProcessEvent(PythonWorkerEvent, true);
+
             Thread t = new(new ThreadStart(tws.ThreadProc));
             t.Start();
-            Console.WriteLine("Main thread does some work, then waits.");
-            t.Join();
-            Console.WriteLine(
-                "Independent task has completed; main thread ends.");
+
+            while (t.IsAlive)
+            {
+                yield return null;
+            }
+
+            SendPythonProcessEvent(PythonWorkerEvent, false);
 
         }
 

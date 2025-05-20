@@ -45,11 +45,11 @@ namespace CinAnnotator
             gameObject.name = "Image";
 
             gameObject.SetActive(true);
+        }
 
-            _interactableImageStack.PythonWorkerEvent.AddListener(delegate { Initialize(); });
-
-
-
+        void PythonProcessOnFalse()
+        {
+            Initialize();
         }
 
         private System.Collections.IEnumerator MyCoroutine()

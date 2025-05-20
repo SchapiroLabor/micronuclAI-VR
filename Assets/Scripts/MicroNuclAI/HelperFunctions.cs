@@ -116,22 +116,24 @@ namespace NonGOSripts
         }
 
 
-        public static GameObject CreateGameObject(Transform parent, string prefabPath)
+        public static GameObject CreateGameObject(string prefabPath)
         {
             // Create a new RawImage GameObject from the prefab
             GameObject instance = Resources.Load<GameObject>(prefabPath);
-            instance.transform.SetParent(parent);
+
             return instance;
         }
 
-        public static void CreateLoadingWidget(Transform parent, string prefabPath, float textfontsize)
+        public static void CreateLoadingWidget(Transform parent, GameObject load_indicator, float textfontsize)
         {
             // Create a new RawImage GameObject from the prefab
-            GameObject load_indicator = CreateGameObject(parent, prefabPath);
-            load_indicator.GetComponentInChildren<TMP_Text>().text = $"Please wait until loading ended";
-            load_indicator.GetComponentInChildren<TMP_Text>().fontSize = SetFontSizeByWorldHeight(load_indicator.GetComponentInChildren<TMP_Text>(),
+            load_indicator.GetComponentInChildren<TextMeshProUGUI>().text = $"Please wait until loading ended";
+            load_indicator.GetComponentInChildren<TextMeshProUGUI>().fontSize = SetFontSizeByWorldHeight(load_indicator.GetComponentInChildren<TMP_Text>(),
             textfontsize);
             load_indicator.transform.position = parent.position;
+            // Set size to 1/3 of width of image with aspect ratio of 3:1
+            load_indicator.GetComponent<RectTransform>().sizeDelta = new Vector2(load_indicator.GetComponent<RectTransform>().rect.width / 3,
+            load_indicator.GetComponent<RectTransform>().rect.width / 6);
             load_indicator.SetActive(true);
         }
 

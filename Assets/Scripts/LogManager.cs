@@ -139,7 +139,8 @@ public static class SchapiroLabLog
     }
 
     /// <summary>
-    /// Saves someting that should be logged later. Call <see cref="LogBacklog"/> whenever you are ready to log everything passed to all calls this function since the last call to <see cref="LogBacklog"/>.
+    /// Saves someting that should be logged later. Call <see cref="LogBacklog"/> whenever you are ready to log everything passed 
+    /// to all calls this function since the last call to <see cref="LogBacklog"/>.
     /// </summary>
     /// <param name="message">The message that should be written to the log later.</param>
     public static void LogLater(string message)
