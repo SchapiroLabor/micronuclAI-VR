@@ -16,13 +16,16 @@ using Unity.Tutorials.Core.Editor;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Palmmedia.ReportGenerator.Core;
 using System.Collections;
+using UnityEngine.UI;
 
 namespace CinAnnotator
 {
     public class InteractableImageStack : MonoBehaviour
     {
         public Camera userCamera;  // Reference to the user's camera
-        public string ImgPath = "D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png";
+        public string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
+        public string MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
+
 
         [SerializeField] private GridMaker _gridMaker;
         [SerializeField] private GameManaging _gameManaging;
@@ -43,10 +46,6 @@ namespace CinAnnotator
         public string inputfolder;
         [Header("Add to config file")]
         private string python_exe;
-
-        [Header("Add to config file")]
-        public string MaskPath = "";
-
         [Header("Add to config file")]
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
@@ -77,8 +76,7 @@ namespace CinAnnotator
             if (_gameManaging == null)
             {
                 // Load from path
-                _gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
-                Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab"))).GetComponent<GameManaging>();
+                _gameManaging = Resources.Load<GameObject>("Assets/Scripts/MicroNuclAI/SceneManager.prefab").GetComponent<GameManaging>();
             }
 
             // TODO: First pop up loading screen to 
@@ -111,6 +109,8 @@ namespace CinAnnotator
             public List<int> Y2;
             public List<int> Index;
             public List<string> Image_path;
+            public List<int[]> whole_slide_img_shape;
+
         }
         private void Start()
         {
@@ -136,10 +136,17 @@ namespace CinAnnotator
 
             //StartCoroutine(PreprocessPatches(tws));
 
-            /*
+
             string ScriptPath = Path.Combine(Application.streamingAssetsPath, PythonScript);
 
-            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, inputfolder);
+            string _MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
+            ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
+            Debug.Log($"Here: {_MaskPath}");
+            string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {inputfolder} " +
+                              $"--n {1} --max_side {250} --target_size {250} --target_a_ratio {1} " +
+                              $"--write-out-my-config {Path.Combine(inputfolder, "python_config.json")}";
+
+            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, cmd_args);
 
             // Start the process
             process.Start();
@@ -149,9 +156,11 @@ namespace CinAnnotator
             string result = json_bbox_dict.ToString();
 
             // We are awaiting beyond the await output statement but Main thread is not blocked
-            bbox_dict = JsonUtility.FromJson<DataFrame>(result); */
+            bbox_dict = JsonUtility.FromJson<DataFrame>(result);
 
-            Debug.Log($"Python script output: {ImgPath} {ImgPath.IsNullOrEmpty().ToString()}");
+            Debug.Log($"Python script output: {bbox_dict.whole_slide_img_shape} and its" +
+            $"type: {bbox_dict}");
+
 
         }
 

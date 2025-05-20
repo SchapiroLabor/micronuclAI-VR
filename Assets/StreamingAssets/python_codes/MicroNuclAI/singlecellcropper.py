@@ -1,6 +1,4 @@
 import os
-from . import arg_parser
-from . import logger
 import numpy as np
 from mask2bbox import BBoxes
 import tifffile as tiff
@@ -11,6 +9,9 @@ import pandas as pd
 import numpy as np
 import os
 from PIL import Image
+from helperfunctions import save2DFcolumn
+sys.path.append(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))))
 
 
 def main(save_dir: str,
@@ -19,7 +20,7 @@ def main(save_dir: str,
          n: int,
          max_side: int,
          target_size: int,
-         target_a_ratio: float
+         target_a_ratio: float, **kwargs: dict
          ):
     """
     Processes an image and its corresponding mask to extract and save single-cell patches.
@@ -48,7 +49,7 @@ def main(save_dir: str,
 
     if not os.path.exists(save_dir) or not [s for s in os.listdir(save_dir) if s.endswith(".png")] \
             or not os.path.exists(os.path.join(save_dir, "bbox.csv")):
-        os.makedirs(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
         logger.info(f"Directory created: {save_dir}")
 
         logger.info("Creating BBoxes object from mask and image.")
@@ -95,7 +96,15 @@ def main(save_dir: str,
         df = df.astype(int)
         df["img_path"] = df["N"].apply(
             lambda x: os.path.join(patch_dir, f"img_{x}.png"))
-        df["whole_slide_img_shape"] = filtered_boxes.image.shape
+
+        df = save2DFcolumn(
+            source_ids=df.N.tolist(),
+            source_col="N",
+            target_ids=np.array(filtered_boxes.image.shape)[None, ...],
+            dataframe=df,
+            target_col="whole_slide_img_shape"
+        )
+
         # Save to CSV
         df.to_csv("output.csv", index=False)
     else:
@@ -112,7 +121,8 @@ def get_bbox_from_csv(data_dir) -> pd.DataFrame:
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"bbox not found in {file_path}")
 
-    df = pd.read_csv(file_path, sep=",", names=["N", "X1", "X2", "Y1", "Y2"])
+    df = pd.read_csv(file_path, sep=",", names=[
+                     "N", "X1", "X2", "Y1", "Y2", "whole_slide_img_shape"])
     # Set 'N' as the index if it exists
     df = df.set_index("N")
 
@@ -185,12 +195,15 @@ def json_serialize(df, data_dir):
 def get_args():
     # Add an argument to the parser
     arg_parser.add_argument("--mask_path", type=str,
-                            help="Path to the mask image")
+                            help="Path to the mask image",
+                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/mask.tif")
 
-    arg_parser.add_argument("--img_path", type=str, help="Path to the image")
+    arg_parser.add_argument("--img_path", type=str, help="Path to the image",
+                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/s01c1.ome.tif")
 
     arg_parser.add_argument("--save_dir",
-                            type=str, help="Path to save the results")
+                            type=str, help="Path to save the results",
+                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data")
 
     arg_parser.add_argument("--n", type=int,
                             default=10, help="Number of pixels to expand the bounding boxes")
@@ -209,10 +222,20 @@ def get_args():
 
 if __name__ == "__main__":
 
+    # TODO: Add working dir by using Sven's package
+
+    from python_codes.python_logger import get_logger, setup_logging
+    from python_codes.parser import CustomArgumentParser
+
+    setup_logging()
+    logger = get_logger()
+
+    arg_parser = CustomArgumentParser.get_arg_parser()
+
     # Parse the arguments
     args = get_args()
 
-    df = main(args)
+    df = main(**vars(args))
 
     json_data = json_serialize(df, args.save_dir)
 

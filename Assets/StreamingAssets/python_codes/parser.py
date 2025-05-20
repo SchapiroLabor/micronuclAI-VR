@@ -4,7 +4,7 @@ import argparse
 import types
 import glob
 import sys
-import configargparse  # type: ignore
+import configargparse
 
 default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                             "python_config.json")
@@ -33,7 +33,7 @@ class CustomArgumentParser(configargparse.ArgumentParser):
 
         self.add_argument('-c', '--my-config', required=False,
                           is_config_file=True, help='config file path')
-        self.add_argument("-w", "--write-out-my-config", required=True,
+        self.add_argument("-w", "--write-out-my-config", required=False,
                           default=default_config_files,
                           help='write out config file path')
 
@@ -158,11 +158,12 @@ class CustomArgumentParser(configargparse.ArgumentParser):
             if exit_after:
                 self.exit(0)
 
-    def get_arg_parser(self) -> configargparse.ArgumentParser:
+    @staticmethod
+    def get_arg_parser() -> configargparse.ArgumentParser:
         """Dynamically get the file path of the script that called the function, use the inspect module
         ref: chatgpt 4o"""
-        logger_name: str = self.calling_directory()
-        return super().get_argument_parser(logger_name)
+        logger_name: str = CustomArgumentParser.calling_directory()
+        return get_argument_parser(logger_name)
 
     @staticmethod
     def calling_directory():
@@ -173,7 +174,7 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         return logger_name
 
     def parse_args(self):
-        return super().parse_known_args()
+        return super().parse_known_args()[0]
 
     @staticmethod
     def read_from_yaml(config_file) -> dict:
@@ -218,3 +219,42 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         # cleaned_config = dict(sorted(cleaned_config.items()))
 
         return cleaned_config
+
+
+# global ArgumentParser instances
+_parsers = {}
+
+
+def init_argument_parser(name=None, **kwargs):
+    """Creates a global ArgumentParser instance with the given name,
+    passing any args other than "name" to the ArgumentParser constructor.
+    This instance can then be retrieved using get_argument_parser(..)
+    """
+
+    if name is None:
+        name = "default"
+
+    if name in _parsers:
+        raise ValueError(("kwargs besides 'name' can only be passed in the"
+                          " first time. '%s' ArgumentParser already exists: %s") % (
+            name, _parsers[name]))
+
+    kwargs.setdefault('formatter_class',
+                      argparse.ArgumentDefaultsHelpFormatter)
+    kwargs.setdefault('conflict_handler', 'resolve')
+    _parsers[name] = CustomArgumentParser(**kwargs)
+
+
+def get_argument_parser(name=None, **kwargs):
+    """Returns the global ArgumentParser instance with the given name. The 1st
+    time this function is called, a new ArgumentParser instance will be created
+    for the given name, and any args other than "name" will be passed on to the
+    ArgumentParser constructor.
+    """
+    if name is None:
+        name = "default"
+
+    if len(kwargs) > 0 or name not in _parsers:
+        init_argument_parser(name, **kwargs)
+
+    return _parsers[name]
