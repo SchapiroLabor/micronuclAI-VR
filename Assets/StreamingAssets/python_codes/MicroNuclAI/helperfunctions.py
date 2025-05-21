@@ -25,20 +25,6 @@ def save2DFcolumn(
     - Updated DataFrame with the new column.
     """
 
-    if not isinstance(target_ids, np.ndarray):
-        target_ids = np.array(target_ids)
-    # Flatten sorted_nucl_labels if it has only one column (2D array with shape [n, 1])
-    if target_ids.ndim == 2:
-        if target_ids.shape[0] == 1 or target_ids.shape[1] == 1:
-            if len(target_ids) == target_ids.size:
-                target_ids = target_ids.flatten()
-        elif target_ids.shape[0] == 1:
-            target_ids = np.repeat(target_ids, source_ids.shape[0], axis=0)
-
-        else:
-            raise ValueError(
-                "More than one row in sorted_nucl_labels, but only one column is expected.")
-
     if isinstance(source_ids, np.ndarray):
 
         if source_ids.ndim > 2:
@@ -47,8 +33,23 @@ def save2DFcolumn(
         else:
             source_ids = source_ids.tolist()
 
+    if not isinstance(target_ids, np.ndarray):
+        target_ids = np.array(target_ids)
+    # Flatten sorted_nucl_labels if it has only one column (2D array with shape [n, 1])
+    if target_ids.ndim == 2:
+        if target_ids.shape[0] >= 1 and target_ids.shape[1] == 1:
+            target_ids = target_ids.flatten()
+
+        if len(source_ids) > len(target_ids) and len(target_ids) == 1:
+            # If sorted_results is a single value, repeat it for each entry in sorted_nucl_labels
+            target_ids = target_ids*len(source_ids)
+
+        else:
+            raise ValueError(
+                "More than one row in sorted_nucl_labels, but only one column is expected.")
+
     # Create a dictionary for fast lookup of results by label
-    label_to_result = dict(zip(source_ids, target_ids.tolist()))
+    label_to_result = dict(zip(source_ids, target_ids))
 
     # Map each NUCLEUS_LABEL_KEY in the dataframe to its corresponding result, or NaN if not found
     dataframe[target_col] = dataframe[source_col].map(

@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import os
 from PIL import Image
+import ast
 from helperfunctions import save2DFcolumn
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
@@ -47,8 +48,10 @@ def main(save_dir: str,
         None
     """
 
+    csv_path = os.path.join(save_dir, "bbox.csv")
+
     if not os.path.exists(save_dir) or not [s for s in os.listdir(save_dir) if s.endswith(".png")] \
-            or not os.path.exists(os.path.join(save_dir, "bbox.csv")):
+            or not os.path.exists(csv_path):
         os.makedirs(save_dir, exist_ok=True)
         logger.info(f"Directory created: {save_dir}")
 
@@ -92,26 +95,30 @@ def main(save_dir: str,
         bbox_path: str = os.path.join(save_dir, "bbox.csv")
         logger.info(f"Saving bounding boxes to {bbox_path}.")
         df = pd.DataFrame(filtered_boxes.bboxes, columns=[
-                          "N", "X1", "X2", "Y1", "Y2"])
+            "N", "X1", "X2", "Y1", "Y2"])
+
         df = df.astype(int)
+
         df["img_path"] = df["N"].apply(
             lambda x: os.path.join(patch_dir, f"img_{x}.png"))
 
-        df = save2DFcolumn(
-            source_ids=df.N.tolist(),
-            source_col="N",
-            target_ids=np.array(filtered_boxes.image.shape)[None, ...],
-            dataframe=df,
-            target_col="whole_slide_img_shape"
-        )
+        df[f"whole_slide_img_ndim"] = filtered_boxes.image.ndim
+
+        logger.info(
+            f"Dims: {filtered_boxes.image.ndim} and shape: {filtered_boxes.image.shape}")
+
+        dim_dict = {0: "Y", 1: "X", 3: "C", 2: "Z", 4: "T"}
+
+        for dim in range(filtered_boxes.image.ndim):
+            value = dim_dict[dim]
+            df[f"whole_slide_img_shape_{value}"] = filtered_boxes.image.shape[dim]
 
         # Save to CSV
-        df.to_csv("output.csv", index=False)
+        df.to_csv(csv_path, index=False)
     else:
         logger.info(f"Directory already exists: {save_dir}")
         # Read the existing CSV file
-        df = pd.read_csv(os.path.join(save_dir, "bbox.csv"))
-
+        df = pd.read_csv(csv_path)
     return df
 
 
@@ -172,7 +179,9 @@ def json_serialize(df, data_dir):
     if os.path.exists(data_dir):
 
         # Convert DataFrame to JSON in the required format
-        bbox = df.to_dict(orient="list")
+
+        """When a pandas DataFrame containing object dtype columns is serialized using 
+        .to_json(), pandas serializes based on the actual runtime value of each object, not the dtype"""
         # img_df = load_img(data_dir)
 
         # Works with the following C# format:
@@ -186,7 +195,14 @@ def json_serialize(df, data_dir):
         #    public List<int[]> img;
         # }
 
+        """Each list in a DataFrame cell is preserved as a nested list in the JSON.
+
+Lists are converted recursively and safely to JSON arrays.
+
+Strings, ints, floats, dicts, and nested lists all serialize cleanly."""
+        bbox = df.to_dict(orient="list")
         bbox = json.dumps(bbox)
+
         return bbox
     else:
         raise FileNotFoundError(f"Directory {data_dir} does not exist")
@@ -232,10 +248,15 @@ if __name__ == "__main__":
 
     arg_parser = CustomArgumentParser.get_arg_parser()
 
-    # Parse the arguments
+    # # Parse the arguments
     args = get_args()
 
     df = main(**vars(args))
+
+    # df = pd.DataFrame({
+    #     "id": [1, 2],
+    #     "tags": [[1, 2], [1, 2]]
+    # })
 
     json_data = json_serialize(df, args.save_dir)
 

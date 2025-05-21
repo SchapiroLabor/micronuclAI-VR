@@ -100,16 +100,32 @@ namespace CinAnnotator
 
         }
 
+
+        public class Container
+        {   // ahsonkhan on May 17, 2019
+
+            public int[][] Matrix { get; set; }
+        }
+
+
         [Serializable]
         public class DataFrame
         {   // Get the BBOX, index and image path
+
+
+            public List<int> Index;
             public List<int> X1;
             public List<int> X2;
             public List<int> Y1;
             public List<int> Y2;
-            public List<int> Index;
             public List<string> Image_path;
-            public List<int[]> whole_slide_img_shape;
+            public List<int> whole_slide_img_ndim;
+            public List<int> whole_slide_img_shape_Y;
+            public List<int> whole_slide_img_shape_X;
+            public List<int> whole_slide_img_shape_C;
+            public List<int> whole_slide_img_shape_Z;
+            public List<int> whole_slide_img_shape_T;
+
 
         }
         private void Start()
@@ -158,8 +174,8 @@ namespace CinAnnotator
             // We are awaiting beyond the await output statement but Main thread is not blocked
             bbox_dict = JsonUtility.FromJson<DataFrame>(result);
 
-            Debug.Log($"Python script output: {bbox_dict.whole_slide_img_shape} and its" +
-            $"type: {bbox_dict}");
+            Debug.Log($"Python script output: {bbox_dict.whole_slide_img_shape_Y[0]} and its" +
+            $"type: {bbox_dict.GetType()}");
 
 
         }

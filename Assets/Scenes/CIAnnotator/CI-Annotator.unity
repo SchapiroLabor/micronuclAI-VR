@@ -325,7 +325,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 352160970197972220, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 44.7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 352160970197972220, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -397,7 +397,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2945947249220219114, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2945947249220219114, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -417,7 +417,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4475923481995023943, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4475923481995023943, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -489,7 +489,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5812510090529016351, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5812510090529016351, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -525,7 +525,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7035622879882584423, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7035622879882584423, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -553,7 +553,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7192134696874642154, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 40
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7192134696874642154, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -573,7 +573,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7674157465165319425, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 44.7
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7674157465165319425, guid: b17f3e48480301c4cbaa753f7f6bdc4b, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -788,11 +788,6 @@ GameObject:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2406909067711672414, guid: ca3a8e1c6fa0ed692a9dcbe2b2fe6252, type: 3}
   m_PrefabInstance: {fileID: 1967177764}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &946302570 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8492587415078152464, guid: 5283215c6aded027293bf03e3332e4e6, type: 3}
-  m_PrefabInstance: {fileID: 293795542}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &950227810
 GameObject:
@@ -1103,6 +1098,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91af4bc66b24a8115ae1a99bf4c54a20, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  raycast_distance: 10
 --- !u!114 &1527052175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1385,6 +1381,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d5565fe0675e484e8f3c1662542b5ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  userCamera: {fileID: 1773221031}
+  ImgPath: D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png
+  MaskPath: 
+  _gridMaker: {fileID: 1527052174}
+  _gameManaging: {fileID: 7892077242007335508, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
   PythonWorkerEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1401,18 +1402,16 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 1
     value: 0
-  userCamera: {fileID: 1773221031}
-  CurrentImage: {fileID: 1879355352}
-  WholeImage: {fileID: 5734393821542011230}
-  Panel: {fileID: 1527052174}
-  gameManaging: {fileID: 7892077242007335508, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
+  load_indicator: {fileID: 0}
   bbox_dict:
     X1: 
     X2: 
     Y1: 
     Y2: 
-  CanvasUI: {fileID: 946302570}
-  isReady: 0
+    Index: 
+    Image_path: []
+  inputfolder: 
+  raycast_distance: 10
 --- !u!114 &1646500095
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1565,6 +1564,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7035354712049439009, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
       propertyPath: Canvas_script
+      value: 
+      objectReference: {fileID: 1646500094}
+    - target: {fileID: 7035354712049439009, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
+      propertyPath: rawImagesubsequentGO
+      value: 
+      objectReference: {fileID: 16304784390011718, guid: bd5970d4e2c4f99bb8411b313a424093, type: 3}
+    - target: {fileID: 7035354712049439009, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
+      propertyPath: _interactableImageStack
       value: 
       objectReference: {fileID: 1646500094}
     - target: {fileID: 8069383788905437301, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
@@ -2059,11 +2066,23 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
+      propertyPath: userCamera
+      value: 
+      objectReference: {fileID: 1773221031}
+    - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
       propertyPath: trashPrefab
       value: 
       objectReference: {fileID: 0}
     - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
       propertyPath: Canvas_script
+      value: 
+      objectReference: {fileID: 1646500094}
+    - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
+      propertyPath: CurrentImage_script
+      value: 
+      objectReference: {fileID: 1879355352}
+    - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
+      propertyPath: _interactableImageStack
       value: 
       objectReference: {fileID: 1646500094}
     - target: {fileID: 8905611663635636823, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
@@ -2317,6 +2336,10 @@ PrefabInstance:
       propertyPath: TeleportActionMap.m_Id
       value: de962902-b1b8-4679-8d23-48a32e6823d3
       objectReference: {fileID: 0}
+    - target: {fileID: 8400800982981898022, guid: c503e0e74f20f68af829cd51034a4d0a, type: 3}
+      propertyPath: _interactableImageStack
+      value: 
+      objectReference: {fileID: 1646500094}
     - target: {fileID: 8400800982981898022, guid: c503e0e74f20f68af829cd51034a4d0a, type: 3}
       propertyPath: TeleportActionMap.m_Name
       value: Teleport

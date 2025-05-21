@@ -110,7 +110,16 @@ namespace General
 
             // Return the output from the Python script
 
-            Debug.Log($"Python script output: {output}");
+            // Print the full output in chunks to avoid truncation in Unity Console
+            const int chunkSize = 1000;
+            if (!string.IsNullOrEmpty(output))
+            {
+                for (int i = 0; i < output.Length; i += chunkSize)
+                {
+                    int length = Math.Min(chunkSize, output.Length - i);
+                    Debug.Log($"Python script output (part {i / chunkSize + 1}): {output.Substring(i, length)}");
+                }
+            }
             return output.ToString();
         }
 
