@@ -77,8 +77,6 @@ namespace CinAnnotator
             // Plays on main thread with pauses
             StartCoroutine(MyCoroutine(ImgPath));
 
-            Initialize(_interactableImageStack.transform, _interactableImageStack.userCamera);
-
             PositionWholeImage(Panel, userCamera);
             // Should occure after the image is positioned as we are using world coordinates
             PositionImagetitle(transform.GetChild(0));

@@ -83,7 +83,7 @@ namespace CinAnnotator
             // TODO: First pop up loading screen to 
             // indicate image loading and processing in python
             // Then load other gameobjects etc.
-            PythonWorkerEvent.AddListener(delegate { PythonProcessStartCallback(); });
+            //PythonWorkerEvent.AddListener(delegate { PythonProcessStartCallback(); });
 
 
             // Position Canvas once it is enabled
