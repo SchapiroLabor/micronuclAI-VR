@@ -26,10 +26,15 @@ namespace CinAnnotator
         public string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
         public string MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
 
+        public int target_size = 60;
+
 
         [SerializeField] private GridMaker _gridMaker;
         [SerializeField] private GameManaging _gameManaging;
         [SerializeField] private WholeImage _wholeImage;
+        [SerializeField] private ClickNextImage _clickNextImage;
+
+        
         [Serializable]
         public class MyChangeEvent : UnityEvent<bool>
         {
@@ -189,7 +194,8 @@ namespace CinAnnotator
         void PythonProcessOnFalse()
         {
             //load_indicator.SetActive(false);
-            _wholeImage.Initialize(_gridMaker.transform, userCamera);
+            //_wholeImage.Initialize(_gridMaker.transform, userCamera);
+            _clickNextImage.Initialize();
         }
 
 
@@ -268,7 +274,7 @@ namespace CinAnnotator
                 string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
                 Debug.Log($"Here: {_MaskPath}");
                 string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {_inputfolder} " +
-                                  $"--n {1} --max_side {250} --target_size {250} --target_a_ratio {1} " +
+                                  $"--n {1} --max_side {250} --target_size {_InteractableImageStack.target_size} --target_a_ratio {1} " +
                                   $"--write-out-my-config {Path.Combine(_inputfolder, "python_config.json")}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);

@@ -26,7 +26,7 @@ namespace CinAnnotator
         public List<Texture2D> images = new List<Texture2D>();
         public int N_image;
         public int current_img_indx = 0;
-        public Vector3 start_position = new Vector3(0, 0, 0);
+        public Vector3 start_position;
         public Quaternion start_rotation = Quaternion.Euler(0, 0, 0);
         private Camera userCamera;
 
@@ -47,26 +47,15 @@ namespace CinAnnotator
             gameObject.SetActive(true);
         }
 
-        void PythonProcessOnFalse()
-        {
-            Initialize();
-        }
-
         private System.Collections.IEnumerator MyCoroutine()
         {
             // Remove the call to WaitForWholeImage since it is not being used
             getImageTextures();
-            yield return null; // Wait for the next frame
-        }
 
-        public void Initialize()
-        {
-
-            userCamera = Camera.main;
-
-            // Start the coroutine
-            StartCoroutine(MyCoroutine());
-
+            while (images.Count < _interactableImageStack.bbox_dict.Index.Count)
+            {
+                yield return null; // Wait for the next frame
+            }
 
             // Initialize the image
             InitializeCurrentImage(current_img_indx, userCamera, start_position, start_rotation);
@@ -75,6 +64,17 @@ namespace CinAnnotator
 
             // Create and display second image
             CreateGameObjectForSecondImage(N_image, transform);
+        }
+
+        public void Initialize()
+        {
+
+            userCamera = Camera.main;
+
+            PositionImageStack();
+
+            // Start the coroutine
+            StartCoroutine(MyCoroutine());
 
             // Add function to select entered listener
             GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
@@ -86,8 +86,6 @@ namespace CinAnnotator
 
         void PositionImageStack()
         {
-            // Set the anchors and pivots of the Image
-            HelperFunctions.SetupAnchorsAndPivots(transform.GetComponent<RectTransform>());
 
             // Set the anchors to the centre of the screen
             transform.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 0.5f);
@@ -99,12 +97,16 @@ namespace CinAnnotator
             // Set side lengths of the rect transform
             transform.localScale = new UnityEngine.Vector3(1, 1, 1);
 
+            start_position = new UnityEngine.Vector3(0, 0, -_interactableImageStack.raycast_distance);
+
+            transform.position = start_position;
+
         }
 
         public void PositionResizeText(RectTransform CurrentImage, int current_img_indx, int N_image)
         {
             // Set the anchors and pivots of the Text
-            RectTransform textRectTransform = CurrentImage.Find("Image_ID").GetComponent<RectTransform>();
+            RectTransform textRectTransform = CurrentImage.GetChild(0).GetComponent<RectTransform>();
 
             // Set the anchors and pivots of the Text as sizeDelta requires absolute difference
             textRectTransform.anchorMin = new Vector2(0, 0);
@@ -192,20 +194,23 @@ namespace CinAnnotator
 
         private Texture2D LoadImg(InteractableImageStack.DataFrame bboxDict, int currentImgIndx)
         {
+            
 
             // Load the image with absolute path
             string path = bboxDict.Image_path[currentImgIndx];
             img_names.Add(Path.GetFileNameWithoutExtension(path));
             byte[] fileData = File.ReadAllBytes(path);
-            (int width, int height) = GetDimensions(bboxDict, currentImgIndx);
-            Texture2D tex = new Texture2D(width, height);
+            Texture2D tex = new Texture2D(_interactableImageStack.target_size, _interactableImageStack.target_size);
             bool isLoaded = tex.LoadImage(fileData);
 
-            if (!isLoaded)
-            {
-                Debug.Log("Texture did not load !!!");
+            if (currentImgIndx == 2790)
+            { Debug.Log($"Image path: {path}"); }
 
-            }
+            if (!isLoaded)
+                {
+                    Debug.Log("Texture did not load !!!");
+
+                }
 
             return tex;
 
@@ -215,14 +220,21 @@ namespace CinAnnotator
         private void getImageTextures()
         {
 
-            foreach (int Index in _interactableImageStack.bbox_dict.Index)
+            try
+            {
+            for (int Index = 0;  Index < _interactableImageStack.bbox_dict.Index.Count; Index++)
             {
                 images.Add(LoadImg(_interactableImageStack.bbox_dict, Index));
 
             }
 
-            N_image = images.Count;
-            Debug.Log(string.Format("Number of images: {0}", N_image));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error getting image dimensions: {e.Message}");
+            }
+
+
         }
 
 
@@ -234,6 +246,8 @@ namespace CinAnnotator
 
             // Get the RawImage component
             GetComponent<RawImage>().texture = images[current_img_indx];
+
+            N_image = _interactableImageStack.bbox_dict.Index.Count;
 
             rawImage = GetComponent<RawImage>();
 
@@ -279,8 +293,6 @@ namespace CinAnnotator
 
                 Debug.Log("RawImageSubsequent is not null");
 
-                rawImagesubsequentGO.name = "SubsequentImage";
-                rawImagesubsequentGO.transform.SetParent(CurrentImage.parent);
                 rawImagesubsequentGO.transform.localPosition = start_position;
                 rawImagesubsequentGO.transform.rotation = start_rotation;
                 rawImagesubsequentGO.SetActive(false);

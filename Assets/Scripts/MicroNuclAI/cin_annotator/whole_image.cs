@@ -84,7 +84,7 @@ namespace CinAnnotator
             PositionImagetitle(transform.GetChild(0));
 
             // Initialize Arrow
-            InitializeArrow();
+            //InitializeArrow();
 
             // STart position of the player
             start_position = Camera.main.transform.position;

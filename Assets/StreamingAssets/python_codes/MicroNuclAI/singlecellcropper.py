@@ -95,12 +95,12 @@ def main(save_dir: str,
         bbox_path: str = os.path.join(save_dir, "bbox.csv")
         logger.info(f"Saving bounding boxes to {bbox_path}.")
         df = pd.DataFrame(filtered_boxes.bboxes, columns=[
-            "N", "X1", "X2", "Y1", "Y2"])
+            "Index", "X1", "X2", "Y1", "Y2"])
 
         df = df.astype(int)
 
-        df["img_path"] = df["N"].apply(
-            lambda x: os.path.join(patch_dir, f"img_{x}.png"))
+        df["Image_path"] = df["Index"].apply(
+            lambda x: os.path.join(os.path.dirname(patch_dir), f"img_{x}.png"))
 
         df[f"whole_slide_img_ndim"] = filtered_boxes.image.ndim
 
@@ -129,7 +129,7 @@ def get_bbox_from_csv(data_dir) -> pd.DataFrame:
         raise FileNotFoundError(f"bbox not found in {file_path}")
 
     df = pd.read_csv(file_path, sep=",", names=[
-                     "N", "X1", "X2", "Y1", "Y2", "whole_slide_img_shape"])
+                     "Index", "X1", "X2", "Y1", "Y2", "whole_slide_img_shape"])
     # Set 'N' as the index if it exists
     df = df.set_index("N")
 
