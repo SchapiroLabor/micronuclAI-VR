@@ -108,19 +108,7 @@ namespace General
 
             }
 
-            // Return the output from the Python script
-
-            // Print the full output in chunks to avoid truncation in Unity Console
-            const int chunkSize = 1000;
-            if (!string.IsNullOrEmpty(output))
-            {
-                for (int i = 0; i < output.Length; i += chunkSize)
-                {
-                    int length = Math.Min(chunkSize, output.Length - i);
-                    Debug.Log($"Python script output (part {i / chunkSize + 1}): {output.Substring(i, length)}");
-                }
-            }
-            return output.ToString();
+            return output;
         }
 
         public static string GetStdOutputFromPython(string ScriptPath, string python_exe,
@@ -133,9 +121,9 @@ namespace General
             // Start the process
             process.Start();
 
-            string python_exe_new = GetStdOutputFromConsole(process);
+            string output = GetStdOutputFromConsole(process);
 
-            return python_exe_new;
+            return output;
 
         }
 

@@ -29,6 +29,7 @@ namespace CinAnnotator
 
         [SerializeField] private GridMaker _gridMaker;
         [SerializeField] private GameManaging _gameManaging;
+        [SerializeField] private WholeImage _wholeImage;
         [Serializable]
         public class MyChangeEvent : UnityEvent<bool>
         {
@@ -39,7 +40,7 @@ namespace CinAnnotator
         public DataFrame bbox_dict;
 
         [Header("Add to config file. Used to set world font size")]
-        private float textfontsize = 0.1f; // Default font size for the text field
+        private float textfontsize = 0.5f; // Default font size for the text field
         [Header("Add to config file")]
         private string PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
         [Header("Add to config file")]
@@ -147,36 +148,10 @@ namespace CinAnnotator
             inputfolder = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data";
             python_exe = @"D:\OneDrive\Desktop\Internship\VR_schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
 
-            ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonWorkerEvent,
+            ThreadWithState tws = new(python_exe, inputfolder, PythonScript,
             this);
 
-            //StartCoroutine(PreprocessPatches(tws));
-
-
-            string ScriptPath = Path.Combine(Application.streamingAssetsPath, PythonScript);
-
-            string _MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
-            ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
-            Debug.Log($"Here: {_MaskPath}");
-            string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {inputfolder} " +
-                              $"--n {1} --max_side {250} --target_size {250} --target_a_ratio {1} " +
-                              $"--write-out-my-config {Path.Combine(inputfolder, "python_config.json")}";
-
-            System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, python_exe, cmd_args);
-
-            // Start the process
-            process.Start();
-
-            string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
-
-            string result = json_bbox_dict.ToString();
-
-            // We are awaiting beyond the await output statement but Main thread is not blocked
-            bbox_dict = JsonUtility.FromJson<DataFrame>(result);
-
-            Debug.Log($"Python script output: {bbox_dict.whole_slide_img_shape_Y[0]} and its" +
-            $"type: {bbox_dict.GetType()}");
-
+            StartCoroutine(PreprocessPatches(tws));
 
         }
 
@@ -208,12 +183,13 @@ namespace CinAnnotator
         void PythonProcessOnTrue()
         {
             // Create text field to state image is loading
-            CreateLoadingWidget(transform, load_indicator, textfontsize);
+            //CreateLoadingWidget(transform, load_indicator, textfontsize);
         }
 
         void PythonProcessOnFalse()
         {
-            load_indicator.SetActive(false);
+            //load_indicator.SetActive(false);
+            _wholeImage.Initialize(transform, userCamera);
         }
 
 
@@ -266,12 +242,11 @@ namespace CinAnnotator
             private string _python_exe;
             private string _inputfolder;
             private string _python_script;
-            private MyChangeEvent _pythonWorkerEvent;
             public DataFrame output;
             public InteractableImageStack _InteractableImageStack;
 
             // The constructor obtains the state information.
-            public ThreadWithState(string python_exe, string inputfolder, string python_script, MyChangeEvent PythonWorkerEvent,
+            public ThreadWithState(string python_exe, string inputfolder, string python_script,
             InteractableImageStack _interactableImageStack)
             {
                 _python_exe = python_exe;
@@ -286,20 +261,29 @@ namespace CinAnnotator
             public void ThreadProc()
             {
 
+
                 string ScriptPath = Path.Combine(Application.streamingAssetsPath, _python_script);
 
-                System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, _inputfolder);
+                string _MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
+                string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
+                Debug.Log($"Here: {_MaskPath}");
+                string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {_inputfolder} " +
+                                  $"--n {1} --max_side {250} --target_size {250} --target_a_ratio {1} " +
+                                  $"--write-out-my-config {Path.Combine(_inputfolder, "python_config.json")}";
+
+                System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);
 
                 // Start the process
                 process.Start();
 
                 string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
 
-                string result = json_bbox_dict.ToString();
-
                 // We are awaiting beyond the await output statement but Main thread is not blocked
-                _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(result);
-                ThreadSafeLogger.Log($"Python script output: {result}");
+                _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(json_bbox_dict);
+
+
+
+
 
             }
 

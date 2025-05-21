@@ -57,15 +57,6 @@ namespace CinAnnotator
 
         }
 
-        void Start()
-        {   
-            string ImgPath = "D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png";
-            Debug.Log($"Image is created: {ImgPath}");
-
-            // Plays on main thread with pauses
-            StartCoroutine(MyCoroutine(ImgPath));
-        }
-
         void Update()
         {
         }
@@ -78,10 +69,17 @@ namespace CinAnnotator
         }
 
         // Start is called before the first frame update
-        public void Initialize(Transform parent, Transform Panel, Camera userCamera)
+        public void Initialize(Transform Panel, Camera userCamera)
         {
+            string ImgPath = "D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png";
+            Debug.Log($"Image is created: {ImgPath}");
 
-            PositionWholeImage(parent, Panel, userCamera);
+            // Plays on main thread with pauses
+            StartCoroutine(MyCoroutine(ImgPath));
+
+            Initialize(_interactableImageStack.transform, _interactableImageStack.userCamera);
+
+            PositionWholeImage(Panel, userCamera);
             // Should occure after the image is positioned as we are using world coordinates
             PositionImagetitle(transform.GetChild(0));
 
@@ -274,7 +272,7 @@ namespace CinAnnotator
             rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
         }
 
-        private void PositionWholeImage(Transform CurrentImage, Transform Panel, Camera userCamera)
+        private void PositionWholeImage(Transform Panel, Camera userCamera)
         {
             RectTransform rectTransform = GetComponent<RectTransform>();
 
@@ -300,7 +298,9 @@ namespace CinAnnotator
         {
             //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
             byte[] fileData = File.ReadAllBytes(img_path);
-            (float width, float height) = GetDimensions(img_path);
+            //(float width, float height) = GetDimensions(img_path);
+            width = _interactableImageStack.bbox_dict.whole_slide_img_shape_X[0];
+            height = _interactableImageStack.bbox_dict.whole_slide_img_shape_Y[0];
             SchapiroLabLog.Log($"Size of img: {width} {height}");
             Texture2D texture = new Texture2D((int)width, (int)height);
             texture.LoadImage(fileData);

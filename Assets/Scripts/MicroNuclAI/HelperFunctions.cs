@@ -132,10 +132,12 @@ namespace NonGOSripts
             textfontsize);
             load_indicator.transform.position = parent.position;
             // Set size to 1/3 of width of image with aspect ratio of 3:1
-            load_indicator.GetComponent<RectTransform>().sizeDelta = new Vector2(load_indicator.GetComponent<RectTransform>().rect.width / 3,
-            load_indicator.GetComponent<RectTransform>().rect.width / 6);
+            load_indicator.GetComponent<RectTransform>().sizeDelta = new Vector2(10,
+            3);
             load_indicator.SetActive(true);
         }
+
+        
 
 
         /*
