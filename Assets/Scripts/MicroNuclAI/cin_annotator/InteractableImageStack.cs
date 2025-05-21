@@ -189,7 +189,7 @@ namespace CinAnnotator
         void PythonProcessOnFalse()
         {
             //load_indicator.SetActive(false);
-            _wholeImage.Initialize(transform, userCamera);
+            _wholeImage.Initialize(_gridMaker.transform, userCamera);
         }
 
 

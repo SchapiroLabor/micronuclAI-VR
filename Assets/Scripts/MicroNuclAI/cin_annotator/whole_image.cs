@@ -77,6 +77,8 @@ namespace CinAnnotator
             // Plays on main thread with pauses
             StartCoroutine(MyCoroutine(ImgPath));
 
+            // TODO: Correct positioning. Take notes on multithreading and IPC processing specifically on JSON parsing etc. 
+
             PositionWholeImage(Panel, userCamera);
             // Should occure after the image is positioned as we are using world coordinates
             PositionImagetitle(transform.GetChild(0));
