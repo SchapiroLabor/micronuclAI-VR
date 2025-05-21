@@ -52,7 +52,7 @@ namespace CinAnnotator
             // Remove the call to WaitForWholeImage since it is not being used
             getImageTextures();
 
-            while (images.Count < _interactableImageStack.bbox_dict.Index.Count)
+            while (images.Count < 6)
             {
                 yield return null; // Wait for the next frame
             }
@@ -194,7 +194,7 @@ namespace CinAnnotator
 
         private Texture2D LoadImg(InteractableImageStack.DataFrame bboxDict, int currentImgIndx)
         {
-            
+
 
             // Load the image with absolute path
             string path = bboxDict.Image_path[currentImgIndx];
@@ -203,14 +203,11 @@ namespace CinAnnotator
             Texture2D tex = new Texture2D(_interactableImageStack.target_size, _interactableImageStack.target_size);
             bool isLoaded = tex.LoadImage(fileData);
 
-            if (currentImgIndx == 2790)
-            { Debug.Log($"Image path: {path}"); }
-
             if (!isLoaded)
-                {
-                    Debug.Log("Texture did not load !!!");
+            {
+                Debug.Log("Texture did not load !!!");
 
-                }
+            }
 
             return tex;
 
@@ -222,13 +219,18 @@ namespace CinAnnotator
 
             try
             {
-            for (int Index = 0;  Index < _interactableImageStack.bbox_dict.Index.Count; Index++)
-            {
-                images.Add(LoadImg(_interactableImageStack.bbox_dict, Index));
+
+                for (int Index = images.Count; Index < 6; Index++)
+                {
+
+                    images.Add(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
+
+                }
+
+
 
             }
 
-            }
             catch (Exception e)
             {
                 Debug.LogError($"Error getting image dimensions: {e.Message}");
