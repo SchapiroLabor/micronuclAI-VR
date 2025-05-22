@@ -21,7 +21,7 @@ namespace CinAnnotator
     public class Trash : MonoBehaviour
     {
 
-        private GameObject trashPrefab;
+        [SerializeField] private GameObject trashPrefab;
         public InteractableImageStack _interactableImageStack;
         [SerializeField] private ClickNextImage CurrentImage_script;
         [SerializeField] private Camera userCamera;
@@ -42,14 +42,10 @@ namespace CinAnnotator
 
         }
 
-        void PythonProcessOnFalse()
-        {
-            Initialize();
-        }
 
 
 
-        void Initialize()
+        public void Initialize()
         {
 
             Transform CurrentImage = CurrentImage_script.transform;
@@ -225,6 +221,12 @@ namespace CinAnnotator
 
                     // If equal or below N_images, reinitialize the image
                     re_init_image(ImageCurrent, CurrentImage_script, CurrentImageIndex, N_image, images);
+
+                    // Remove when current image is switched to near index.
+                    images.RemoveAt(CurrentImageIndex - 1);
+
+
+                     CurrentImage_script.getImageTextures();
 
                 }
                 else

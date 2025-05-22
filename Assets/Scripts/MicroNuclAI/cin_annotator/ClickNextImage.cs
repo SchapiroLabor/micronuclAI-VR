@@ -20,6 +20,7 @@ namespace CinAnnotator
     {
         public GameObject rawImagesubsequentGO;
         public InteractableImageStack _interactableImageStack;
+        public Trash _trash;
         private int subsequent_img;
         public List<string> img_names;
         private RawImage rawImage;
@@ -79,6 +80,7 @@ namespace CinAnnotator
             // Add function to select entered listener
             GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectEntered.AddListener((args) => DisplaySecondImage());
 
+            _trash.Initialize();
         }
 
 
@@ -214,12 +216,12 @@ namespace CinAnnotator
 
         }
 
-        private void getImageTextures()
+        public void getImageTextures()
         {
 
             try
             {
-
+                Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}");
                 for (int Index = images.Count; Index < 6; Index++)
                 {
 
