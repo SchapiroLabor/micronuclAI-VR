@@ -24,10 +24,10 @@ namespace CinAnnotator
         [SerializeField] private GameObject trashPrefab;
         public InteractableImageStack _interactableImageStack;
         [SerializeField] private ClickNextImage _clickNextImage;
+        GameObject Texinstance;
         [SerializeField] private Camera userCamera;
         private List<GameObject> trashList = new List<GameObject>();
         private string last_trash;
-        private int temp_iterator = 0; // Used to keep track of the current image index for the trash
 
 
         void Awake()
@@ -103,6 +103,7 @@ namespace CinAnnotator
             ImageCurrent.GetComponent<RectTransform>().localPosition = _clickNextImage.start_position;
             ImageCurrent.GetComponent<RectTransform>().rotation = _clickNextImage.start_rotation;
         }
+
         private GameObject InformNoMoreImages(GameObject ImageCurrent)
         {
             // Just set it off
@@ -155,11 +156,9 @@ namespace CinAnnotator
             Debug.Log($"No more images to display, executed for: {_clickNextImage.current_img_indx}");
 
             return textInstance;
-
-
         }
 
-        private void NextCurrentImage(GameObject ImageCurrent, LinkedList<Texture2D> images)
+        private void ImageStackIndexing(GameObject ImageCurrent, LinkedList<Texture2D> images)
 
         {
 
@@ -168,16 +167,16 @@ namespace CinAnnotator
                 // Close second image
                 _clickNextImage.rawImagesubsequentGO.SetActive(false);
 
-                GameObject Texinstance = null;
+                int N_images = _interactableImageStack.bbox_dict.Index.Count;
 
                 // If current image is index is below N_images, reinitialize the image
-                if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
+                if (_clickNextImage.current_img_indx < N_images)
                 {
                     ImageCurrent.SetActive(true);
                     // Take second image as the current image
                     ImageCurrent.GetComponent<RawImage>().texture = images.First.Value;
                     _clickNextImage.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(),
-                    _clickNextImage.current_img_indx);
+                    _clickNextImage.current_img_indx, N_images);
                     RepositionCurrentImage(ImageCurrent);
 
                     if (Texinstance != null)
@@ -201,6 +200,28 @@ namespace CinAnnotator
             }
         }
 
+        public void NextImage()
+        {                    // Remove the first image from the linked list
+            _clickNextImage.images.RemoveFirst();
+
+            _clickNextImage.current_img_indx += 1;
+
+        }
+
+        public void PreviousImage()
+        {   // Remove the first image from the linked list
+            _clickNextImage.images.RemoveLast();
+
+            _clickNextImage.current_img_indx -= 1;
+
+            // Add the last trash to the linked list of images
+            _clickNextImage.images.AddFirst(_clickNextImage.LoadImg(_interactableImageStack.bbox_dict,
+            _clickNextImage.current_img_indx));
+
+
+
+        }
+
         // This is executed once the trash object collider is triggered
         public void dispose(string Trash_name)
         {
@@ -208,20 +229,19 @@ namespace CinAnnotator
             GameObject ImageCurrent = _clickNextImage.gameObject;
 
             // Get current image index
-            if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
+            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
             {
 
                 if (ImageCurrent != null)
                 {
+                    // Delete in one frame
                     ImageCurrent.SetActive(false);
 
-                    // Remove the first image from the linked list
-                    _clickNextImage.images.RemoveFirst();
-
-                    _clickNextImage.current_img_indx += 1;
+                    // Next image in the stack
+                    NextImage();
 
                     // Switch subsequent image with current image
-                    NextCurrentImage(ImageCurrent, _clickNextImage.images);
+                    ImageStackIndexing(ImageCurrent, _clickNextImage.images);
 
                     // Load additional texture to maintain 6 images in the stack
                     _clickNextImage.getImageTextures();
@@ -252,17 +272,8 @@ namespace CinAnnotator
                 GameObject currentImage = _clickNextImage.gameObject;
 
                 // Get current image index
-                if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
+                if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
                 {
-                    _clickNextImage.current_img_indx -= 1;
-
-                    // Add the last trash to the linked list of images
-                    _clickNextImage.images.AddFirst(_clickNextImage.LoadImg(_interactableImageStack.bbox_dict,
-                    _clickNextImage.current_img_indx));
-
-                    // Load additional texture to maintain 6 images in the stack
-                    _clickNextImage.getImageTextures();
-
                     Transform trash = transform.Find(last_trash);
 
                     List<int> patches = trash.GetComponent<Tinyt>().patches;
@@ -275,8 +286,10 @@ namespace CinAnnotator
                     {
                         currentImage.SetActive(false);
 
+                        PreviousImage();
+
                         // Switch subsequent image with current image
-                        NextCurrentImage(currentImage, _clickNextImage.images);
+                        ImageStackIndexing(currentImage, _clickNextImage.images);
                     }
                     else
                     {

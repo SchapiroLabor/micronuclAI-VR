@@ -21,13 +21,12 @@ namespace CinAnnotator
         public GameObject rawImagesubsequentGO;
         public InteractableImageStack _interactableImageStack;
         public Trash _trash;
-        private int subsequent_img_indx;
         public List<string> img_names;
         private RawImage rawImage;
         public LinkedList<Texture2D> images = new LinkedList<Texture2D>();
         public int max_imgs_to_load = 6; // Maximum number of images to load at once
-        public int N_image;
         public int current_img_indx = 0;
+        private int subsequent_img_indx;
         public Vector3 start_position;
         public Quaternion start_rotation = Quaternion.Euler(0, 0, 0);
         private Camera userCamera;
@@ -106,7 +105,7 @@ namespace CinAnnotator
 
         }
 
-        public void PositionResizeText(RectTransform CurrentImage, int img_indx)
+        public void PositionResizeText(RectTransform CurrentImage, int img_indx, int N_image)
         {
             // Set the anchors and pivots of the Text
             RectTransform textRectTransform = CurrentImage.GetChild(0).GetComponent<RectTransform>();
@@ -222,10 +221,10 @@ namespace CinAnnotator
 
             try
             {
-                Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}");
+
                 for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
-
+                    Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}, Index: {Index}");
                     images.AddLast(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
 
                 }
@@ -252,8 +251,6 @@ namespace CinAnnotator
             // Get the RawImage component
             GetComponent<RawImage>().texture = images.First.Value;
 
-            N_image = _interactableImageStack.bbox_dict.Index.Count;
-
             rawImage = GetComponent<RawImage>();
 
             // Resize the image to be within 40% of the FOV
@@ -263,7 +260,8 @@ namespace CinAnnotator
             SetColliderSize(rawImage);
 
             // Position and resize the text
-            PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx);
+            PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx,
+            _interactableImageStack.bbox_dict.Index.Count);
 
             // Set non maskable to true
             rawImage.GetComponent<RawImage>().maskable = false;
@@ -284,14 +282,16 @@ namespace CinAnnotator
         {
 
             // Create subsequent image only when there are more than one images
-            if (N_image > 1)
+            if (_interactableImageStack.bbox_dict.Index.Count > 1)
             {
 
                 // Create a new RawImage GameObject from the prefab
 
                 if (rawImagesubsequentGO == null)
                 {
-                    rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position, transform.rotation);
+                    rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
+                    Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position,
+                    transform.rotation);
                     rawImagesubsequentGO.GetComponent<RawImage>().SetNativeSize();
 
                 }
@@ -318,14 +318,15 @@ namespace CinAnnotator
         {
             if (this.gameObject != null && rawImagesubsequentGO != null)
             {
+                int N_images = _interactableImageStack.bbox_dict.Index.Count;
 
                 subsequent_img_indx = current_img_indx + 1;
 
-                if (subsequent_img_indx < N_image)
+                if (subsequent_img_indx < N_images)
                 {
                     // Increment the index to get the next image
                     rawImagesubsequentGO.GetComponent<RawImage>().texture = images.First.Next.Value; // Set second image texture
-                    PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img_indx);
+                    PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img_indx, N_images);
                     rawImagesubsequentGO.SetActive(true);
                 }
 
