@@ -171,6 +171,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 2
   m_VerticalFit: 2
+--- !u!114 &228217394 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
+  m_PrefabInstance: {fileID: 2896750308307665656}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228217390}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74d441ff6987c24dc8e6ed961c8b6717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &293795542
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1284,6 +1295,10 @@ PrefabInstance:
       value: Image
       objectReference: {fileID: 0}
     - target: {fileID: 7035354712049439009, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
+      propertyPath: _trash
+      value: 
+      objectReference: {fileID: 228217394}
+    - target: {fileID: 7035354712049439009, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
       propertyPath: CanvasUI
       value: 
       objectReference: {fileID: 0}
@@ -1722,11 +1737,15 @@ PrefabInstance:
     - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
       propertyPath: trashPrefab
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 5306894076688062867, guid: 68db35ad9b5e0728889de9cd5dfcfa2f, type: 3}
     - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
       propertyPath: Canvas_script
       value: 
       objectReference: {fileID: 1646500094}
+    - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
+      propertyPath: _clickNextImage
+      value: 
+      objectReference: {fileID: 1879355352}
     - target: {fileID: 4739478209010673525, guid: b74e47e4beb8387bfabebee0036a74d5, type: 3}
       propertyPath: CurrentImage_script
       value: 

@@ -23,10 +23,11 @@ namespace CinAnnotator
 
         [SerializeField] private GameObject trashPrefab;
         public InteractableImageStack _interactableImageStack;
-        [SerializeField] private ClickNextImage CurrentImage_script;
+        [SerializeField] private ClickNextImage _clickNextImage;
         [SerializeField] private Camera userCamera;
         private List<GameObject> trashList = new List<GameObject>();
         private string last_trash;
+        private int temp_iterator = 0; // Used to keep track of the current image index for the trash
 
 
         void Awake()
@@ -48,7 +49,7 @@ namespace CinAnnotator
         public void Initialize()
         {
 
-            Transform CurrentImage = CurrentImage_script.transform;
+            Transform CurrentImage = _clickNextImage.transform;
             Vector3 image_position = CurrentImage.position;
             float width = CurrentImage.GetComponent<RectTransform>().rect.width / 2;
             float x_shift = width;
@@ -99,10 +100,10 @@ namespace CinAnnotator
 
         private void RepositionCurrentImage(GameObject ImageCurrent)
         {
-            ImageCurrent.GetComponent<RectTransform>().localPosition = CurrentImage_script.start_position;
-            ImageCurrent.GetComponent<RectTransform>().rotation = CurrentImage_script.start_rotation;
+            ImageCurrent.GetComponent<RectTransform>().localPosition = _clickNextImage.start_position;
+            ImageCurrent.GetComponent<RectTransform>().rotation = _clickNextImage.start_rotation;
         }
-        private GameObject InformNoMoreImages(GameObject ImageCurrent, ClickNextImage CurrentImage_script)
+        private GameObject InformNoMoreImages(GameObject ImageCurrent)
         {
             // Just set it off
             ImageCurrent.SetActive(false);
@@ -151,33 +152,32 @@ namespace CinAnnotator
             // Text color böack
             textInstance.GetComponent<TextMeshProUGUI>().color = Color.white;
 
-            Debug.Log($"No more images to display, executed for: {CurrentImage_script.current_img_indx}");
+            Debug.Log($"No more images to display, executed for: {_clickNextImage.current_img_indx}");
 
             return textInstance;
 
 
         }
 
-        private void re_init_image(GameObject ImageCurrent, ClickNextImage CurrentImage_script,
-                                    int CurrentImageIndex, int N_image, List<Texture2D> images)
+        private void NextCurrentImage(GameObject ImageCurrent, LinkedList<Texture2D> images)
 
         {
 
             if (ImageCurrent == null || ImageCurrent.activeSelf == false)
             {
-
-                CurrentImage_script.current_img_indx = CurrentImageIndex;
-                closedisplaysecondimg();
+                // Close second image
+                _clickNextImage.rawImagesubsequentGO.SetActive(false);
 
                 GameObject Texinstance = null;
 
                 // If current image is index is below N_images, reinitialize the image
-                if (CurrentImageIndex < N_image)
+                if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
                 {
                     ImageCurrent.SetActive(true);
-                    Debug.Log(string.Format("Current image index is {0}", CurrentImageIndex));
-                    ImageCurrent.GetComponent<RawImage>().texture = images[CurrentImageIndex];
-                    CurrentImage_script.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(), CurrentImageIndex, N_image);
+                    // Take second image as the current image
+                    ImageCurrent.GetComponent<RawImage>().texture = images.First.Value;
+                    _clickNextImage.PositionResizeText(ImageCurrent.GetComponent<RectTransform>(),
+                    _clickNextImage.current_img_indx);
                     RepositionCurrentImage(ImageCurrent);
 
                     if (Texinstance != null)
@@ -189,7 +189,7 @@ namespace CinAnnotator
                 }
                 else
                 {
-                    Texinstance = InformNoMoreImages(ImageCurrent, CurrentImage_script);
+                    Texinstance = InformNoMoreImages(ImageCurrent);
                     RepositionCurrentImage(ImageCurrent);
 
                 }
@@ -205,28 +205,26 @@ namespace CinAnnotator
         public void dispose(string Trash_name)
         {
             last_trash = Trash_name;
-            GameObject ImageCurrent = CurrentImage_script.gameObject;
-            int CurrentImageIndex = CurrentImage_script.current_img_indx;
-            int N_image = CurrentImage_script.N_image;
-            List<Texture2D> images = CurrentImage_script.images;
+            GameObject ImageCurrent = _clickNextImage.gameObject;
 
             // Get current image index
-            if (CurrentImageIndex < (N_image))
+            if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
             {
-                CurrentImageIndex += 1;
 
                 if (ImageCurrent != null)
                 {
                     ImageCurrent.SetActive(false);
 
-                    // If equal or below N_images, reinitialize the image
-                    re_init_image(ImageCurrent, CurrentImage_script, CurrentImageIndex, N_image, images);
+                    // Remove the first image from the linked list
+                    _clickNextImage.images.RemoveFirst();
 
-                    // Remove when current image is switched to near index.
-                    images.RemoveAt(CurrentImageIndex - 1);
+                    _clickNextImage.current_img_indx += 1;
 
+                    // Switch subsequent image with current image
+                    NextCurrentImage(ImageCurrent, _clickNextImage.images);
 
-                     CurrentImage_script.getImageTextures();
+                    // Load additional texture to maintain 6 images in the stack
+                    _clickNextImage.getImageTextures();
 
                 }
                 else
@@ -251,13 +249,19 @@ namespace CinAnnotator
         {   // Could use UnityEngine.Pool for this to improve memory management
             if (last_trash != null)
             {
-                GameObject currentImage = CurrentImage_script.gameObject;
-                int currentImageIndex = CurrentImage_script.current_img_indx;
+                GameObject currentImage = _clickNextImage.gameObject;
 
                 // Get current image index
-                if (currentImageIndex <= (CurrentImage_script.N_image) && currentImageIndex > 0)
+                if (_clickNextImage.current_img_indx < _clickNextImage.N_image)
                 {
-                    currentImageIndex -= 1;
+                    _clickNextImage.current_img_indx -= 1;
+
+                    // Add the last trash to the linked list of images
+                    _clickNextImage.images.AddFirst(_clickNextImage.LoadImg(_interactableImageStack.bbox_dict,
+                    _clickNextImage.current_img_indx));
+
+                    // Load additional texture to maintain 6 images in the stack
+                    _clickNextImage.getImageTextures();
 
                     Transform trash = transform.Find(last_trash);
 
@@ -270,7 +274,9 @@ namespace CinAnnotator
                     if (currentImage != null)
                     {
                         currentImage.SetActive(false);
-                        re_init_image(currentImage, CurrentImage_script, currentImageIndex, CurrentImage_script.N_image, CurrentImage_script.images);
+
+                        // Switch subsequent image with current image
+                        NextCurrentImage(currentImage, _clickNextImage.images);
                     }
                     else
                     {
@@ -287,14 +293,6 @@ namespace CinAnnotator
 
 
 
-        public void closedisplaysecondimg()
-
-        {
-            GameObject rawImagesubsequent = transform.parent.Find("SubsequentImage").gameObject;
-
-            rawImagesubsequent.SetActive(false);
-
-        }
 
         private GameObject createTrash(int N, Transform CurrentImage)
         {
@@ -371,7 +369,7 @@ namespace CinAnnotator
 
         public void CreateBucket()
         {
-            GameObject trashinstance = createTrash(trashList.Count + 1, CurrentImage_script.transform);
+            GameObject trashinstance = createTrash(trashList.Count + 1, _clickNextImage.transform);
 
             trashList.Add(trashinstance);
 

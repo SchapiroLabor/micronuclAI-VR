@@ -21,10 +21,11 @@ namespace CinAnnotator
         public GameObject rawImagesubsequentGO;
         public InteractableImageStack _interactableImageStack;
         public Trash _trash;
-        private int subsequent_img;
+        private int subsequent_img_indx;
         public List<string> img_names;
         private RawImage rawImage;
-        public List<Texture2D> images = new List<Texture2D>();
+        public LinkedList<Texture2D> images = new LinkedList<Texture2D>();
+        public int max_imgs_to_load = 6; // Maximum number of images to load at once
         public int N_image;
         public int current_img_indx = 0;
         public Vector3 start_position;
@@ -53,18 +54,18 @@ namespace CinAnnotator
             // Remove the call to WaitForWholeImage since it is not being used
             getImageTextures();
 
-            while (images.Count < 6)
+            while (images.Count < max_imgs_to_load)
             {
                 yield return null; // Wait for the next frame
             }
 
             // Initialize the image
-            InitializeCurrentImage(current_img_indx, userCamera, start_position, start_rotation);
+            InitializeCurrentImage(userCamera, start_position, start_rotation);
 
             // Do not trust child to be initialized during Start()
 
             // Create and display second image
-            CreateGameObjectForSecondImage(N_image, transform);
+            CreateGameObjectForSecondImage();
         }
 
         public void Initialize()
@@ -105,7 +106,7 @@ namespace CinAnnotator
 
         }
 
-        public void PositionResizeText(RectTransform CurrentImage, int current_img_indx, int N_image)
+        public void PositionResizeText(RectTransform CurrentImage, int img_indx)
         {
             // Set the anchors and pivots of the Text
             RectTransform textRectTransform = CurrentImage.GetChild(0).GetComponent<RectTransform>();
@@ -130,7 +131,7 @@ namespace CinAnnotator
             textRectTransform.GetComponent<TextMeshProUGUI>().fontSize = CurrentImage.sizeDelta.x * 0.1f;
 
             // Set the text of the Text
-            textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", current_img_indx + 1, N_image);
+            textRectTransform.GetComponent<TextMeshProUGUI>().text = string.Format("Patch {0}/{1}", img_indx, N_image);
 
             // Centre text in the Text
             textRectTransform.GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Bottom;
@@ -194,7 +195,7 @@ namespace CinAnnotator
         }
 
 
-        private Texture2D LoadImg(InteractableImageStack.DataFrame bboxDict, int currentImgIndx)
+        public Texture2D LoadImg(InteractableImageStack.DataFrame bboxDict, int currentImgIndx)
         {
 
 
@@ -222,10 +223,10 @@ namespace CinAnnotator
             try
             {
                 Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}");
-                for (int Index = images.Count; Index < 6; Index++)
+                for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
 
-                    images.Add(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
+                    images.AddLast(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
 
                 }
 
@@ -242,14 +243,14 @@ namespace CinAnnotator
         }
 
 
-        public void InitializeCurrentImage(int current_img_indx, Camera userCamera, Vector3 StartPosition, quaternion StartRotation)
+        public void InitializeCurrentImage(Camera userCamera, Vector3 StartPosition, quaternion StartRotation)
         {
 
             transform.localPosition = StartPosition;
             transform.rotation = StartRotation;
 
             // Get the RawImage component
-            GetComponent<RawImage>().texture = images[current_img_indx];
+            GetComponent<RawImage>().texture = images.First.Value;
 
             N_image = _interactableImageStack.bbox_dict.Index.Count;
 
@@ -262,7 +263,7 @@ namespace CinAnnotator
             SetColliderSize(rawImage);
 
             // Position and resize the text
-            PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx, N_image);
+            PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx);
 
             // Set non maskable to true
             rawImage.GetComponent<RawImage>().maskable = false;
@@ -279,11 +280,11 @@ namespace CinAnnotator
 
 
 
-        private void CreateGameObjectForSecondImage(int N_images, Transform CurrentImage)
+        private void CreateGameObjectForSecondImage()
         {
 
             // Create subsequent image only when there are more than one images
-            if (N_images > 1)
+            if (N_image > 1)
             {
 
                 // Create a new RawImage GameObject from the prefab
@@ -301,8 +302,8 @@ namespace CinAnnotator
                 rawImagesubsequentGO.transform.rotation = start_rotation;
                 rawImagesubsequentGO.SetActive(false);
                 rawImagesubsequentGO.GetComponent<RawImage>().maskable = false;
-                rawImagesubsequentGO.GetComponent<RectTransform>().sizeDelta = CurrentImage.GetComponent<RectTransform>().sizeDelta;
-                rawImagesubsequentGO.GetComponent<RectTransform>().localScale = CurrentImage.GetComponent<RectTransform>().localScale;
+                rawImagesubsequentGO.GetComponent<RectTransform>().sizeDelta = GetComponent<RectTransform>().sizeDelta;
+                rawImagesubsequentGO.GetComponent<RectTransform>().localScale = GetComponent<RectTransform>().localScale;
             }
 
             else
@@ -311,19 +312,20 @@ namespace CinAnnotator
             }
         }
 
+
+
         private void DisplaySecondImage()
         {
             if (this.gameObject != null && rawImagesubsequentGO != null)
             {
 
-                subsequent_img = current_img_indx;
+                subsequent_img_indx = current_img_indx + 1;
 
-                if (subsequent_img < (images.Count - 1))
+                if (subsequent_img_indx < N_image)
                 {
-                    subsequent_img += 1;
-
-                    rawImagesubsequentGO.GetComponent<RawImage>().texture = images[subsequent_img];
-                    PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img, N_image);
+                    // Increment the index to get the next image
+                    rawImagesubsequentGO.GetComponent<RawImage>().texture = images.First.Next.Value; // Set second image texture
+                    PositionResizeText(rawImagesubsequentGO.transform.GetComponent<RectTransform>(), subsequent_img_indx);
                     rawImagesubsequentGO.SetActive(true);
                 }
 
