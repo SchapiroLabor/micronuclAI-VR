@@ -276,24 +276,23 @@ namespace CinAnnotator
                 {
                     Transform trash = transform.Find(last_trash);
 
-                    List<int> patches = trash.GetComponent<Tinyt>().patches;
-                    if (patches.Count > 0)
+                    if (trash.GetComponent<Tinyt>().patches.Count > 0)
                     {
-                        patches.RemoveAt(patches.Count - 1);
-                    }
+                        trash.GetComponent<Tinyt>().patches.RemoveLast();
 
-                    if (currentImage != null)
-                    {
-                        currentImage.SetActive(false);
+                        if (currentImage != null)
+                        {
+                            currentImage.SetActive(false);
 
-                        PreviousImage();
+                            PreviousImage();
 
-                        // Switch subsequent image with current image
-                        ImageStackIndexing(currentImage, _clickNextImage.images);
-                    }
-                    else
-                    {
-                        Debug.Log(string.Format("This object appears to be missing {0}", currentImage.name));
+                            // Switch subsequent image with current image
+                            ImageStackIndexing(currentImage, _clickNextImage.images);
+                        }
+                        else
+                        {
+                            Debug.Log(string.Format("This object appears to be missing {0}", currentImage.name));
+                        }
                     }
                 }
 

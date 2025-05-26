@@ -470,6 +470,7 @@ namespace CinAnnotator
         {
             MicronucleiCounts micronucleiCounts = new MicronucleiCounts();
 
+            // TODO: Make this smarter
 
             // Only get basename of the image using 
             Transform Trash = _gridMaker.transform.GetChild(0);

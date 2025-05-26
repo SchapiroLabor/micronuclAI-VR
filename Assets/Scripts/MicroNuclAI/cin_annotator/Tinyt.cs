@@ -14,14 +14,12 @@ namespace CinAnnotator
         private Color originalColor;
         private Color originalEmissionColor;
         private Material material;
-        private GameObject Image;
-        public List<int> cell_ids = new List<int>();
-        public List<int> patches = new List<int>();
-        public List<string> patches_names = new List<string>();
-        public List<int> keys = new List<int>();
+        public GameObject Image;
+        public LinkedList<int> patches = new LinkedList<int>();
+        public LinkedList<string> patches_names = new LinkedList<string>();
+        public LinkedList<int> keys = new LinkedList<int>();
         private float img_height;
         private float img_width;
-        private float intersecting_diameter;
         private Bounds bounds;
 
 
@@ -95,13 +93,13 @@ namespace CinAnnotator
         public void SavePatch(int img_indx, List<string> img_names)
         {
             // Add index to list
-            patches.Add(img_indx);
+            patches.AddLast(img_indx);
 
             // Add image name and the trash count to a list
-            patches_names.Add(img_names[img_indx]);
+            patches_names.AddLast(img_names[img_indx]);
 
             // Get first character of the gameobject name
-            keys.Add(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
+            keys.AddLast(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
 
         }
 
@@ -110,19 +108,18 @@ namespace CinAnnotator
             if (patches.Count > 0)
             {
                 // Remove index from list
-                patches.RemoveAt(-1);
+                patches.RemoveLast();
 
                 // Remove image name and the trash count from a list
-                patches_names.RemoveAt(-1);
+                patches_names.RemoveLast();
 
-                keys.RemoveAt(-1);
+                keys.RemoveLast();
             }
 
         }
 
         private void Trashifwithinbounds()
         {
-            GameObject Image = transform.parent.parent.Find("Image").gameObject;
 
             if (Image != null)
             {
