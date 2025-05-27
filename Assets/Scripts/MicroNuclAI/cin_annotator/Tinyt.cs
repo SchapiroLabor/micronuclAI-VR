@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 using System.IO;
+using System.Linq;
 
 
 namespace CinAnnotator
@@ -15,12 +16,39 @@ namespace CinAnnotator
         private Color originalEmissionColor;
         private Material material;
         public GameObject Image;
-        public LinkedList<int> patches = new LinkedList<int>();
-        public LinkedList<string> patches_names = new LinkedList<string>();
-        public LinkedList<int> keys = new LinkedList<int>();
         private float img_height;
         private float img_width;
         private Bounds bounds;
+
+
+        public class TrashDataFrame
+
+        {
+            public LinkedList<int> patches = new LinkedList<int>();
+            public LinkedList<string> patches_names = new LinkedList<string>();
+            public LinkedList<int> keys = new LinkedList<int>();
+
+            public void RegisterImage(int img_indx, string img_name, int key)
+            {
+                patches.AddLast(img_indx);
+                patches_names.AddLast(img_name);
+                keys.AddLast(key);
+            }
+
+            public List<List<object>> RetrieveData()
+            {
+                List<List<object>> data = new List<List<object>>
+                {
+                    patches.Cast<object>().ToList(),
+                    patches_names.Cast<object>().ToList(),
+                    keys.Cast<object>().ToList()
+                };
+                return data;
+            }
+
+        }
+
+        
 
 
 
