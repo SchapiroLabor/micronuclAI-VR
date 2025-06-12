@@ -224,8 +224,11 @@ namespace CinAnnotator
 
                 for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
-                    Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}, Index: {Index}");
-                    images.AddLast(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
+                    if (Index < max_imgs_to_load && Index + current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
+                    {
+                        Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}/{_interactableImageStack.bbox_dict.Index.Count}, Index: {Index}/{max_imgs_to_load}");
+                        images.AddLast(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
+                    }
 
                 }
 

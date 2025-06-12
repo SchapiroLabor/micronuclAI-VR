@@ -1110,8 +1110,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userCamera: {fileID: 1773221031}
-  ImgPath: D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png
-  MaskPath: 
   target_size: 250
   _gridMaker: {fileID: 1527052174}
   _gameManaging: {fileID: 7892077242007335508, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
@@ -1147,7 +1145,6 @@ MonoBehaviour:
     whole_slide_img_shape_C: 
     whole_slide_img_shape_Z: 
     whole_slide_img_shape_T: 
-  inputfolder: 
   raycast_distance: 10
 --- !u!114 &1646500095
 MonoBehaviour:

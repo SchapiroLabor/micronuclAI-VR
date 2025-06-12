@@ -27,7 +27,7 @@ namespace CinAnnotator
         GameObject Texinstance;
         [SerializeField] private Camera userCamera;
         private List<GameObject> trashList = new List<GameObject>();
-        private string last_trash;
+        public Transform current_trash;
 
 
         void Awake()
@@ -66,7 +66,7 @@ namespace CinAnnotator
             gridLayoutGroup.cellSize = fov / 4;
 
             // Above only works if content size fitters exists
-            createBuckets(CurrentImage);
+            createTrashs(CurrentImage);
         }
 
 
@@ -158,7 +158,7 @@ namespace CinAnnotator
             return textInstance;
         }
 
-        private void ImageStackIndexing(GameObject ImageCurrent, LinkedList<Texture2D> images)
+        public void ImageStackIndexing(GameObject ImageCurrent, LinkedList<Texture2D> images)
 
         {
 
@@ -221,204 +221,50 @@ namespace CinAnnotator
 
 
         }
-
-        // This is executed once the trash object collider is triggered
-        public void dispose(string Trash_name)
-        {
-            last_trash = Trash_name;
-            GameObject ImageCurrent = _clickNextImage.gameObject;
+        public void ReverseDispose()
+        {   // Could use UnityEngine.Pool for this to improve memory management
+            GameObject currentImage = _clickNextImage.gameObject;
 
             // Get current image index
             if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
             {
 
-                if (ImageCurrent != null)
+                if (current_trash.GetComponent<Tinyt>().df.patch_index.Count > 0)
                 {
-                    // Delete in one frame
-                    ImageCurrent.SetActive(false);
+                    current_trash.GetComponent<Tinyt>().df.RemoveImage();
 
-                    // Next image in the stack
-                    NextImage();
-
-                    // Switch subsequent image with current image
-                    ImageStackIndexing(ImageCurrent, _clickNextImage.images);
-
-                    // Load additional texture to maintain 6 images in the stack
-                    _clickNextImage.getImageTextures();
-
-                }
-                else
-                {
-                    Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
-                }
-
-            }
-            else
-            {
-                Debug.Log("No more images to display");
-            }
-
-
-
-
-
-        }
-
-
-        public void ReverseDispose()
-        {   // Could use UnityEngine.Pool for this to improve memory management
-            if (last_trash != null)
-            {
-                GameObject currentImage = _clickNextImage.gameObject;
-
-                // Get current image index
-                if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
-                {
-                    Transform trash = transform.Find(last_trash);
-
-                    if (trash.GetComponent<Tinyt>().patches.Count > 0)
+                    if (currentImage != null)
                     {
-                        trash.GetComponent<Tinyt>().patches.RemoveLast();
+                        currentImage.SetActive(false);
 
-                        if (currentImage != null)
-                        {
-                            currentImage.SetActive(false);
+                        PreviousImage();
 
-                            PreviousImage();
-
-                            // Switch subsequent image with current image
-                            ImageStackIndexing(currentImage, _clickNextImage.images);
-                        }
-                        else
-                        {
-                            Debug.Log(string.Format("This object appears to be missing {0}", currentImage.name));
-                        }
+                        // Switch subsequent image with current image
+                        ImageStackIndexing(currentImage, _clickNextImage.images);
+                    }
+                    else
+                    {
+                        Debug.Log(string.Format("This object appears to be missing {0}", currentImage.name));
                     }
                 }
-
-
             }
-
 
         }
 
-
-        public class MicronucleiCounts : Dictionary<string, List<object>>
+        public void InitializeTrash()
         {
+            GameObject trashinstance = createTrash(trashList.Count + 1, _clickNextImage.transform);
 
-
-
-
-
-            public void AddTrashDataFrame(Tinyt.TrashDataFrame trashDataFrame)
-            {
-                foreach (var field in trashDataFrame.GetProperties())
-                {
-                    AddMicronuclei(field.Name, field.GetValue(trashDataFrame));
-                }
-
-
-            }
-
-            public void AddMicronuclei(string key, object value)
-            {
-                if (!ContainsKey(key))
-                {
-                    this[key] = new List<object>();
-                }
-                this[key].Add(value);
-            }
-
-
-            // Method to save the data to CSV
-            public void SaveToCSVcsharp(string filePath)
-            {
-                // Open a StreamWriter to write to the CSV file
-                using (StreamWriter writer = new StreamWriter(filePath))
-                {
-                    // Write the header row (dictionary keys)
-                    writer.WriteLine(string.Join(",", Keys));
-
-                    // Get the maximum number of rows in the dictionary's lists
-                    int rowCount = 0;
-                    foreach (var list in Values)
-                    {
-                        rowCount = Mathf.Max(rowCount, list.Count);
-                    }
-
-                    // Write each row by iterating through the lists in the dictionary
-                    for (int i = 0; i < rowCount; i++)
-                    {
-                        List<string> row = new List<string>();
-
-                        foreach (var key in Keys)
-                        {
-                            if (i < this[key].Count)
-                            {
-                                row.Add(this[key][i]?.ToString()); // Convert objects to string
-                            }
-                            else
-                            {
-                                row.Add(""); // Add an empty string if no value exists for this row
-                            }
-                        }
-
-                        writer.WriteLine(string.Join(",", row));
-                    }
-                }
-
-                Debug.Log("CSV file saved at: " + filePath);
-            }
+            trashList.Add(trashinstance);
 
         }
-
-        private MicronucleiCounts CollectMicroNucleiCounts()
-        {
-            MicronucleiCounts micronucleiCounts = new MicronucleiCounts();
-
-            // TODO: Make this smarter
-
-            // Only get basename of the image using 
-            Transform Trash = _gridMaker.transform.GetChild(0);
-
-            for (int i = 0; i < Trash.childCount; i++)
-            {
-                Tinyt script = Trash.GetChild(i).GetComponent<Tinyt>();
-
-
-                if (script.patches.Count == 0)
-                {
-                    SchapiroLabLog.Log($"No patches in the image for trash {script.gameObject.name}");
-                    continue;
-                }
-                else
-                {
-                    for (int j = 0; j < script.patches.Count; j++)
-                    {
-
-                        micronucleiCounts.AddMicronuclei("img", script.patches_names[j]);
-                        micronucleiCounts.AddMicronuclei("Micronuclei", script.keys[j]);
-                        micronucleiCounts.AddMicronuclei("Patch ID", script.patches[j]);
-                    }
-                }
-
-
-            }
-
-            // Jsonify the micronucleiCounts
-            //string json = JsonConvert.SerializeObject(micronucleiCounts);
-            return micronucleiCounts;
-
-        }
-
-
-
 
         private GameObject createTrash(int N, Transform CurrentImage)
         {
 
             GameObject trashInstance = Instantiate(trashPrefab, transform);
-            trashInstance.transform.position = new Vector3(trashInstance.transform.position.x, trashInstance.transform.position.y, transform.position.z);
+            trashInstance.transform.position = new Vector3(trashInstance.transform.position.x,
+            trashInstance.transform.position.y, transform.position.z);
             trashInstance.transform.localScale = Vector3.one;
             trashInstance.name = $"{N} Micronuclei";
             TMP_Text tmpText = trashInstance.GetComponentInChildren<TMP_Text>();
@@ -428,17 +274,13 @@ namespace CinAnnotator
             return trashInstance;
         }
 
-
-
-        public void createBuckets(Transform CurrentImage)
+        public void createTrashs(Transform CurrentImage)
         {
             RawImage rawImagecurrent = CurrentImage.GetComponent<RawImage>();
 
             if (rawImagecurrent != null)
             {
-                var spacing = (rawImagecurrent.GetComponent<RectTransform>().rect.width) / 2;
-
-
+                // Load the trash prefab if not already loaded
                 if (trashPrefab == null)
                 {
                     trashPrefab = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
@@ -458,22 +300,21 @@ namespace CinAnnotator
                 GameObject title = new GameObject("Title");
                 title.transform.parent = transform.parent;
 
-
-
-
                 // Pivot of current class is at 1, 0.5
                 title.AddComponent<TextMeshPro>();
                 TextMeshPro titleText = title.GetComponent<TextMeshPro>();
                 UnityEngine.Vector3 position = transform.position;
                 title.GetComponent<RectTransform>().pivot = new UnityEngine.Vector2(0.5f, 0);
-                UnityEngine.Vector2 size = new UnityEngine.Vector2(rawImagecurrent.GetComponent<RectTransform>().rect.width, rawImagecurrent.GetComponent<RectTransform>().rect.height);
+                UnityEngine.Vector2 size = new UnityEngine.Vector2(rawImagecurrent.GetComponent<RectTransform>().rect.width,
+                rawImagecurrent.GetComponent<RectTransform>().rect.height);
 
                 // Add content size fitter to the title
                 title.AddComponent<ContentSizeFitter>();
                 title.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
                 title.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-                title.transform.position = new UnityEngine.Vector3(position.x - (size.x / 2) * 1.5f, (position.y + (size.y / 2)) * 1.5f, position.z);
+                title.transform.position = new UnityEngine.Vector3(position.x - (size.x / 2) * 1.5f,
+                (position.y + (size.y / 2)) * 1.5f, position.z);
 
                 titleText.text = "Micronuclei count";
                 titleText.fontSize = size.x;
@@ -485,16 +326,6 @@ namespace CinAnnotator
 
 
         }
-
-
-        public void CreateBucket()
-        {
-            GameObject trashinstance = createTrash(trashList.Count + 1, _clickNextImage.transform);
-
-            trashList.Add(trashinstance);
-
-        }
-
 
     }
 }

@@ -17,14 +17,14 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Palmmedia.ReportGenerator.Core;
 using System.Collections;
 using UnityEngine.UI;
+using System.Diagnostics;
 
 namespace CinAnnotator
 {
     public class InteractableImageStack : MonoBehaviour
     {
         public Camera userCamera;  // Reference to the user's camera
-        public string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
-        public string MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
+
 
         public int target_size = 60;
 
@@ -34,7 +34,7 @@ namespace CinAnnotator
         [SerializeField] private WholeImage _wholeImage;
         [SerializeField] private ClickNextImage _clickNextImage;
 
-        
+
         [Serializable]
         public class MyChangeEvent : UnityEvent<bool>
         {
@@ -46,16 +46,22 @@ namespace CinAnnotator
 
         [Header("Add to config file. Used to set world font size")]
         private float textfontsize = 0.5f; // Default font size for the text field
+
+        [Header("Add to config file")]
+        private string python_exe = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
         [Header("Add to config file")]
         private string PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
         [Header("Add to config file")]
-        public string inputfolder;
+        static private string inputfolder = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\";
         [Header("Add to config file")]
-        private string python_exe;
+        private string ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
         [Header("Add to config file")]
+        private string MaskPath = Path.Combine(inputfolder, "mask.tif");
+
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
         private bool done = false;
+
 
 
 
@@ -149,9 +155,6 @@ namespace CinAnnotator
             }
 
             PositionCanvas();
-
-            inputfolder = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data";
-            python_exe = @"D:\OneDrive\Desktop\Internship\VR_schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
 
             ThreadWithState tws = new(python_exe, inputfolder, PythonScript,
             this);
@@ -250,6 +253,8 @@ namespace CinAnnotator
             private string _python_script;
             public DataFrame output;
             public InteractableImageStack _InteractableImageStack;
+            private string _MaskPath;
+            private string ImgPath;
 
             // The constructor obtains the state information.
             public ThreadWithState(string python_exe, string inputfolder, string python_script,
@@ -260,6 +265,8 @@ namespace CinAnnotator
                 _python_script = python_script;
                 //_pythonWorkerEvent = PythonWorkerEvent;
                 _InteractableImageStack = _interactableImageStack;
+                _MaskPath = Path.Combine(inputfolder, "mask.tif");
+                ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
             }
 
             // The thread procedure performs the task, such as formatting
@@ -267,25 +274,39 @@ namespace CinAnnotator
             public void ThreadProc()
             {
 
-
                 string ScriptPath = Path.Combine(Application.streamingAssetsPath, _python_script);
 
-                string _MaskPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\mask.tif";
-                string ImgPath = @"D:\OneDrive\Desktop\Internship\VR_schapiro\data\data\s01c1.ome.tif";
-                Debug.Log($"Here: {_MaskPath}");
                 string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {_inputfolder} " +
                                   $"--n {1} --max_side {250} --target_size {_InteractableImageStack.target_size} --target_a_ratio {1} " +
                                   $"--write-out-my-config {Path.Combine(_inputfolder, "python_config.json")}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);
 
-                // Start the process
-                process.Start();
 
-                string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+                try
+                {
+                    // Start the process
+                    process.Start();
 
-                // We are awaiting beyond the await output statement but Main thread is not blocked
-                _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(json_bbox_dict);
+                    string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+
+                    // We are awaiting beyond the await output statement but Main thread is not blocked
+                    _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(json_bbox_dict);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
+                }
+                finally
+                {
+                    // Ensure the process is disposed of properly
+                    if (process != null)
+                    {
+                        process.Dispose();
+                    }
+                }
+
+
 
 
 
@@ -296,7 +317,20 @@ namespace CinAnnotator
             // Unity API is not thread safe, so cannot use it in worker thread. Use indirect variables to pass data
         }
 
+        private void read_csv_with_python(string data_dir)
+        {
+            // TODO: Use this all fallback incase the Python process fails to start (Make sure that python script 
+            // and this have same filename for the csv file)
 
+            // Path to the CSV file
+            string csvFilePath = Path.Combine(data_dir, "bbox.txt");
+
+            // Setup the Python process
+            PythonIPC.GetStdOutputFromPython(General.HelperFunctions.AddQuotesIfRequired(Path.Combine(Application.streamingAssetsPath,
+            PythonScript)),
+             python_exe, General.HelperFunctions.AddQuotesIfRequired(csvFilePath));
+
+        }
 
         private void SendPythonProcessEvent(MyChangeEvent PythonWorkerEvent, bool Value)
         {
@@ -404,22 +438,6 @@ namespace CinAnnotator
             {
                 SchapiroLabLog.Log($"An error occurred: {e.Message} with stack trace {e.StackTrace}");
             }
-
-        }
-
-
-        // Define dictionary class to store the counts of micro nuclei
-
-
-
-        private void read_csv_with_python(string data_dir)
-        {
-            // Path to the CSV file
-            string csvFilePath = Path.Combine(data_dir, "bbox.txt");
-
-            // Setup the Python process
-            PythonIPC.GetStdOutputFromPython(General.HelperFunctions.AddQuotesIfRequired(Path.Combine(Application.streamingAssetsPath, PythonScript)),
-             python_exe, General.HelperFunctions.AddQuotesIfRequired(csvFilePath));
 
         }
 

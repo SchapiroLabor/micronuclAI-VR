@@ -144,7 +144,7 @@ namespace CinAnnotator
             AddBin.GetComponentInChildren<TextMeshProUGUI>().text = "Add Bin";
 
             // Add a listener to the button
-            AddBin.GetComponent<Button>().onClick.AddListener(() => Trash.GetComponentInChildren<Trash>().CreateBucket());
+            AddBin.GetComponent<Button>().onClick.AddListener(() => Trash.GetComponentInChildren<Trash>().InitializeTrash());
 
         }
 

@@ -52,7 +52,9 @@ def main(save_dir: str,
 
     if not os.path.exists(save_dir) or not [s for s in os.listdir(save_dir) if s.endswith(".png")] \
             or not os.path.exists(csv_path):
+
         os.makedirs(save_dir, exist_ok=True)
+
         logger.info(f"Directory created: {save_dir}")
 
         logger.info("Creating BBoxes object from mask and image.")

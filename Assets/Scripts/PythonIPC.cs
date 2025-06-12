@@ -74,7 +74,7 @@ namespace General
         public static System.Diagnostics.Process SetupPythonProcess(string ScriptPath, string python_exe,
         string argument = null)
         {
-            Debug.Log($"Running Python script: {ScriptPath} with arguments: {argument}");
+            Debug.Log($"Running Python script: {python_exe} and {ScriptPath} with arguments: {argument}");
 
             // Create a new process to run the Python script    
             return new System.Diagnostics.Process

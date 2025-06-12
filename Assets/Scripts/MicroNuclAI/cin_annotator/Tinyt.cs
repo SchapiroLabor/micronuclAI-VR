@@ -6,181 +6,203 @@ using UnityEngine;
 using System.IO;
 using System.Linq;
 
+using UnityEngine.XR.Interaction.Toolkit;
+
 
 namespace CinAnnotator
 {
     public class Tinyt : MonoBehaviour
     {
 
-        private Color originalColor;
-        private Color originalEmissionColor;
-        private Material material;
-        public GameObject Image;
-        private float img_height;
-        private float img_width;
-        private Bounds bounds;
+
+        public TrashDataFrame df = new TrashDataFrame();
+        [SerializeField] private InteractableImageStack _interactableImageStack;
+        [SerializeField] private GameObject Image;
+        [SerializeField] private ClickNextImage _clickNextImage;
+        [SerializeField] private Trash _trash;
+
 
 
         public class TrashDataFrame
 
         {
-            public LinkedList<int> patches = new LinkedList<int>();
-            public LinkedList<string> patches_names = new LinkedList<string>();
-            public LinkedList<int> keys = new LinkedList<int>();
+            public LinkedList<int> patch_index = new LinkedList<int>();
+            public LinkedList<string> patch_name = new LinkedList<string>();
+            public LinkedList<int> patch_key = new LinkedList<int>();
 
-            public void RegisterImage(int img_indx, string img_name, int key)
+            public void RegisterImage(int img_indx, string img_name, Transform transform)
             {
-                patches.AddLast(img_indx);
-                patches_names.AddLast(img_name);
-                keys.AddLast(key);
+                patch_index.AddLast(img_indx);
+                patch_name.AddLast(img_name);
+                patch_key.AddLast(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
             }
 
-            public List<List<object>> RetrieveData()
+            public void RemoveImage()
             {
-                List<List<object>> data = new List<List<object>>
+                patch_index.RemoveLast();
+                patch_name.RemoveLast();
+                patch_key.RemoveLast();
+            }
+
+            public void MergeDFs(TrashDataFrame df)
+            {
+                patch_index = new LinkedList<int>(patch_index.Concat(df.patch_index));
+                patch_name = new LinkedList<string>(patch_name.Concat(df.patch_name));
+                patch_key = new LinkedList<int>(patch_key.Concat(df.patch_key));
+            }
+
+            public void Save2CSV(string filePath)
+            {
+                // Open a StreamWriter to write to the CSV file
+                using (StreamWriter writer = new StreamWriter(filePath))
                 {
-                    patches.Cast<object>().ToList(),
-                    patches_names.Cast<object>().ToList(),
-                    keys.Cast<object>().ToList()
-                };
-                return data;
+                    var indexEnum = patch_index.GetEnumerator();
+                    var nameEnum = patch_name.GetEnumerator();
+                    var keyEnum = patch_key.GetEnumerator();
+
+                    while (indexEnum.MoveNext() && nameEnum.MoveNext() && keyEnum.MoveNext())
+                    {
+                        writer.WriteLine($"{indexEnum.Current},{nameEnum.Current},{keyEnum.Current}");
+                    }
+                }
             }
+
 
         }
 
-        
+
+        // This is executed once the trash object collider is triggered
+        public void dispose()
+        {
+
+            GameObject ImageCurrent = _clickNextImage.gameObject;
+
+            // Get current image index
+            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
+            {
+
+                if (ImageCurrent != null)
+                {
+
+                    df.RegisterImage(Image.GetComponent<ClickNextImage>().current_img_indx,
+                    Image.GetComponent<ClickNextImage>().img_names[Image.GetComponent<ClickNextImage>().current_img_indx],
+                    transform);
+                    // Delete in one frame
+                    ImageCurrent.SetActive(false);
+
+                    // Next image in the stack
+                    _trash.NextImage();
+
+                    // Switch subsequent image with current image
+                    _trash.ImageStackIndexing(ImageCurrent, _clickNextImage.images);
+
+                    // Load additional texture to maintain 6 images in the stack
+                    _clickNextImage.getImageTextures();
+
+                    _trash.current_trash = transform;
+
+                }
+                else
+                {
+                    Debug.Log(string.Format("This object appears to be missing {0}", ImageCurrent.name));
+                }
+
+            }
+            else
+            {
+                Debug.Log("No more images to display");
+            }
+
+
+
+
+
+        }
 
 
 
         // Start is called before the first frame update
         public void Initialize(Transform Image_t)
         {
+            // Setup the emission color
+            ChangeColorSetup();
+
+            _interactableImageStack = transform.parent.parent.parent.GetComponent<InteractableImageStack>();
+            _clickNextImage = Image_t.GetComponent<ClickNextImage>();
+            _trash = transform.parent.GetComponent<Trash>();
 
             Image = Image_t.gameObject;
 
-            // Cache the Renderer's material and original color at start
-            material = GetComponent<Renderer>().material;
-            originalColor = material.color;
+            Image.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectExited.AddListener((args) =>
+            Trashifwithinbounds());
 
-            // Ensure the material supports emission color by enabling emission
-            material.EnableKeyword("_EMISSION");
-
-            // Assuming the original emission is set and needs to be stored
-            originalEmissionColor = new Color(0.1f, 0.1f, 0.1f, 1.0f);
-
-            GetComponent<Renderer>().material.SetColor("_EmissionColor", originalEmissionColor);
-
-            // Log if emission is on
-            SchapiroLabLog.Log("Emission enabled: " + material.IsKeywordEnabled("_EMISSION"));
-
-
-            Image.GetComponent<UnityEngine.XR.Interaction.Toolkit.XRGrabInteractable>().selectExited.AddListener((args) => Trashifwithinbounds());
-
-            // Get the image height and width
-            img_height = Image.GetComponent<RectTransform>().rect.height;
-            img_width = Image.GetComponent<RectTransform>().rect.width;
-
-        }
-
-
-
-        // Update is called once per frame
-        void Update()
-        {
-            confirm_if_within_bounds();
-        }
-
-
-
-        private void confirm_if_within_bounds()
-        {
-
-            if (Image != null && this != null)
+            // Add XRSIMPLEINTERACTABLE component if not already present
+            if (GetComponent<XRSimpleInteractable>() == null)
             {
-                Bounds temp = Image.GetComponent<BoxCollider>().bounds;
-
-                Bounds img_bounds = new Bounds(new Vector3(temp.center.x, temp.center.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
-
-                // Confrim if bounding box intersects with renderer bounds
-
-                Collider renderer = GetComponent<MeshCollider>();
-
-                bounds = renderer.bounds;
-
-                if (bounds.Intersects(img_bounds))
-                {
-                    change2brightgreen();
-                }
-                else
-                {
-                    RevertToOriginalColor();
-                }
-            }
-        }
-
-        public void SavePatch(int img_indx, List<string> img_names)
-        {
-            // Add index to list
-            patches.AddLast(img_indx);
-
-            // Add image name and the trash count to a list
-            patches_names.AddLast(img_names[img_indx]);
-
-            // Get first character of the gameobject name
-            keys.AddLast(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
-
-        }
-
-        public void RemovePatch()
-        {
-            if (patches.Count > 0)
-            {
-                // Remove index from list
-                patches.RemoveLast();
-
-                // Remove image name and the trash count from a list
-                patches_names.RemoveLast();
-
-                keys.RemoveLast();
+                gameObject.AddComponent<XRSimpleInteractable>();
             }
 
+            // TODO: Change this to image intersecting not raycast
+            GetComponent<XRSimpleInteractable>().hoverEntered.AddListener((args) => change2brightgreen());
+
+            GetComponent<XRSimpleInteractable>().hoverExited.AddListener((args) => RevertToOriginalColor());
+
         }
+
+        [SerializeField] private Material highlightMaterial;
+        private Material OldMaterial;
+
+        private void ChangeColorSetup()
+        {
+            // TODO: Change material instead of emission color
+            OldMaterial = GetComponent<MeshRenderer>().material;
+        }
+
+
+
+
+        void OnCollisionEnter(Collision collision)
+        {
+
+            Trashifwithinbounds();
+        }
+
 
         private void Trashifwithinbounds()
-        {
+
+        { // TODO: Turn this into an event callback
 
             if (Image != null)
             {
-                Collider renderer = GetComponent<MeshCollider>();
 
-                //  Confirm if image area is intersecting with the trash area
-
-
-                var bounds = renderer.bounds;
 
                 Bounds temp = Image.GetComponent<BoxCollider>().bounds;
 
-                Bounds img_bounds = new Bounds(new Vector3(temp.center.x, temp.center.y, bounds.center.z), new Vector3(0.2f, 0.2f, 1));
+                Bounds bounds = GetComponent<MeshCollider>().bounds;
 
+                Bounds img_bounds = new Bounds(new Vector3(temp.center.x, temp.center.y, bounds.center.z),
+                new Vector3(0.2f, 0.2f, 1));
+
+                // Confrim if bounding box intersects with renderer bounds
+                // If this is not put in place, 4 images at once are disposed. Investigate later why.
                 if (bounds.Intersects(img_bounds))
                 {
-                    SavePatch(Image.GetComponent<ClickNextImage>().current_img_indx, Image.GetComponent<ClickNextImage>().img_names);
-
-                    transform.parent.GetComponent<Trash>().dispose(transform.gameObject.name);
+                    dispose();
 
                 }
+
+
 
             }
         }
 
-        private void change2brightgreen()
-        {         // Ensure the material supports emission color by enabling emission
-            GetComponent<Renderer>().material.EnableKeyword("_EMISSION");
-            Color color = new Color(0f, 1f, 0f, 1f);
-            // Set the emission color to a bright green
-            GetComponent<Renderer>().material.SetColor("_EmissionColor", color);
 
-            SchapiroLabLog.Log($"Emission color on : {color}");
+
+
+        private void change2brightgreen()
+        {
+            // Set the emission color to a bright green
+            GetComponent<MeshRenderer>().material = highlightMaterial;
             //transform.parent.GetComponent<Trash>().dispose();}
         }
 
@@ -188,10 +210,7 @@ namespace CinAnnotator
         // Call this method to revert to the original color and emission
         private void RevertToOriginalColor()
         {
-
-            material.SetColor("_EmissionColor", originalEmissionColor);
-
-            SchapiroLabLog.Log($"Emission color off : {originalEmissionColor}");
+            GetComponent<MeshRenderer>().material = OldMaterial;
         }
 
 
