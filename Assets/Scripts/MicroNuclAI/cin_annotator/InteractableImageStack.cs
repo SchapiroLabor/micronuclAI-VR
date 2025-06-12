@@ -41,7 +41,7 @@ namespace CinAnnotator
             public bool value;
         }
         [SerializeField] public MyChangeEvent PythonWorkerEvent = new MyChangeEvent();
-        [SerializeField] GameObject load_indicator;
+        [SerializeField] private GameObject load_indicator;
         public DataFrame bbox_dict;
 
         [Header("Add to config file. Used to set world font size")]
@@ -90,6 +90,11 @@ namespace CinAnnotator
                 // Load from path
                 _gameManaging = Resources.Load<GameObject>("Assets/Scripts/MicroNuclAI/SceneManager.prefab").GetComponent<GameManaging>();
             }
+
+            ThreadWithState tws = new(python_exe, inputfolder, PythonScript,
+            this);
+
+            StartCoroutine(PreprocessPatches(tws));
 
             // TODO: First pop up loading screen to 
             // indicate image loading and processing in python
@@ -155,11 +160,6 @@ namespace CinAnnotator
             }
 
             PositionCanvas();
-
-            ThreadWithState tws = new(python_exe, inputfolder, PythonScript,
-            this);
-
-            StartCoroutine(PreprocessPatches(tws));
 
         }
 
@@ -352,10 +352,33 @@ namespace CinAnnotator
             Thread t = new(new ThreadStart(tws.ThreadProc));
             t.Start();
 
+            // Display a loading indicator while the thread is running
+
+            // Setup anchors and pivots
+            RectTransform rectTransform = load_indicator.GetComponent<RectTransform>();
+
+            // Set anchor to the centre of the screen
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+
+            // Set pivot to the centre of the screen
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+            // Set local position to the centre of the screen at a distance of 10 units
+            rectTransform.localPosition =  new UnityEngine.Vector3(0, 0, raycast_distance);
+
+            // Set rotation of the Canvas to face the camera
+            transform.rotation = Quaternion.Euler(Vector3.zero);
+
+            // Set scale to 1
+            transform.localScale = new Vector3(1, 1, 1);
+
             while (t.IsAlive)
             {
                 yield return null;
             }
+
+            Destroy(load_indicator);
 
             SendPythonProcessEvent(PythonWorkerEvent, false);
 
