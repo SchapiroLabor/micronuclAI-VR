@@ -44,9 +44,6 @@ namespace CinAnnotator
         [SerializeField] private GameObject load_indicator;
         public DataFrame bbox_dict;
 
-        [Header("Add to config file. Used to set world font size")]
-        private float textfontsize = 0.5f; // Default font size for the text field
-
         [Header("Add to config file")]
         private string python_exe = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
         [Header("Add to config file")]
@@ -57,10 +54,15 @@ namespace CinAnnotator
         private string ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
         [Header("Add to config file")]
         private string MaskPath = Path.Combine(inputfolder, "mask.tif");
+        [Header("Add to config file")]
+        private string PythonConfigPath = Path.Combine(inputfolder, "config.json");
 
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
         private bool done = false;
+        
+        [Header("Add to config file. Used to set world font size")]
+        private float textfontsize = 0.5f; // Default font size for the text field
 
 
 
@@ -91,8 +93,8 @@ namespace CinAnnotator
                 _gameManaging = Resources.Load<GameObject>("Assets/Scripts/MicroNuclAI/SceneManager.prefab").GetComponent<GameManaging>();
             }
 
-            ThreadWithState tws = new(python_exe, inputfolder, PythonScript,
-            this);
+            ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonConfigPath,
+            MaskPath, ImgPath, this);
 
             StartCoroutine(PreprocessPatches(tws));
 
@@ -254,10 +256,12 @@ namespace CinAnnotator
             public DataFrame output;
             public InteractableImageStack _InteractableImageStack;
             private string _MaskPath;
-            private string ImgPath;
+            private string _ImgPath;
+            private string _PythonConfigPath;
 
             // The constructor obtains the state information.
-            public ThreadWithState(string python_exe, string inputfolder, string python_script,
+            public ThreadWithState(string python_exe, string inputfolder,
+            string python_script, string python_config_path, string mask_path, string img_path,
             InteractableImageStack _interactableImageStack)
             {
                 _python_exe = python_exe;
@@ -265,8 +269,9 @@ namespace CinAnnotator
                 _python_script = python_script;
                 //_pythonWorkerEvent = PythonWorkerEvent;
                 _InteractableImageStack = _interactableImageStack;
-                _MaskPath = Path.Combine(inputfolder, "mask.tif");
-                ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
+                _MaskPath = mask_path;
+                _ImgPath = img_path;
+                _PythonConfigPath = python_config_path;
             }
 
             // The thread procedure performs the task, such as formatting
@@ -276,9 +281,9 @@ namespace CinAnnotator
 
                 string ScriptPath = Path.Combine(Application.streamingAssetsPath, _python_script);
 
-                string cmd_args = $"--mask_path {_MaskPath} --img_path {ImgPath} --save_dir {_inputfolder} " +
+                string cmd_args = $"--mask_path {_MaskPath} --img_path {_ImgPath} --save_dir {_inputfolder} " +
                                   $"--n {1} --max_side {250} --target_size {_InteractableImageStack.target_size} --target_a_ratio {1} " +
-                                  $"--write-out-my-config {Path.Combine(_inputfolder, "python_config.json")}";
+                                  $"--default_config_files {_PythonConfigPath}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);
 
@@ -365,7 +370,7 @@ namespace CinAnnotator
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
 
             // Set local position to the centre of the screen at a distance of 10 units
-            rectTransform.localPosition =  new UnityEngine.Vector3(0, 0, raycast_distance);
+            rectTransform.localPosition = new UnityEngine.Vector3(0, 0, raycast_distance);
 
             // Set rotation of the Canvas to face the camera
             transform.rotation = Quaternion.Euler(Vector3.zero);
@@ -378,6 +383,7 @@ namespace CinAnnotator
                 yield return null;
             }
 
+            // Delete the loading indicator after the thread has finished
             Destroy(load_indicator);
 
             SendPythonProcessEvent(PythonWorkerEvent, false);

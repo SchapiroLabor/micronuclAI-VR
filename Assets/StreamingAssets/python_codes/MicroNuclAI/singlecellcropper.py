@@ -210,7 +210,7 @@ Strings, ints, floats, dicts, and nested lists all serialize cleanly."""
         raise FileNotFoundError(f"Directory {data_dir} does not exist")
 
 
-def get_args():
+def get_args(arg_parser):
     # Add an argument to the parser
     arg_parser.add_argument("--mask_path", type=str,
                             help="Path to the mask image",
@@ -249,9 +249,12 @@ if __name__ == "__main__":
     logger = get_logger()
 
     arg_parser = CustomArgumentParser.get_arg_parser()
+    # TODO: Save config is not working for some reason
 
     # # Parse the arguments
-    args = get_args()
+    args = get_args(arg_parser)
+
+    logger.info(f"Arguments: {args}")
 
     df = main(**vars(args))
 

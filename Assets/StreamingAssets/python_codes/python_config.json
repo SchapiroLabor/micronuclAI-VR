@@ -1,0 +1,2 @@
+arguments = OrderedDict({'mask_path': 'D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif', 'img_path': 'D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif', 'save_dir': 'D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\', 'n': 1, 'max_side': 250, 'target_size': 250, 'target_a_ratio': 1.0})
+variables = {}
