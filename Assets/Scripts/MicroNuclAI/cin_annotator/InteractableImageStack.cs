@@ -52,7 +52,9 @@ namespace CinAnnotator
         [Header("Add to config file")]
         static private string inputfolder = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\";
         [Header("Add to config file")]
-        private string ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
+        public string ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
+        [Header("Add to config file")]
+        public string ImgPNGPath = Path.Combine(inputfolder, "img.png");
         [Header("Add to config file")]
         private string MaskPath = Path.Combine(inputfolder, "mask.tif");
         [Header("Add to config file")]
@@ -200,7 +202,7 @@ namespace CinAnnotator
         void PythonProcessOnFalse()
         {
             //load_indicator.SetActive(false);
-            //_wholeImage.Initialize(_gridMaker.transform, userCamera);
+            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
             _clickNextImage.Initialize();
         }
 

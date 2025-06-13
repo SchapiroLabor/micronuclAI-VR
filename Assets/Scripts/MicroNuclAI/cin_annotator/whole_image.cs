@@ -24,7 +24,8 @@ namespace CinAnnotator
     public class WholeImage : MonoBehaviour
     {   // TODO: Correct this script please
 
-        public InteractableImageStack _interactableImageStack;
+        [SerializeField] private InteractableImageStack _interactableImageStack;
+        [SerializeField] private GridMaker _gridMaker;
         private GameObject Arrow;
         private float height;
         private float width;
@@ -61,23 +62,34 @@ namespace CinAnnotator
         {
         }
 
-        private System.Collections.IEnumerator MyCoroutine(string img_path)
+        public System.Collections.IEnumerator SetTextureOnWholeImage(string img_path)
         {
             // Remove the call to WaitForWholeImage since it is not being used
-            SetTextureOnWholeImage(img_path);
-            yield return null; // Wait for the next frame
+            Texture2D whole_img_texture = LoadTexture(img_path);
+
+            // Size delta must be explicitly matched to the size of the image
+            GetComponent<RawImage>().texture = whole_img_texture;
+            RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
+            rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
+
+            while (GetComponent<RawImage>().texture == null)
+            {
+                Debug.Log("Waiting for whole image texture to be set...");
+                yield return null; // Wait for a short time before checking again
+            }
+        }
+
+        void Start()
+        {
+            
         }
 
         // Start is called before the first frame update
-        public void Initialize(Transform Panel, Camera userCamera)
+        public void Initialize(Transform Panel, Camera userCamera, string ImgPath)
         {
-            string ImgPath = "D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/img.png";
-            Debug.Log($"Image is created: {ImgPath}");
 
-            // Plays on main thread with pauses
-            StartCoroutine(MyCoroutine(ImgPath));
+            StartCoroutine(SetTextureOnWholeImage(ImgPath));
 
-            // TODO: Correct positioning. Take notes on multithreading and IPC processing specifically on JSON parsing etc. 
 
             PositionWholeImage(Panel, userCamera);
             // Should occure after the image is positioned as we are using world coordinates
@@ -217,20 +229,7 @@ namespace CinAnnotator
             //Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
         }
 
-        private void SetTextureOnWholeImage(string img_path)
-        {
-            Texture2D whole_img_texture = LoadTexture(img_path);
 
-            if (whole_img_texture == null)
-            {
-                SchapiroLabLog.Log("Whole image texture is null");
-            }
-
-            // Size delta must be explicitly matched to the size of the image
-            GetComponent<RawImage>().texture = whole_img_texture;
-            RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
-            rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
-        }
 
         private List<float> GetFOVatWD(float WD, Camera userCamera)
         {

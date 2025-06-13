@@ -29,6 +29,8 @@ public class GridMaker : MonoBehaviour
         // Also, local position is only accurate when used after Start() or Awake()
         PositionGrid(rectTransform, userCamera, raycast_distance);
 
+        
+
 
     }
 
