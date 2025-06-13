@@ -18,6 +18,7 @@ using Palmmedia.ReportGenerator.Core;
 using System.Collections;
 using UnityEngine.UI;
 using System.Diagnostics;
+using UnityEditor.Rendering;
 
 namespace CinAnnotator
 {
@@ -58,8 +59,6 @@ namespace CinAnnotator
         private string PythonConfigPath = Path.Combine(inputfolder, "config.json");
 
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
-
-        private bool done = false;
         
         [Header("Add to config file. Used to set world font size")]
         private float textfontsize = 0.5f; // Default font size for the text field
@@ -97,6 +96,8 @@ namespace CinAnnotator
             MaskPath, ImgPath, this);
 
             StartCoroutine(PreprocessPatches(tws));
+
+            
 
             // TODO: First pop up loading screen to 
             // indicate image loading and processing in python
@@ -283,7 +284,7 @@ namespace CinAnnotator
 
                 string cmd_args = $"--mask_path {_MaskPath} --img_path {_ImgPath} --save_dir {_inputfolder} " +
                                   $"--n {1} --max_side {250} --target_size {_InteractableImageStack.target_size} --target_a_ratio {1} " +
-                                  $"--default_config_files {_PythonConfigPath}";
+                                  $"--write-out-my-config {_PythonConfigPath}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);
 
@@ -297,6 +298,15 @@ namespace CinAnnotator
 
                     // We are awaiting beyond the await output statement but Main thread is not blocked
                     _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(json_bbox_dict);
+
+                    if (_InteractableImageStack.bbox_dict == null)
+                    {
+                        Debug.LogError("Failed to parse the JSON output from the Python script.");
+                    }
+                    else
+                    {
+                        Debug.Log($"Parsed DataFrame: {_InteractableImageStack.bbox_dict.Index.Count} entries found.");
+                    }
                 }
                 catch (Exception e)
                 {
@@ -354,7 +364,7 @@ namespace CinAnnotator
 
             SendPythonProcessEvent(PythonWorkerEvent, true);
 
-            Thread t = new(new ThreadStart(tws.ThreadProc));
+            Task t = new Task(() => tws.ThreadProc());
             t.Start();
 
             // Display a loading indicator while the thread is running
@@ -378,10 +388,13 @@ namespace CinAnnotator
             // Set scale to 1
             transform.localScale = new Vector3(1, 1, 1);
 
-            while (t.IsAlive)
+            while (!t.IsCompleted)
             {
                 yield return null;
             }
+
+            // Wait for the thread to finish
+            t.Wait();
 
             // Delete the loading indicator after the thread has finished
             Destroy(load_indicator);

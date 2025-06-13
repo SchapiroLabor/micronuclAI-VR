@@ -221,7 +221,7 @@ namespace CinAnnotator
 
             try
             {
-
+               
                 for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
                     if (Index < max_imgs_to_load && Index + current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
@@ -238,7 +238,7 @@ namespace CinAnnotator
 
             catch (Exception e)
             {
-                Debug.LogError($"Error getting image dimensions: {e.Message}");
+                Debug.LogError($"Error getting images: {e}");
             }
 
 

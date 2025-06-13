@@ -10,6 +10,7 @@ import numpy as np
 import os
 from PIL import Image
 import ast
+import argparse
 from helperfunctions import save2DFcolumn
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
@@ -214,14 +215,14 @@ def get_args(arg_parser):
     # Add an argument to the parser
     arg_parser.add_argument("--mask_path", type=str,
                             help="Path to the mask image",
-                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/mask.tif")
+                            default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif")
 
     arg_parser.add_argument("--img_path", type=str, help="Path to the image",
-                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data/s01c1.ome.tif")
+                            default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif")
 
     arg_parser.add_argument("--save_dir",
                             type=str, help="Path to save the results",
-                            default=r"D:/OneDrive/Desktop/Internship/VR_schapiro/data/data")
+                            default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\")
 
     arg_parser.add_argument("--n", type=int,
                             default=10, help="Number of pixels to expand the bounding boxes")
@@ -234,6 +235,9 @@ def get_args(arg_parser):
 
     arg_parser.add_argument("--target_a_ratio",
                             default=0.7, type=float, help="Aspect ratio to resize the single cells to")
+
+    arg_parser.add_argument("--write-out-my-config",
+                            type=str, help="Aspect ratio to resize the single cells to")
 
     return arg_parser.parse_args()
 
@@ -248,21 +252,22 @@ if __name__ == "__main__":
     setup_logging()
     logger = get_logger()
 
-    arg_parser = CustomArgumentParser.get_arg_parser()
+    logger.info("Starting script execution.")
+
+    logger.info("Initialized argument parser.")
+    arg_parser = argparse.ArgumentParser()
     # TODO: Save config is not working for some reason
 
     # # Parse the arguments
     args = get_args(arg_parser)
 
-    logger.info(f"Arguments: {args}")
+    logger.info(f"Parsed arguments: {args}")
 
+    logger.info("Calling main function with parsed arguments.")
     df = main(**vars(args))
-
-    # df = pd.DataFrame({
-    #     "id": [1, 2],
-    #     "tags": [[1, 2], [1, 2]]
-    # })
+    logger.info("Main function executed successfully.")
 
     json_data = json_serialize(df, args.save_dir)
-
+    logger.info("Data serialized to JSON.")
     sys.stdout.write(json_data)
+    logger.info("JSON data written to stdout. Exiting script.")

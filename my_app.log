@@ -1,15 +1,16 @@
-[INFO|singlecellcropper|L121] 2025-06-12T17:03:15+0200: Directory already exists: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\
-[INFO|singlecellcropper|L256] 2025-06-12T17:09:00+0200: Arguments: Namespace(write_out_my_config=['D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro'+
-'\\repos\\micronuclAI-VR\\Assets\\StreamingAssets\\python_codes\\python_config.json'],
-mask_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif',
-img_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif',
-save_dir='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\', n=1, max_side=250, target_size=250, target_a_ratio=1.0)
-[INFO|singlecellcropper|L121] 2025-06-12T17:09:00+0200: Directory already exists: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\
-[INFO|singlecellcropper|L257] 2025-06-12T21:31:51+0200: Arguments: 
-Namespace(write_out_my_config=['D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\repos\\micronuclAI-VR\\Assets\\StreamingAssets\\python_codes\\python_config.json'], 
-mask_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif', 
-img_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif', 
-save_dir='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\', n=1, max_side=250, target_size=250, target_a_ratio=1.0); Config path: []
-[INFO|singlecellcropper|L121] 2025-06-12T21:31:51+0200: Directory already exists: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\
-[INFO|parser|L157] 2025-06-12T21:48:26+0200: Wrote config file to D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\StreamingAssets\python_codes\python_config.json
-[INFO|parser|L157] 2025-06-12T22:09:02+0200: Wrote config file to D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\StreamingAssets\python_codes\python_config.json
+[INFO|singlecellcropper|L255] 2025-06-13T22:03:16+0200: Starting script execution.
+[INFO|singlecellcropper|L257] 2025-06-13T22:03:16+0200: Initialized argument parser.
+[INFO|singlecellcropper|L264] 2025-06-13T22:03:16+0200: Parsed arguments: Namespace(mask_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif', img_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif', save_dir='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\', n=1, max_side=250, target_size=250, target_a_ratio=1.0, write_out_my_config='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\config.json')
+[INFO|singlecellcropper|L266] 2025-06-13T22:03:16+0200: Calling main function with parsed arguments.
+[INFO|singlecellcropper|L122] 2025-06-13T22:03:16+0200: Directory already exists: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\
+[INFO|singlecellcropper|L268] 2025-06-13T22:03:16+0200: Main function executed successfully.
+[INFO|singlecellcropper|L271] 2025-06-13T22:03:16+0200: Data serialized to JSON.
+[INFO|singlecellcropper|L273] 2025-06-13T22:03:16+0200: JSON data written to stdout. Exiting script.
+[INFO|singlecellcropper|L255] 2025-06-13T22:35:45+0200: Starting script execution.
+[INFO|singlecellcropper|L257] 2025-06-13T22:35:45+0200: Initialized argument parser.
+[INFO|singlecellcropper|L264] 2025-06-13T22:35:45+0200: Parsed arguments: Namespace(mask_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif', img_path='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\s01c1.ome.tif', save_dir='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\', n=1, max_side=250, target_size=250, target_a_ratio=1.0, write_out_my_config='D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\config.json')
+[INFO|singlecellcropper|L266] 2025-06-13T22:35:45+0200: Calling main function with parsed arguments.
+[INFO|singlecellcropper|L122] 2025-06-13T22:35:45+0200: Directory already exists: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\
+[INFO|singlecellcropper|L268] 2025-06-13T22:35:45+0200: Main function executed successfully.
+[INFO|singlecellcropper|L271] 2025-06-13T22:35:45+0200: Data serialized to JSON.
+[INFO|singlecellcropper|L273] 2025-06-13T22:35:45+0200: JSON data written to stdout. Exiting script.
