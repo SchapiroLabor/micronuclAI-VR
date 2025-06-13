@@ -327,5 +327,7 @@ namespace CinAnnotator
 
         }
 
+        //TODO: Create collect trash function
+
     }
 }

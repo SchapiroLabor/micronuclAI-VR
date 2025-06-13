@@ -296,6 +296,7 @@ namespace CinAnnotator
         private Texture2D LoadTexture(string img_path)
         {
             //Texture2D texture = Resources.Load<Texture2D>(Path.Combine("MicroNuclAI", name));
+            // TODO: Find a way to also load tif images, currently only png and jpg are supported
             byte[] fileData = File.ReadAllBytes(img_path);
             //(float width, float height) = GetDimensions(img_path);
             width = _interactableImageStack.bbox_dict.whole_slide_img_shape_X[0];

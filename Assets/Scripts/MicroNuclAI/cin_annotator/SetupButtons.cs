@@ -45,6 +45,9 @@ namespace CinAnnotator
         public void Initialize(Transform ImagePatch, UnityEngine.Vector3 position, UnityEngine.Quaternion rotation,
         Transform WholeImage, Transform Trash)
         {
+
+
+            // TODO: Call this function depending on the objects required to be setup
             fontSize = ImagePatch.GetComponent<RectTransform>().sizeDelta.x * 0.1f;
             buttonPosition = position;
             buttonRoation = rotation;
