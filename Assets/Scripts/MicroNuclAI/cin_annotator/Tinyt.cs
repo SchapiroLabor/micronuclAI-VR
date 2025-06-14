@@ -28,27 +28,27 @@ namespace CinAnnotator
         {
             public LinkedList<int> patch_index = new LinkedList<int>();
             public LinkedList<string> patch_name = new LinkedList<string>();
-            public LinkedList<int> patch_key = new LinkedList<int>();
+            public LinkedList<int> N_micronuclei = new LinkedList<int>();
 
             public void RegisterImage(int img_indx, string img_name, Transform transform)
             {
                 patch_index.AddLast(img_indx);
                 patch_name.AddLast(img_name);
-                patch_key.AddLast(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
+                N_micronuclei.AddLast(Int32.Parse(transform.gameObject.name.Substring(0, 1)));
             }
 
             public void RemoveImage()
             {
                 patch_index.RemoveLast();
                 patch_name.RemoveLast();
-                patch_key.RemoveLast();
+                N_micronuclei.RemoveLast();
             }
 
             public void MergeDFs(TrashDataFrame df)
             {
                 patch_index = new LinkedList<int>(patch_index.Concat(df.patch_index));
                 patch_name = new LinkedList<string>(patch_name.Concat(df.patch_name));
-                patch_key = new LinkedList<int>(patch_key.Concat(df.patch_key));
+                N_micronuclei = new LinkedList<int>(N_micronuclei.Concat(df.N_micronuclei));
             }
 
             public void Save2CSV(string filePath)
@@ -58,7 +58,9 @@ namespace CinAnnotator
                 {
                     var indexEnum = patch_index.GetEnumerator();
                     var nameEnum = patch_name.GetEnumerator();
-                    var keyEnum = patch_key.GetEnumerator();
+                    var keyEnum = N_micronuclei.GetEnumerator();
+
+                    writer.WriteLine($"Patch index, Patch name, Micronuclei count");
 
                     while (indexEnum.MoveNext() && nameEnum.MoveNext() && keyEnum.MoveNext())
                     {

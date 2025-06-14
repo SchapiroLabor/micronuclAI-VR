@@ -327,7 +327,35 @@ namespace CinAnnotator
 
         }
 
-        //TODO: Create collect trash function
+
+
+        public void CollectTrash(string save_dir)
+        {
+            // Iterate through all the trash objects and collect them
+            GameObject trash = trashList[0];
+            Tinyt.TrashDataFrame dataframe = trash.GetComponent<Tinyt>().df;
+
+            //TODO: Following error: ArgumentException: Offset and length were 
+            // out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.
+
+            trashList.RemoveAt(0);
+
+            foreach (GameObject trash_i in trashList)
+            {
+                dataframe.MergeDFs(trash_i.GetComponent<Tinyt>().df);
+            }
+
+            // Save as CSV
+            dataframe.Save2CSV(Path.Combine(save_dir, "micronuclei_count.csv"));
+
+        }
+
+        void OnApplicationQuit()
+        {
+            // Save the trash data frame to a CSV file when the application quits
+            CollectTrash(_interactableImageStack.inputfolder);
+
+        }
 
     }
 }

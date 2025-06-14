@@ -26,6 +26,7 @@ namespace CinAnnotator
 
         [SerializeField] private InteractableImageStack _interactableImageStack;
         [SerializeField] private GridMaker _gridMaker;
+        [SerializeField] private ClickNextImage _clickNextImage;
         private GameObject Arrow;
         private float height;
         private float width;
@@ -53,14 +54,12 @@ namespace CinAnnotator
             transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
             transform.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0);
 
-            // Reduce Local Scale
-            rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
+
+
+
 
         }
 
-        void Update()
-        {
-        }
 
         public System.Collections.IEnumerator SetTextureOnWholeImage(string img_path)
         {
@@ -71,6 +70,9 @@ namespace CinAnnotator
             GetComponent<RawImage>().texture = whole_img_texture;
             RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
             rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
+            // Reduce Local Scale
+            //rectTransform.localScale = new UnityEngine.Vector3(10/width, 10/height, 1f);
+            rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
 
             while (GetComponent<RawImage>().texture == null)
             {
@@ -79,10 +81,7 @@ namespace CinAnnotator
             }
         }
 
-        void Start()
-        {
-            
-        }
+
 
         // Start is called before the first frame update
         public void Initialize(Transform Panel, Camera userCamera, string ImgPath)
@@ -96,36 +95,119 @@ namespace CinAnnotator
             PositionImagetitle(transform.GetChild(0));
 
             // Initialize Arrow
-            //InitializeArrow();
+            InitializeArrow();
 
             // STart position of the player
             start_position = Camera.main.transform.position;
             start_rotation = Camera.main.transform.rotation;
 
-            //data_dict = ConvertOutputToDictionary(output);
-
             //TeleportActionMap.action.started += ctx => Return2Start();
         }
 
-        private void ColorPixelCluster(Rect pixelCluster, Color newColor)
+        public void DisplayCell()
+        {
+            // Get the bounding box of the cell
+            Rect bbox = _interactableImageStack.bbox_dict.GetBBOX(_clickNextImage.current_img_indx);
+
+            // Log the bounding box
+            Debug.Log($"Bounding box: {bbox}");
+
+            // Color the pixel cluster in the bounding box
+            ColorPixelCluster(bbox, Color.red);
+
+            // Position the arrow at the center of the bounding box
+            PositionArrow(bbox);
+
+            // Move player to the center of the patch
+            //MovePlayer2PixelPosition(bbox);
+        }
+
+        private void ColorPixelCluster(Rect bbox, Color newColor)
         {
             // Clone the original texture
             Texture2D originalTexture = GetComponent<RawImage>().texture as Texture2D;
 
-            // Apply the new color to the specified cluster of pixels
-            for (int x = (int)pixelCluster.xMin; x < (int)pixelCluster.xMax; x++)
+            int boundary_thickness = width > height ? (int)MathF.Pow(width, 1f / 3f) : (int)MathF.Pow(height, 1f / 3f);
+
+            // Clamp bounding box to texture bounds
+            int xMin = Mathf.Max(0, (int)bbox.xMin - boundary_thickness);
+            int xMax = Mathf.Min(originalTexture.width, (int)bbox.xMax + boundary_thickness);
+            int yMin = Mathf.Max(0, (int)bbox.yMin - boundary_thickness);
+            int yMax = Mathf.Min(originalTexture.height, (int)bbox.yMax + boundary_thickness);
+
+            // Compute the border coordinates and iterate through them
+            List<(int x, int y)> borderCoords = new List<(int x, int y)>();
+        /*
+            // Top border
+            for (int y = yMin; y < (int)bbox.yMin; y++)
+                for (int x = xMin; x < xMax; x++)
+                    borderCoords.Add((x, y));
+
+            // Bottom border
+            for (int y = (int)bbox.yMax; y < yMax; y++)
+                for (int x = xMin; x < xMax; x++)
+                    borderCoords.Add((x, y));
+
+            // Left and right borders
+            for (int y = (int)bbox.yMin; y < (int)bbox.yMax; y++)
             {
-                for (int y = (int)pixelCluster.yMin; y < (int)pixelCluster.yMax; y++)
+                for (int x = xMin; x < (int)bbox.xMin; x++)
+                    borderCoords.Add((x, y));
+                for (int x = (int)bbox.xMax; x < xMax; x++)
+                    borderCoords.Add((x, y));
+            } */
+
+            // Generate all coordinate combinations for x: 0-100 and y: 0-100
+            for (int x = 0; x <= 200; x++)
+            {
+                for (int y = (int) height - 200; y <= (int) height; y++)
                 {
-                    originalTexture.SetPixel(x, y, newColor); // The x and y are swapped because the texture is rotated
+                    borderCoords.Add((y, x));
                 }
             }
 
+            // Set the color for each border coordinate
+            foreach (var (x, y) in borderCoords)
+            {
+                originalTexture.SetPixel(y, x, newColor);
+            }
             // Apply all changes to the texture
             originalTexture.Apply();
         }
 
 
+        private void PositionArrow(Rect bbox)
+        {
+            UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
+            Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
+
+            Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
+            Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x, local_coords.y, local_coords.z);
+            //Arrow.transform.position = new UnityEngine.Vector3(0, 0, 5);
+
+            // Log maximum and minimum local position
+            if (!Arrow.activeSelf)
+            {
+                Arrow.SetActive(true);
+            }
+
+            //Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
+        }
+
+        private void InitializeArrow()
+        {
+            Arrow = transform.GetChild(1).gameObject;
+
+            Arrow.SetActive(false);
+
+            // Square root area of image
+            Arrow.transform.localScale = new UnityEngine.Vector3(3, 6, 1);
+
+        }
+
+
+
+        // Methods relating to teleportation
         private Vector2 RescalePixelCoords(Vector2 pixel_coords)
         {
             // Get image resize factor
@@ -140,8 +222,8 @@ namespace CinAnnotator
             SchapiroLabLog.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
 
             // Get the pixel position of the patch
-            UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(((bbox.xMin + bbox.xMax) / 2),
-            ((bbox.yMin + bbox.yMax) / 2)));
+            UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(bbox.xMin + bbox.xMax / 2,
+            bbox.yMin + bbox.yMax / 2));
 
             SchapiroLabLog.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
 
@@ -190,43 +272,6 @@ namespace CinAnnotator
 
             // Move the player to the patch position
             teleportationProvider.QueueTeleportRequest(telepoint);
-        }
-
-        private void InitializeArrow()
-        {
-            Arrow = transform.GetChild(1).gameObject;
-
-            /*         if (Arrow == null)
-                    {
-                        string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Arrow.prefab"));
-                        Arrow = HelperFunctions.CreateGameObject(transform, prefabPath, transform);
-                    } */
-
-            Arrow.SetActive(false);
-
-            // Square root area of image
-            Arrow.transform.localScale = new UnityEngine.Vector3(3, 6, 1);
-
-            // Get the rotation in 150° Angle
-            //Arrow.transform.rotation = UnityEngine.Quaternion.Euler(90, 180, 0);
-        }
-
-        private void PositionArrow(Rect bbox)
-        {
-            UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
-            Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
-
-            Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
-            Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x, local_coords.y, local_coords.z);
-            //Arrow.transform.position = new UnityEngine.Vector3(0, 0, 5);
-
-            // Log maximum and minimum local position
-            if (!Arrow.activeSelf)
-            {
-                Arrow.SetActive(true);
-            }
-
-            //Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(295, 0, -25);
         }
 
 
@@ -342,8 +387,6 @@ namespace CinAnnotator
             // Position -90° from whole image, this causes its axis to rotated too
             title.GetComponent<RectTransform>().localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
 
-            float d_height = GetComponent<RectTransform>().rect.height;
-            float d_width = GetComponent<RectTransform>().rect.width;
 
             // Position at whole image height distance in z axis.
             title.GetComponent<RectTransform>().position = new UnityEngine.Vector3(transform.position.x, transform.position.y,

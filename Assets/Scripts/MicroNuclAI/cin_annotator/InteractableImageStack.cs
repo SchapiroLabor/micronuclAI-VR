@@ -34,6 +34,8 @@ namespace CinAnnotator
         [SerializeField] private GameManaging _gameManaging;
         [SerializeField] private WholeImage _wholeImage;
         [SerializeField] private ClickNextImage _clickNextImage;
+        [SerializeField] private Trash _trash;
+        [SerializeField] private SetupButtons _buttons;
 
 
         [Serializable]
@@ -46,27 +48,66 @@ namespace CinAnnotator
         public DataFrame bbox_dict;
 
         [Header("Add to config file")]
-        private string python_exe = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
+        private string python_exe; //gameManaging.PythonExecutable;
         [Header("Add to config file")]
-        private string PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
+        private string PythonScript;
         [Header("Add to config file")]
-        static private string inputfolder = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\";
+        public string inputfolder;
         [Header("Add to config file")]
-        public string ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
+        public string ImgPath;
         [Header("Add to config file")]
-        public string ImgPNGPath = Path.Combine(inputfolder, "img.png");
+        public string ImgPNGPath;
         [Header("Add to config file")]
-        private string MaskPath = Path.Combine(inputfolder, "mask.tif");
+        private string MaskPath;
         [Header("Add to config file")]
-        private string PythonConfigPath = Path.Combine(inputfolder, "config.json");
+        private string PythonConfigPath;
 
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
-        
+
         [Header("Add to config file. Used to set world font size")]
         private float textfontsize = 0.5f; // Default font size for the text field
 
 
 
+
+        void PythonProcessOnTrue()
+        {
+            // Create text field to state image is loading
+            //CreateLoadingWidget(transform, load_indicator, textfontsize);
+        }
+
+        void PythonProcessOnFalse()
+        {
+            //load_indicator.SetActive(false);
+            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
+            _clickNextImage.Initialize();
+            _buttons.Initialize(_clickNextImage.transform, _clickNextImage.transform.rotation, _trash.transform);
+        }
+
+
+        void PythonProcessStartCallback()
+        { // Added as callback in the Editor. For some reason cannot be added in script.
+
+            if (PythonWorkerEvent.value == true)
+            {
+                // Start the Python process here
+                // Create text field to state image is loading
+                PythonProcessOnTrue();
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} started";
+
+            }
+            else if (PythonWorkerEvent.value == false)
+            {
+                // Stop the Python process here
+                // Create text field to state image is loading
+                PythonProcessOnFalse();
+                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
+            }
+            else
+            {
+                Debug.Log($"Process failed to start.");
+            }
+        }
 
 
         public class myjson_element
@@ -94,12 +135,29 @@ namespace CinAnnotator
                 _gameManaging = Resources.Load<GameObject>("Assets/Scripts/MicroNuclAI/SceneManager.prefab").GetComponent<GameManaging>();
             }
 
+
+            // TODO: Add the following to the game manager
+            python_exe = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
+            PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
+            inputfolder = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\";
+
+
+            ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
+            ImgPNGPath = Path.Combine(inputfolder, "img.png");
+            MaskPath = Path.Combine(inputfolder, "mask.tif");
+            PythonConfigPath = Path.Combine(inputfolder, "config.json");
+
+
+
             ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonConfigPath,
             MaskPath, ImgPath, this);
 
             StartCoroutine(PreprocessPatches(tws));
 
-            
+
+
+
+
 
             // TODO: First pop up loading screen to 
             // indicate image loading and processing in python
@@ -149,6 +207,28 @@ namespace CinAnnotator
             public List<int> whole_slide_img_shape_T;
 
 
+
+            public Rect GetBBOX(int df_index)
+            {
+                if (df_index < 0 || df_index >= Index.Count)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(df_index), "Index is out of range.");
+                }
+
+                return new Rect()
+                {
+                    x = X1[df_index],
+                    y = Y1[df_index],
+                    width = X2[df_index] - X1[df_index],
+                    height = Y2[df_index] - Y1[df_index]
+                };
+
+            }
+
+
+
+
+
         }
         private void Start()
         {
@@ -193,43 +273,7 @@ namespace CinAnnotator
 
         }
 
-        void PythonProcessOnTrue()
-        {
-            // Create text field to state image is loading
-            //CreateLoadingWidget(transform, load_indicator, textfontsize);
-        }
 
-        void PythonProcessOnFalse()
-        {
-            //load_indicator.SetActive(false);
-            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
-            _clickNextImage.Initialize();
-        }
-
-
-        void PythonProcessStartCallback()
-        { // Added as callback in the Editor. For some reason cannot be added in script.
-
-            if (PythonWorkerEvent.value == true)
-            {
-                // Start the Python process here
-                // Create text field to state image is loading
-                PythonProcessOnTrue();
-                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} started";
-
-            }
-            else if (PythonWorkerEvent.value == false)
-            {
-                // Stop the Python process here
-                // Create text field to state image is loading
-                PythonProcessOnFalse();
-                // Get the text field to update textField.GetComponent<TMP_Text>().text = $"Process {"processName"} finished";
-            }
-            else
-            {
-                Debug.Log($"Process failed to start.");
-            }
-        }
 
 
 
@@ -484,22 +528,6 @@ namespace CinAnnotator
             }
 
         }
-
-        /*
-        void Update()
-        {
-            if (Ready2Exit == true)
-            {
-            // Quit the application
-            Application.Quit();
-
-            // If running in the Unity Editor, stop play mode
-    #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-    #endif
-            }
-        }
-        */
 
 
     }
