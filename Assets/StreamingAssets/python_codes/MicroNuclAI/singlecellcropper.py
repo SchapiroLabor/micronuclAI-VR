@@ -12,6 +12,8 @@ from PIL import Image
 import ast
 import argparse
 from helperfunctions import save2DFcolumn
+
+
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
@@ -20,8 +22,6 @@ def main(save_dir: str,
          mask_path: str,
          img_path: str,
          n: int,
-         max_side: int,
-         target_size: int,
          target_a_ratio: float, **kwargs: dict
          ):
     """
@@ -67,16 +67,24 @@ def main(save_dir: str,
         logger.info("Removing bounding boxes located on the edge of the image.")
         all_boxes: BBoxes = all_boxes.remove_from_edge()
 
+        sides: np.ndarray = all_boxes.get_sides()[1:, ...]
+
+        third_quartile_cols: int = int(np.quantile(sides[:, 0], 0.95))
+        third_quartile_rows: int = int(np.quantile(sides[:, 1], 0.95))
+
         logger.info(
-            f"Filtering bounding boxes with sides <= ({max_side}, {max_side}).")
+            f"Filtering bounding boxes with sides <= ({third_quartile_cols}, {third_quartile_rows}).")
         filtered_boxes: BBoxes = all_boxes.filter("sides", np.less_equal,
-                                                  (max_side, max_side))
+                                                  (third_quartile_cols, third_quartile_rows))
+
+        target_size: int = int(np.median(sides.flatten()))
+
+        logger.info(f"Calculating resize factors for target size {target_size} and \
+                    aspect ratio {target_a_ratio}.")
 
         logger.info(f"Reading image from {img_path}.")
         filtered_boxes.image = tiff.imread(img_path)
 
-        logger.info(f"Calculating resize factors for target size {target_size} and \
-                    aspect ratio {target_a_ratio}.")
         resize_factors: np.ndarray = filtered_boxes.calculate_resizing_factor(
             desired_ratio=target_a_ratio, size=(target_size, target_size))
 
@@ -88,7 +96,7 @@ def main(save_dir: str,
             logger.info(f"Patch directory already exists: {patch_dir}")
 
         patch_dir: str = os.path.join(patch_dir, "img")
-
+        # TODO Look through this debug to understand why we get a type error when cropping
         logger.info(f"Extracting and saving patches to {patch_dir}.")
         filtered_boxes.extract(resize_factors, size=(target_size,
                                                      target_size),
@@ -118,6 +126,14 @@ def main(save_dir: str,
 
         # Save to CSV
         df.to_csv(csv_path, index=False)
+
+        # Save array as png
+        img, canvas = filtered_boxes.draw(idx=0, to="image", method="numpy")
+        img = img[..., None] + canvas
+
+        Image.fromarray(img).save(
+            os.path.join(save_dir, "img.png"), format='PNG')
+
     else:
         logger.info(f"Directory already exists: {save_dir}")
         # Read the existing CSV file
@@ -225,16 +241,10 @@ def get_args(arg_parser):
                             default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\")
 
     arg_parser.add_argument("--n", type=int,
-                            default=10, help="Number of pixels to expand the bounding boxes")
-
-    arg_parser.add_argument("--max_side",
-                            default=70, type=int, help="Minimum side of the bounding boxes")
-
-    arg_parser.add_argument("--target_size",
-                            default=256, type=int, help="Size to resize the single cells to")
+                            default=1, help="Number of pixels to expand the bounding boxes")
 
     arg_parser.add_argument("--target_a_ratio",
-                            default=0.7, type=float, help="Aspect ratio to resize the single cells to")
+                            default=1, type=float, help="Aspect ratio to resize the single cells to")
 
     arg_parser.add_argument("--write-out-my-config",
                             type=str, help="Aspect ratio to resize the single cells to")
@@ -246,28 +256,32 @@ if __name__ == "__main__":
 
     # TODO: Add working dir by using Sven's package
 
-    from python_codes.python_logger import get_logger, setup_logging
-    from python_codes.parser import CustomArgumentParser
+    try:
+        from python_codes.python_logger import get_logger, setup_logging
+        from python_codes.parser import CustomArgumentParser
 
-    setup_logging()
-    logger = get_logger()
+        setup_logging()
+        logger = get_logger()
 
-    logger.info("Starting script execution.")
+        logger.info("Starting script execution.")
 
-    logger.info("Initialized argument parser.")
-    arg_parser = argparse.ArgumentParser()
-    # TODO: Save config is not working for some reason
+        logger.info("Initialized argument parser.")
+        arg_parser = argparse.ArgumentParser()
+        # TODO: Save config is not working for some reason
 
-    # # Parse the arguments
-    args = get_args(arg_parser)
+        # # Parse the arguments
+        args = get_args(arg_parser)
 
-    logger.info(f"Parsed arguments: {args}")
+        logger.info(f"Parsed arguments: {args}")
 
-    logger.info("Calling main function with parsed arguments.")
-    df = main(**vars(args))
-    logger.info("Main function executed successfully.")
+        logger.info("Calling main function with parsed arguments.")
+        df = main(**vars(args))
+        logger.info("Main function executed successfully.")
 
-    json_data = json_serialize(df, args.save_dir)
-    logger.info("Data serialized to JSON.")
-    sys.stdout.write(json_data)
-    logger.info("JSON data written to stdout. Exiting script.")
+        json_data = json_serialize(df, args.save_dir)
+        logger.info("Data serialized to JSON.")
+        sys.stdout.write(json_data)
+        logger.info("JSON data written to stdout. Exiting script.")
+    except Exception as e:
+        raise RuntimeError(
+            f"An error occurred during script execution: {e}") from e

@@ -329,7 +329,7 @@ namespace CinAnnotator
                 string ScriptPath = Path.Combine(Application.streamingAssetsPath, _python_script);
 
                 string cmd_args = $"--mask_path {_MaskPath} --img_path {_ImgPath} --save_dir {_inputfolder} " +
-                                  $"--n {1} --max_side {250} --target_size {_InteractableImageStack.target_size} --target_a_ratio {1} " +
+                                  $"--n {15} --target_a_ratio {1} " +
                                   $"--write-out-my-config {_PythonConfigPath}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);

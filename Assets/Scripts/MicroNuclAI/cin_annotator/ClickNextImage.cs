@@ -251,6 +251,9 @@ namespace CinAnnotator
             transform.localPosition = StartPosition;
             transform.rotation = StartRotation;
 
+            // Set RawImage to natural size
+            GetComponent<RawImage>().SetNativeSize();
+
             // Get the RawImage component
             GetComponent<RawImage>().texture = images.First.Value;
 

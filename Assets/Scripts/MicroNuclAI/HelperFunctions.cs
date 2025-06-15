@@ -15,10 +15,12 @@ using System.Threading.Tasks;
 using UnityEditor.PackageManager;
 
 
+
+
 namespace NonGOSripts
 {
     static class HelperFunctions
-    {
+    {     // Compute 3x3 homography matrix using DLT
 
         public static void SetupAnchorsAndPivots(RectTransform rectTransform)
         {
@@ -137,7 +139,7 @@ namespace NonGOSripts
             load_indicator.SetActive(true);
         }
 
-        
+
 
 
         /*

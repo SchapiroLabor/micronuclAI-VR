@@ -17,6 +17,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.XR.Interaction.Toolkit.Inputs;
 using static SchapiroLabLog;
 using NonGOSripts;
+using General;
 // With a static directive, you can access the members of the class by using the class name itself
 
 namespace CinAnnotator
@@ -48,7 +49,7 @@ namespace CinAnnotator
 
             // Setup anchors and pivots
             RectTransform rectTransform = GetComponent<RectTransform>();
-            HelperFunctions.SetupAnchorsAndPivots(rectTransform);
+            NonGOSripts.HelperFunctions.SetupAnchorsAndPivots(rectTransform);
 
             // Set the anchors and pivots of the Canvas as sizeDelta requires absolute difference
             transform.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
@@ -66,10 +67,14 @@ namespace CinAnnotator
             // Remove the call to WaitForWholeImage since it is not being used
             Texture2D whole_img_texture = LoadTexture(img_path);
 
+            // Set interpolation to linear
+            whole_img_texture.filterMode = FilterMode.Bilinear;
+
             // Size delta must be explicitly matched to the size of the image
             GetComponent<RawImage>().texture = whole_img_texture;
             RectTransform rectTransform = GetComponent<RawImage>().GetComponent<RectTransform>();
             rectTransform.sizeDelta = new UnityEngine.Vector2(whole_img_texture.width, whole_img_texture.height);
+            Debug.Log($"Set size delta to {whole_img_texture.width} and {whole_img_texture.height}");
             // Reduce Local Scale
             //rectTransform.localScale = new UnityEngine.Vector3(10/width, 10/height, 1f);
             rectTransform.localScale = new UnityEngine.Vector3(1f, 1f, 1f);
@@ -100,6 +105,9 @@ namespace CinAnnotator
             // STart position of the player
             start_position = Camera.main.transform.position;
             start_rotation = Camera.main.transform.rotation;
+
+            // Set anchor to pixel coordinate origin
+
 
             //TeleportActionMap.action.started += ctx => Return2Start();
         }
@@ -135,9 +143,11 @@ namespace CinAnnotator
             int yMin = Mathf.Max(0, (int)bbox.yMin - boundary_thickness);
             int yMax = Mathf.Min(originalTexture.height, (int)bbox.yMax + boundary_thickness);
 
+            Debug.Log($"Bounding box coordinates highlighting coordinates: xMin={xMin}, xMax={xMax}, yMin={yMin}, yMax={yMax}");
+
             // Compute the border coordinates and iterate through them
             List<(int x, int y)> borderCoords = new List<(int x, int y)>();
-        /*
+
             // Top border
             for (int y = yMin; y < (int)bbox.yMin; y++)
                 for (int x = xMin; x < xMax; x++)
@@ -155,16 +165,16 @@ namespace CinAnnotator
                     borderCoords.Add((x, y));
                 for (int x = (int)bbox.xMax; x < xMax; x++)
                     borderCoords.Add((x, y));
-            } */
+            }
 
             // Generate all coordinate combinations for x: 0-100 and y: 0-100
-            for (int x = 0; x <= 200; x++)
-            {
-                for (int y = (int) height - 200; y <= (int) height; y++)
-                {
-                    borderCoords.Add((y, x));
-                }
-            }
+            /*          for (int x = 0; x <= 200; x++)
+                      {
+                          for (int y = (int)height - 200; y <= (int)height; y++)
+                          {
+                              borderCoords.Add((y, x));
+                          }
+                      }  */
 
             // Set the color for each border coordinate
             foreach (var (x, y) in borderCoords)
@@ -179,10 +189,13 @@ namespace CinAnnotator
         private void PositionArrow(Rect bbox)
         {
             UnityEngine.Vector2 pixel_coords = GetPatchMidPoint(bbox);
-            Vector3 local_coords = Pixel2UnityCoord(pixel_coords, true);
+
+            Vector2 local_coords = Pixel2UnityCoord(pixel_coords, true);
 
             Arrow.transform.localRotation = UnityEngine.Quaternion.Euler(270, 0, 0);
-            Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.x, local_coords.y, local_coords.z);
+            Arrow.transform.localPosition = new UnityEngine.Vector3(local_coords.y, local_coords.x, 0);
+            //Arrow.transform.position = new UnityEngine.Vector3(local_coords.y, local_coords.x, 0);
+            
             //Arrow.transform.position = new UnityEngine.Vector3(0, 0, 5);
 
             // Log maximum and minimum local position
@@ -219,19 +232,27 @@ namespace CinAnnotator
         private Vector2 GetPatchMidPoint(Rect bbox)
         {
             // Log minimum 
-            SchapiroLabLog.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
+            Debug.Log($"The minimum pixel coordinates are {bbox.xMin}, {bbox.yMin}");
+
+            UnityEngine.Vector2 mid_point_pixel = new UnityEngine.Vector2(
+                (bbox.xMin + bbox.xMax) / 2,
+                (bbox.yMin + bbox.yMax) / 2
+            );
+
+            Debug.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
 
             // Get the pixel position of the patch
-            UnityEngine.Vector2 mid_point_pixel = RescalePixelCoords(new UnityEngine.Vector2(bbox.xMin + bbox.xMax / 2,
-            bbox.yMin + bbox.yMax / 2));
+            UnityEngine.Vector2 rescaled_mid_point_pixel = RescalePixelCoords(mid_point_pixel);
 
-            SchapiroLabLog.Log($"The mid point pixel coordinates are {mid_point_pixel.x}, {mid_point_pixel.y}");
+            Debug.Log($"The rescaled mid point pixel coordinates are {rescaled_mid_point_pixel.x}, {rescaled_mid_point_pixel.y}");
 
-            return mid_point_pixel;
+            return rescaled_mid_point_pixel;
         }
 
 
-        private Vector3 Pixel2UnityCoord(UnityEngine.Vector2 pixel_coords, bool child = false)
+
+
+        private Vector2 Pixel2UnityCoord(UnityEngine.Vector2 pixel_coords, bool child = false)
         {
             Vector3 local_midpoint = Vector3.zero;
 
@@ -242,18 +263,30 @@ namespace CinAnnotator
                 // Traverse by half the width and height of the image
                 UnityEngine.Vector3 coords = mid_point_image - new UnityEngine.Vector3(newWidth / 2, mid_point_image.y, newHeight / 2) +
                 new UnityEngine.Vector3(pixel_coords.x, transform.position.y, pixel_coords.y);
-                SchapiroLabLog.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
-                return coords;
+                Debug.Log($"Pixel to world coordinates are {pixel_coords} and {coords}");
+                return mid_point_image;
             }
             else
             {
                 // Traverse by half the width and height of the image
-                UnityEngine.Vector3 coords = local_midpoint - new UnityEngine.Vector3(newWidth / 2, newHeight / 2, 0) +
-                new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0);
+                // Origin is at x=-4.24 and y=-3.64
 
-                SchapiroLabLog.Log($"Pixel to local coordinates are {pixel_coords} and {coords}");
+                // Normalised rect coordinates to local coordinates
 
-                return coords;
+                UnityEngine.Vector2 coords = local_midpoint - new UnityEngine.Vector3(newWidth / 2, newHeight / 2, 0) /*+
+                new UnityEngine.Vector3(pixel_coords.x, pixel_coords.y, 0) */;
+                Debug.Log($"Rect origin is {coords.x}, {coords.y}");
+
+                // TODO: Write down maximum and minimum local position given by image size. 
+                // Afterwards, compare to rescaled pixel coordinates given by patches
+                UnityEngine.Vector2 adjusted_coords = coords + pixel_coords;
+
+                // TODO: THe set pixels function of UNity might be buggy. Will remove that function.
+                // UnityEngine.Vector2 adjusted_coords = coords + new Vector2(0, newHeight);
+                Debug.Log($"Pixel to local coordinates are {adjusted_coords.x}, {adjusted_coords.y}");
+
+
+                return adjusted_coords;
             }
         }
 
@@ -263,7 +296,7 @@ namespace CinAnnotator
             UnityEngine.Vector2 mid_point_pixel = GetPatchMidPoint(bbox);
 
             // Get the mid point in world coordinates
-            UnityEngine.Vector3 mid_point_world = Pixel2UnityCoord(mid_point_pixel) - new UnityEngine.Vector3(0, 0.5f, 0.5f);
+            UnityEngine.Vector2 mid_point_world = Pixel2UnityCoord(mid_point_pixel);
 
             // Create Teleportation request
             TeleportRequest telepoint = new TeleportRequest();
@@ -331,11 +364,39 @@ namespace CinAnnotator
             // Set size of the image
             ResizeImgtobewithinFOV((y + transform.position.z) / 2, userCamera);
 
+            // Compute logbase10 of the image size
+            int log10_width = (int)Mathf.Log10(width);
+            int log10_height = (int)Mathf.Log10(height);
+            // Assert that the logs are equal 
+            if (Mathf.Equals(log10_width, log10_height))
+            {
+                Debug.Log("The image is square");
+                int log_10 = (int)log10_width; // Use either log10_width or log10_height as they are equal
+
+                int downsample_factor = log_10 > 1 ? log_10 - 1 : 1; // Downsample factor is log10 - 1, but at least 1
+                Debug.Log($"Downsample factor is {downsample_factor}");
+
+                newWidth = width / downsample_factor;
+                newHeight = height / downsample_factor;
+
+                Debug.Log($"New size of img: {newWidth} {newHeight}");
+
+                // Set size of the image
+                rectTransform.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+
+            }
+            else
+            {
+                Debug.Log($"The image is not square: {log10_width} and {log10_height}");
+            }
+
             // Set angle of the image to panel at 90°
             rectTransform.position = new Vector3(rectTransform.position.x, rectTransform.position.y + y, rectTransform.position.z);
 
             // Last incase, it affects positioning
             rectTransform.localRotation = UnityEngine.Quaternion.Euler(90, 0, 0);
+
+
         }
 
         private Texture2D LoadTexture(string img_path)
@@ -346,8 +407,8 @@ namespace CinAnnotator
             //(float width, float height) = GetDimensions(img_path);
             width = _interactableImageStack.bbox_dict.whole_slide_img_shape_X[0];
             height = _interactableImageStack.bbox_dict.whole_slide_img_shape_Y[0];
-            SchapiroLabLog.Log($"Size of img: {width} {height}");
-            Texture2D texture = new Texture2D((int)width, (int)height);
+            Debug.Log($"Size of img: {width} {height}");
+            Texture2D texture = new Texture2D((int)width, (int)height, TextureFormat.RGB24, true);
             texture.LoadImage(fileData);
             return texture;
         }
