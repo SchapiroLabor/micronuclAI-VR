@@ -17,7 +17,7 @@ namespace CinAnnotator
     public class SetupButtons : MonoBehaviour
 
     {
-        float fontSize;
+        public float fontSize;
         private UnityEngine.Vector2 buttonSize;
         private UnityEngine.Quaternion buttonRoation;
         public GameObject LocatePatch;
@@ -96,7 +96,7 @@ namespace CinAnnotator
             standardiseButton(LocatePatch);
 
             // Set text of the button
-            LocatePatch.GetComponentInChildren<TextMeshProUGUI>().text = "Locate";
+            LocatePatch.GetComponentInChildren<TextMeshProUGUI>().text = "Explore";
 
             // Add a listener to the button
             LocatePatch.GetComponent<Button>().onClick.AddListener(() => transform.parent.GetComponentInChildren<WholeImage>().DisplayCell());
@@ -165,7 +165,7 @@ namespace CinAnnotator
 
 
 
-        private void standardiseButton(GameObject Button)
+        public void standardiseButton(GameObject Button)
         {
             // Set the font size of the Button same to width of image
             Button.GetComponentInChildren<TextMeshProUGUI>().fontSize = fontSize;

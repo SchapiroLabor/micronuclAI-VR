@@ -224,9 +224,9 @@ namespace CinAnnotator
                
                 for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
-                    if (Index < max_imgs_to_load && Index + current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
+                    if (Index < max_imgs_to_load && Index + current_img_indx < _interactableImageStack.bbox_dict.label_ids.Count)
                     {
-                        Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}/{_interactableImageStack.bbox_dict.Index.Count}, Index: {Index}/{max_imgs_to_load}");
+                        Debug.Log($"Count: {images.Count}, current_img_indx: {current_img_indx}/{_interactableImageStack.bbox_dict.label_ids.Count}, Index: {Index}/{max_imgs_to_load}");
                         images.AddLast(LoadImg(_interactableImageStack.bbox_dict, Index + current_img_indx));
                     }
 
@@ -267,7 +267,7 @@ namespace CinAnnotator
 
             // Position and resize the text
             PositionResizeText(rawImage.transform.GetComponent<RectTransform>(), current_img_indx,
-            _interactableImageStack.bbox_dict.Index.Count);
+            _interactableImageStack.bbox_dict.label_ids.Count);
 
             // Set non maskable to true
             rawImage.GetComponent<RawImage>().maskable = false;
@@ -288,7 +288,7 @@ namespace CinAnnotator
         {
 
             // Create subsequent image only when there are more than one images
-            if (_interactableImageStack.bbox_dict.Index.Count > 1)
+            if (_interactableImageStack.bbox_dict.label_ids.Count > 1)
             {
 
                 // Create a new RawImage GameObject from the prefab
@@ -324,7 +324,7 @@ namespace CinAnnotator
         {
             if (this.gameObject != null && rawImagesubsequentGO != null)
             {
-                int N_images = _interactableImageStack.bbox_dict.Index.Count;
+                int N_images = _interactableImageStack.bbox_dict.label_ids.Count;
 
                 subsequent_img_indx = current_img_indx + 1;
 

@@ -80,7 +80,7 @@ namespace CinAnnotator
             GameObject ImageCurrent = _clickNextImage.gameObject;
 
             // Get current image index
-            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
+            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.label_ids.Count)
             {
 
                 if (ImageCurrent != null)

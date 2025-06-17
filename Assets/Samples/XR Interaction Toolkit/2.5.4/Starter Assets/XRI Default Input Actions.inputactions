@@ -2629,8 +2629,8 @@
                 },
                 {
                     "name": "modifier",
-                    "id": "d2fab372-1b24-4ee7-badc-cf3f137dc8b0",
-                    "path": "<XRController>{LeftHand}/{TriggerButton}",
+                    "id": "d81231f5-3c69-4457-9549-5f59d1d0e04b",
+                    "path": "<XRController>{LeftHand}/{Submit}",
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",
@@ -2641,7 +2641,7 @@
                 {
                     "name": "binding",
                     "id": "fee2bc9c-2aa9-49eb-960f-d9bc7b6cc7c1",
-                    "path": "<XRController>{RightHand}/{TriggerButton}",
+                    "path": "<XRController>{LeftHand}/{GripButton}",
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",

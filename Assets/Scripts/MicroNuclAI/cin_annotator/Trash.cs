@@ -167,7 +167,7 @@ namespace CinAnnotator
                 // Close second image
                 _clickNextImage.rawImagesubsequentGO.SetActive(false);
 
-                int N_images = _interactableImageStack.bbox_dict.Index.Count;
+                int N_images = _interactableImageStack.bbox_dict.label_ids.Count;
 
                 // If current image is index is below N_images, reinitialize the image
                 if (_clickNextImage.current_img_indx < N_images)
@@ -226,7 +226,7 @@ namespace CinAnnotator
             GameObject currentImage = _clickNextImage.gameObject;
 
             // Get current image index
-            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.Index.Count)
+            if (_clickNextImage.current_img_indx < _interactableImageStack.bbox_dict.label_ids.Count)
             {
 
                 if (current_trash.GetComponent<Tinyt>().df.patch_index.Count > 0)

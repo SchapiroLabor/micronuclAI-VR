@@ -79,7 +79,11 @@ namespace CinAnnotator
         void PythonProcessOnFalse()
         {
             //load_indicator.SetActive(false);
-            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
+   
+
+                _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
+
+
             _clickNextImage.Initialize();
             _buttons.Initialize(_clickNextImage.transform, _clickNextImage.transform.rotation, _trash.transform);
         }
@@ -109,19 +113,6 @@ namespace CinAnnotator
             }
         }
 
-
-        public class myjson_element
-        {   // X, Y = Width, Height
-            // ["N", "X1", "X2", "Y1", "Y2"]
-
-            public int N { get; set; }
-            public int X1 { get; set; }
-            public int X2 { get; set; }
-            public int Y1 { get; set; }
-            public int Y2 { get; set; }
-            public int[] whole_slide_img_shape { get; set; }
-
-        }
 
         void Awake()
         {
@@ -193,7 +184,7 @@ namespace CinAnnotator
         {   // Get the BBOX, index and image path
 
 
-            public List<int> Index;
+            public List<int> label_ids;
             public List<int> X1;
             public List<int> X2;
             public List<int> Y1;
@@ -206,23 +197,36 @@ namespace CinAnnotator
             public List<int> whole_slide_img_shape_Z;
             public List<int> whole_slide_img_shape_T;
 
+            public List<int> X1_downsampled;
+            public List<int> X2_downsampled;
+            public List<int> Y1_downsampled;
+            public List<int> Y2_downsampled;
 
 
-            public Rect GetBBOX(int df_index)
+
+            public Rect GetBBOX(int df_index, bool downsampled = false, float canvasscalefactor = 1f)
             {
-                if (df_index < 0 || df_index >= Index.Count)
-                {
+                if (df_index < 0 || df_index >= label_ids.Count)
                     throw new ArgumentOutOfRangeException(nameof(df_index), "Index is out of range.");
+
+                if (downsampled)
+                {   
+                    float x1 = X1_downsampled[df_index] / canvasscalefactor;
+                    float x2 = X2_downsampled[df_index] / canvasscalefactor;
+                    float y1 = Y1_downsampled[df_index] / canvasscalefactor;
+                    float y2 = Y2_downsampled[df_index] / canvasscalefactor;
+
+                    return new Rect(x1, y1, x2 - x1, y2 - y1);
                 }
-
-                return new Rect()
+                else
                 {
-                    x = X1[df_index],
-                    y = Y1[df_index],
-                    width = X2[df_index] - X1[df_index],
-                    height = Y2[df_index] - Y1[df_index]
-                };
+                    float x1 = X1[df_index];
+                    float x2 = X2[df_index];
+                    float y1 = Y1[df_index];
+                    float y2 = Y2[df_index];
 
+                    return new Rect(x1, y1, x2 - x1, y2 - y1);
+                }
             }
 
 
@@ -351,7 +355,7 @@ namespace CinAnnotator
                     }
                     else
                     {
-                        Debug.Log($"Parsed DataFrame: {_InteractableImageStack.bbox_dict.Index.Count} entries found.");
+                        Debug.Log($"Parsed DataFrame: {_InteractableImageStack.bbox_dict.label_ids.Count} entries found.");
                     }
                 }
                 catch (Exception e)

@@ -121,6 +121,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Return2Start",
+                    "type": "Button",
+                    "id": "e2fb781b-0a08-4204-825a-6e66d088d1ff",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -303,7 +312,7 @@
                 {
                     "name": "",
                     "id": "4f6dfc4a-38d9-455d-9364-3a188b0e9326",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/t",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -407,6 +416,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Secondary Touch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "66c81c6c-a079-4260-a94f-c44ead310eaf",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Return2Start",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
