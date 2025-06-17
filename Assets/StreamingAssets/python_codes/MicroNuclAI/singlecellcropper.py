@@ -12,9 +12,6 @@ from PIL import Image
 import ast
 import argparse
 from helperfunctions import save2DFcolumn
-from skimage.transform import resize
-
-
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
@@ -23,7 +20,7 @@ def main(save_dir: str,
          mask_path: str,
          img_path: str,
          n: int,
-         target_a_ratio: float, downsample: tuple[float], **kwargs: dict
+         target_a_ratio: float, **kwargs: dict
          ):
     """
     Processes an image and its corresponding mask to extract and save single-cell patches.
@@ -52,132 +49,21 @@ def main(save_dir: str,
 
     csv_path = os.path.join(save_dir, "bbox.csv")
 
-    if os.path.exists(csv_path) and os.path.exists(os.path.join(save_dir, "mask_downsampled.png")):
-        df = pd.read_csv(csv_path)
-        return df
-    else:
-        df = generate_data(csv_path, save_dir,
-                           mask_path, img_path, n, target_a_ratio, downsample, **kwargs)
-
-    return df
-
-
-def generate_data(csv_path: str, save_dir: str,
-                  mask_path: str,
-                  img_path: str,
-                  n: int,
-                  target_a_ratio: float, downsample: tuple[float], **kwargs: dict
-                  ) -> pd.DataFrame:
-    # Downsample if instructed
-    if downsample is not None:
-        # Read in the mask file
-        n = 1
-        mask = load_img(mask_path)
-
-        mask_path = os.path.join(save_dir, "mask_downsampled.tif")
-
-        if not os.path.exists(mask_path) and not os.path.exists(img_path):
-            mask = resize(mask, downsample,
-                          order=0).astype(np.uint16)
-            save_img(mask, mask_path, 'tiff')
-            logger.info(
-                f"Mask saved to {mask_path} and mask size is {mask.shape}")
-
-        else:
-            mask = load_img(mask_path)
-
-    # Extract bounding boxes from the mask
-    all_boxes: BBoxes = BBoxes.from_mask(mask_path)
-
-    assert all_boxes.bboxes.shape[0] > 0, "No bounding boxes found in the mask."
-
-    all_boxes: BBoxes = all_boxes.expand(n=n)
-
-    all_boxes: BBoxes = all_boxes.remove_from_edge()
-
-    assert np.all(all_boxes.bboxes >
-                  0), "No bounding boxes found after expansion and edge removal."
-
-    # Filter bounding boxes
-    if downsample is None:
-        # min max scaling to uint16
-        img = load_img(img_path)
-        img_path = os.path.join(save_dir, "img.png")
-        img = (img - img.min()) / (img.max() - img.min()) * 255**2
-        save_img(img.astype(np.uint16), img_path, 'PNG')
-        all_boxes, sides = get_filtered_boxes(all_boxes, save_dir, csv_path)
-
-    df = pd.DataFrame(all_boxes.bboxes, columns=[
-        "label_ids", "X1", "X2", "Y1", "Y2"])
-
-    # see if indi
-
-    # Unify the dataframes between downsampled and non-downsampled bounding boxes
-    if downsample is not None:
-        if os.path.exists(csv_path):
-            df_existing = pd.read_csv(csv_path)
-
-            # TODO: Log to confirm if indices are the same as we get Nan error for bbx when merfing dfs
-
-            down_bbox_cols = [
-                f"{x}_downsampled" for x in ["X1", "X2", "Y1", "Y2"]]
-            if df_existing.columns.isin(down_bbox_cols).all():
-                df_existing = df_existing.drop(columns=down_bbox_cols)
-
-            df = df_existing.merge(
-                df, on="label_ids", how="left", suffixes=("", "_downsampled"))
-
-            # Test
-            all_boxes.image = img
-            del mask, img
-            mask = load_img(mask_path.replace("_downsampled", ""))
-            all_boxes.mask = mask
-            all_boxes.bboxes = df_existing[[
-                "label_ids", "X1", "X2", "Y1", "Y2"]].values
-            img, canvas = all_boxes.draw(idx=0, to="image", method="numpy")
-            img = img + canvas[..., 0]
-            img = (img - img.min()) / (img.max() - img.min()) * 255
-            save_img(img.astype(np.uint8), os.path.join(save_dir, "img.png"))
-
-    for col in df.columns:
-        if np.issubdtype(df[col].dtypes, np.number):
-            df[col] = df[col].fillna(0)
-            df[col] = df[col].astype(int)
-
-    # Crop the patches
-    if downsample is None:
-        patch_dir = performcropping(all_boxes, sides,
-                                    target_a_ratio, img, save_dir)
-
-        df["Image_path"] = df["label_ids"].apply(
-            lambda x: os.path.join(os.path.dirname(patch_dir), f"img_{x}.png"))
-
-        df["whole_slide_img_ndim"] = all_boxes.image.ndim
-
-        logger.info(
-            f"Dims: {all_boxes.image.ndim} and shape: {all_boxes.image.shape}")
-
-        dim_dict = {0: "Y", 1: "X", 3: "C", 2: "Z", 4: "T"}
-
-        for dim in range(all_boxes.image.ndim):
-            value = dim_dict[dim]
-            df[f"whole_slide_img_shape_{value}"] = all_boxes.image.shape[dim]
-
-    # Save to CSV
-    df.to_csv(csv_path, index=False)
-
-    return df
-
-
-def get_filtered_boxes(all_boxes: BBoxes, save_dir: str,
-                       csv_path: str) -> [BBoxes, np.ndarray]:
-
     if not os.path.exists(save_dir) or not [s for s in os.listdir(save_dir) if s.endswith(".png")] \
             or not os.path.exists(csv_path):
 
         os.makedirs(save_dir, exist_ok=True)
 
         logger.info(f"Directory created: {save_dir}")
+
+        logger.info("Creating BBoxes object from mask and image.")
+        all_boxes: BBoxes = BBoxes.from_mask(mask_path, img_path)
+
+        logger.info(f"Expanding bounding boxes by {n} pixels.")
+        all_boxes: BBoxes = all_boxes.expand(n=n)
+
+        logger.info("Removing bounding boxes located on the edge of the image.")
+        all_boxes: BBoxes = all_boxes.remove_from_edge()
 
         sides: np.ndarray = all_boxes.get_sides()[1:, ...]
 
@@ -189,55 +75,67 @@ def get_filtered_boxes(all_boxes: BBoxes, save_dir: str,
         all_boxes: BBoxes = all_boxes.filter("sides", np.less_equal,
                                              (third_quartile_cols, third_quartile_rows))
 
-    return all_boxes, sides
+        logger.info(f"Reading image from {img_path}.")
+        all_boxes.image = tiff.imread(img_path)
+        img_path = os.path.join(save_dir, "img.png")
+        save_img(all_boxes.image, img_path, 'PNG')
 
+        target_size: int = int(np.median(sides.flatten()))
 
-def performcropping(all_boxes: BBoxes, sides: np.ndarray,
-                    target_a_ratio: float, img: np.ndarray, save_dir: str) -> str:
+        resize_factors: np.ndarray = all_boxes.calculate_resizing_factor(
+            desired_ratio=target_a_ratio, size=(target_size, target_size))
 
-    target_size: int = int(np.median(sides.flatten()))
+        patch_dir: str = os.path.join(save_dir, "patches")
+        if not os.path.exists(patch_dir):
+            os.makedirs(patch_dir)
+            logger.info(f"Patch directory created: {patch_dir}")
+        else:
+            logger.info(f"Patch directory already exists: {patch_dir}")
 
-    logger.info(f"Calculating resize factors for target size {target_size} and \
-                aspect ratio {target_a_ratio}.")
+        crop_path: str = os.path.join(patch_dir, "img")
 
-    resize_factors: np.ndarray = all_boxes.calculate_resizing_factor(
-        desired_ratio=target_a_ratio, size=(target_size, target_size))
+        all_boxes.extract(resize_factors, size=(target_size,
+                                                target_size),
+                          output=crop_path, rescale_intensity=True)
+        logger.info("Extraction and saving of patches completed.")
 
-    patch_dir: str = os.path.join(save_dir, "patches")
-    if not os.path.exists(patch_dir):
-        os.makedirs(patch_dir)
-        logger.info(f"Patch directory created: {patch_dir}")
+        bbox_path: str = os.path.join(save_dir, "bbox.csv")
+
+        logger.info(f"Saving bounding boxes to {bbox_path}.")
+
+        df = pd.DataFrame(all_boxes.bboxes, columns=[
+            "label_ids", "X1", "X2", "Y1", "Y2"])
+
+        df = df.astype(int)
+
+        df["Image_path"] = df["label_ids"].apply(
+            lambda k: os.path.join(f"{crop_path}_{k}.png"))
+
+        df[f"whole_slide_img_ndim"] = all_boxes.image.ndim
+
+        logger.info(
+            f"Dims: {all_boxes.image.ndim} and shape: {all_boxes.image.shape}")
+
+        dim_dict = {0: "Y", 1: "X", 3: "C", 2: "Z", 4: "T"}
+
+        for dim in range(all_boxes.image.ndim):
+            value = dim_dict[dim]
+            df[f"whole_slide_img_shape_{value}"] = all_boxes.image.shape[dim]
+
+        # Save to CSV
+        df.to_csv(csv_path, index=False)
     else:
-        logger.info(f"Patch directory already exists: {patch_dir}")
-
-    patch_dir: str = os.path.join(patch_dir, "img")
-
-    all_boxes.image = img
-
-    logger.info(f"Extracting and saving patches to {patch_dir}.")
-
-    all_boxes.extract(resize_factors, size=(target_size,
-                                            target_size),
-                      output=patch_dir, rescale_intensity=True)
-
-    logger.info("Extraction and saving of patches completed.")
-
-    return patch_dir
+        logger.info(f"Directory already exists: {save_dir}")
+        # Read the existing CSV file
+        df = pd.read_csv(csv_path)
+    return df
 
 
 def save_img(img, file_path: str, format: str = 'PNG'):
-
     if "tif" in os.path.splitext(file_path)[-1]:
         tiff.imwrite(file_path, img)
     else:
         Image.fromarray(img).save(file_path, format=format)
-
-
-def drawbbox(filtered_boxes: BBoxes) -> None:
-    # Save array as png
-    img, canvas = filtered_boxes.draw(idx=0, to="image", method="numpy")
-    img = img[..., None] + canvas
-    return img
 
 
 def get_bbox_from_csv(data_dir) -> pd.DataFrame:
@@ -260,7 +158,8 @@ def get_bbox_from_csv(data_dir) -> pd.DataFrame:
     return df
 
 
-def load_img(file_path) -> np.ndarray:
+def load_img(data_dir) -> np.ndarray:
+    file_path = os.path.join(data_dir, "img.png")
 
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"img not found in {file_path}")
@@ -338,20 +237,11 @@ def get_args(arg_parser):
                             type=str, help="Path to save the results",
                             default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\")
 
-    arg_parser.add_argument("--downsample",
-                            help="Downsample", nargs="+", type=float, default=None)
-
-    # 986,2305 and 847,5026
-
-    # [847, 986]
-
-    # [2102, 2446]
-
-    arg_parser.add_argument("--n", type=int,
-                            default=1, help="Number of pixels to expand the bounding boxes")
+    arg_parser.add_argument("--n",
+                            default=15, type=int, help="Buffer to nucleus mask")
 
     arg_parser.add_argument("--target_a_ratio",
-                            default=1, type=float, help="Aspect ratio to resize the single cells to")
+                            default=0.7, type=float, help="Aspect ratio to resize the single cells to")
 
     arg_parser.add_argument("--write-out-my-config",
                             type=str, help="Aspect ratio to resize the single cells to")
