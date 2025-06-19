@@ -480,8 +480,9 @@ namespace CinAnnotator
         {
             // Get the FOV at the panel height
             List<float> outputs = GetFOVatWD(WD, userCamera);
-            newHeight = outputs[0] * 2f; // Height
-            float newWidth = outputs[1] * 2f; // Width
+            
+            newHeight = outputs[0]; // Height
+            float newWidth = outputs[1]; // Width
             Debug.Log($"FOV at WD adjusted {WD} is {newWidth} and {newHeight}");
 
 
@@ -490,14 +491,8 @@ namespace CinAnnotator
 
             Debug.Log($"Aspect ratio of the image is {aspect_ratio} = {width}/{height}");
             // Adjust the dimensions to maintain the aspect ratio
-            if (newWidth > newHeight * aspect_ratio)
-            {
-                newWidth = newHeight * aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
-            }
-            else
-            {
-                newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newHeight = newWidth
-            }
+            newHeight = newWidth / aspect_ratio; // Aspect ratio is 1, so newWidth = newHeight
+
             Debug.Log($"New size of img: {newWidth} {newHeight}");
             // Transform rect size to pixels
 
@@ -540,8 +535,11 @@ namespace CinAnnotator
             // Set position of the image at same x position as panel and at the same z position as panel but at y position of panel + height of the image
             float y = Panel.GetComponent<RectTransform>().sizeDelta.y;
 
+            // Hypotenuse
+            float hypotenuse = Mathf.Sqrt(Mathf.Pow(y, 2) + Mathf.Pow(_interactableImageStack.raycast_distance, 2));
+
             // Set size of the image
-            var img_size = ResizeImgtobewithinFOV((y + transform.position.z) / 2, userCamera);
+            var img_size = ResizeImgtobewithinFOV(hypotenuse, userCamera);
 
             // Resize rectTransform to fit the canvas
             rectTransform.sizeDelta = new UnityEngine.Vector2(img_size.Item1, img_size.Item2);

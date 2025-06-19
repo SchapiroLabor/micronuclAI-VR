@@ -79,9 +79,9 @@ namespace CinAnnotator
         void PythonProcessOnFalse()
         {
             //load_indicator.SetActive(false);
-   
 
-                _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
+
+            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
 
 
             _clickNextImage.Initialize();
@@ -210,7 +210,7 @@ namespace CinAnnotator
                     throw new ArgumentOutOfRangeException(nameof(df_index), "Index is out of range.");
 
                 if (downsampled)
-                {   
+                {
                     float x1 = X1_downsampled[df_index] / canvasscalefactor;
                     float x2 = X2_downsampled[df_index] / canvasscalefactor;
                     float y1 = Y1_downsampled[df_index] / canvasscalefactor;
