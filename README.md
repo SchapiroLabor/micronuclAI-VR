@@ -1,6 +1,6 @@
 # MicronuclAI-VR
 
-VR implementation of the MicronuclAI labelling tool cited in *Ibarra-Arellano et al., 2025*.
+VR implementation of MicronuclAI labelling tool cited in *Ibarra-Arellano et al., 2025*.
 
 ## Game logic
 The immersive user interface of micronuclAI VR is populated with classification buckets, a single nucleus patch stack, whole slide image visualization, virtual controllers and buttons. The aim is to label the MN count for individual nuclei. This is executed by the following steps: (1) inspect individual nuclei (Figure B) and (2) label MN count by placing the patch in the dedicated bucket (Figure A). Wrong labels are rectified by selecting the “Undo” button, whilst higher MN counts are accommodated by adding the corresponding buckets through selecting the “Add Bin” button. Additionally, the whole slide image from which the patches originate is visualized to enable dataset exploration at native resolution. For convenience, an “Explore” button is provided to teleport the user to the whole slide image (Figure C). Once sufficient nuclei have been classified, the user quits the software to exit and generate a summarisation CSV file containing the recorded nuclei mask id, MN count and file path.
