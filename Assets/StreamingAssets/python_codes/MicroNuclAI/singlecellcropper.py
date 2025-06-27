@@ -259,22 +259,24 @@ if __name__ == "__main__":
     setup_logging()
     logger = get_logger()
 
-    logger.info("Starting script execution.")
-
-    logger.info("Initialized argument parser.")
-    arg_parser = argparse.ArgumentParser()
+    arg_parser = CustomArgumentParser.get_arg_parser()
     # TODO: Save config is not working for some reason
 
     # # Parse the arguments
     args = get_args(arg_parser)
+    logger.info(f"Arguments: {args}")
+    args = arg_parser.set_namespace_from_config(args,
+                                                os.path.join(args.save_dir, "python_config.yml"))
 
-    logger.info(f"Parsed arguments: {args}")
+    logger.info(f"Arguments: {args}")
 
-    logger.info("Calling main function with parsed arguments.")
-    df = main(**vars(args))
-    logger.info("Main function executed successfully.")
+    df = main(**arg_parser.namespace2dict(args))
+
+    # df = pd.DataFrame({
+    #     "id": [1, 2],
+    #     "tags": [[1, 2], [1, 2]]
+    # })
 
     json_data = json_serialize(df, args.save_dir)
-    logger.info("Data serialized to JSON.")
+
     sys.stdout.write(json_data)
-    logger.info("JSON data written to stdout. Exiting script.")

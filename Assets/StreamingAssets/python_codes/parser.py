@@ -5,9 +5,36 @@ import types
 import glob
 import sys
 import configargparse
+import json
 
 default_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "python_config.json")
+                            "python_config.yml")
+
+
+def load_config_file(config_file_path: str, k: str = "r") -> dict:
+    """Load a configuration file from the given path.
+
+    Args:
+        config_file_path (str): Path to the configuration file.
+
+    Returns:
+        dict: Parsed configuration data.
+    """
+    if not os.path.exists(config_file_path):
+
+        if config_file_path.endswith('.yaml'):
+            import yaml
+            with open(config_file_path, k) as file:
+                config_data = yaml.safe_load(file)
+
+        elif config_file_path.endswith('.json'):
+            with open(config_file_path, k) as file:
+                config_data = json.load(file)
+        else:
+            raise ValueError(
+                "Unsupported file format. Please use .yaml or .json files.")
+
+        return config_data
 
 
 class CustomArgumentParser(configargparse.ArgumentParser):
@@ -31,16 +58,16 @@ class CustomArgumentParser(configargparse.ArgumentParser):
                          default_config_files=default_config_files,
                          **kwargs)
 
-        self.add_argument('-c', '--my-config', required=False,
-                          is_config_file=True, help='config file path')
-        self.add_argument("-w", "--write-out-my-config", required=False,
-                          default=default_config_files,
+        self.add_argument("-w", "--write-out-my-config", required=False, is_write_out_config_file_arg=False,
+                          default=default_config_files[0],
                           help='write out config file path')
 
         self.variables_dict = {}
 
         self.arguments_key = "arguments"
         self.variables_key = "variables"
+
+        # self._config_file_open_func = json.load
 
     def _open_config_files(self, command_line_args):
         """Tries to parse config file path(s) from within command_line_args.
@@ -125,7 +152,17 @@ class CustomArgumentParser(configargparse.ArgumentParser):
 
         return config_files
 
-    def write_config_file(self, parsed_namespace, output_file_paths, exit_after=False):
+    def ordereddict2dict(self, od):
+        """Convert an OrderedDict to a regular dict."""
+
+        if isinstance(od, dict):
+            return {k: self.ordereddict2dict(v) for k, v in od.items()}
+        elif isinstance(od, list):
+            return [self.ordereddict2dict(item) for item in od]
+        else:
+            return od
+
+    def write_config_file(self, parsed_namespace, output_file_paths: list, exit_after=False):
         """Write the given settings to output files.
 
         Args:
@@ -133,30 +170,36 @@ class CustomArgumentParser(configargparse.ArgumentParser):
             output_file_paths: any number of file paths to write the config to
             exit_after: whether to exit the program after writing the config files
         """
+        default_path = None
         for output_file_path in output_file_paths:
             # validate the output file path
             try:
                 with self._config_file_open_func(output_file_path, "w") as output_file:
                     pass
-            except IOError as e:
-                raise ValueError("Couldn't open {} for writing: {}".format(
-                    output_file_path, e))
-        if output_file_paths:
-            # generate the config file contents
-            self.arguments_dict = self.get_items_for_config_file_output(
-                self._source_to_settings, parsed_namespace)
+            except:
+                if output_file_paths.__len__() == 1:
+                    default_path = output_file_paths[0]
+                output_file_paths.remove(output_file_path)
 
-            config_items = {self.arguments_key: self.arguments_dict,
-                            self.variables_key: self.variables_dict}
+        if not output_file_paths:
+            if default_path is None:
+                return
+            output_file_paths = [default_path]
 
-            file_contents = self._config_file_parser.serialize(config_items)
-            for output_file_path in output_file_paths:
-                with self._config_file_open_func(output_file_path, "w") as output_file:
-                    output_file.write(file_contents)
+        # generate the config file contents
+        self.arguments_dict = self.get_items_for_config_file_output(
+            self._source_to_settings, parsed_namespace)
 
-            print("Wrote config file to " + ", ".join(output_file_paths))
-            if exit_after:
-                self.exit(0)
+        config_items = {self.arguments_key: self.ordereddict2dict(self.arguments_dict),
+                        self.variables_key: self.variables_dict}
+
+        file_contents = self._config_file_parser.serialize(config_items)
+        for output_file_path in output_file_paths:
+            with self._config_file_open_func(output_file_path, "w") as output_file:
+                output_file.write(file_contents)
+
+        if exit_after:
+            self.exit(0)
 
     @staticmethod
     def get_arg_parser() -> configargparse.ArgumentParser:
@@ -173,8 +216,52 @@ class CustomArgumentParser(configargparse.ArgumentParser):
         logger_name: str = os.path.basename(os.path.dirname(caller_file))
         return logger_name
 
+    def set_namespace_from_dict(self, args, config_dict: dict):
+        """Set the namespace from a dictionary.
+
+        Args:
+            config_dict (dict): Dictionary containing configuration data.
+        """
+        # Convert dictionary to namespace
+
+        # Update the namespace with command line arguments
+        if config_dict:
+            for key, value in config_dict.items():
+                if hasattr(args, key):
+                    setattr(args, key, value)
+                    print(
+                        f"Setting {key} to {value} from config file: Namespace: {args}")
+
+        return args
+
+    def set_namespace_from_config(self, args, config_file_path: str = default_path):
+        # Load yaml file
+
+        if os.path.exists(config_file_path):
+            config_stream = self._config_file_open_func(
+                config_file_path=config_file_path, k="r")
+            config = self._config_file_parser.parse(config_stream)
+            print(f"Config file loaded: {config}")
+            if config:
+                return self.set_namespace_from_dict(args, config)
+
+        else:
+            return args
+
+    def namespace2dict(self, namespace: argparse.Namespace) -> dict:
+        """Convert a namespace object to a dictionary.
+
+        Args:
+            namespace (argparse.Namespace): Namespace object to convert.
+
+        Returns:
+            dict: Dictionary representation of the namespace.
+        """
+        return vars(namespace)
+
     def parse_args(self):
-        return super().parse_known_args()[0]
+        namespace = self.parse_known_args()[0]
+        return namespace
 
     @staticmethod
     def read_from_yaml(config_file) -> dict:

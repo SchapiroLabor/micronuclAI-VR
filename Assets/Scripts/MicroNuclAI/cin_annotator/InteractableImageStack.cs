@@ -229,75 +229,8 @@ namespace CinAnnotator
                 }
             }
 
-
-
-
-
-        }
-        private void Start()
-        {
-            if (userCamera == null)
-            {
-                userCamera = Camera.main;  // Use the main camera if no camera is assigned
-            }
-
-            // Ensure the Canvas is using World Space
-            Canvas canvas = GetComponent<Canvas>();
-            if (canvas.renderMode != RenderMode.WorldSpace)
-            {
-                canvas.renderMode = RenderMode.WorldSpace;
-            }
-
-            PositionCanvas();
-
         }
 
-        void PositionCanvas()
-        {
-
-            // Setup anchors and pivots
-            RectTransform rectTransform = GetComponent<RectTransform>();
-
-            // Set anchor to the centre of the screen
-            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
-            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
-
-            // Set pivot to the centre of the screen
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-
-            // Set local position to the centre of the screen at a distance of 10 units
-            rectTransform.localPosition = NonGOSripts.HelperFunctions.FacePlayer(raycast_distance);
-
-            // Set rotation of the Canvas to face the camera
-            transform.rotation = Quaternion.Euler(Vector3.zero);
-
-            // Set scale to 1
-            transform.localScale = new Vector3(1, 1, 1);
-
-
-        }
-
-
-
-
-
-        /*
-                private async Task PreprocessPatches(string inputfolder, string python_exe, string python_script = "read_df.py")
-                {
-                    // Call as lambda function
-                    // evt.previousValue is read-only and cannot be set. Remove this line.
-                    SendPythonProcessEvent(PythonWorkerEvent, true);
-                    var output = RunTask(() => Image2bbox_dict(python_exe, inputfolder, python_script)); // Wait for the task to complete
-                    await output;
-
-                    string result = output.Result.ToString();
-
-                    // We are awaiting beyond the await output statement but Main thread is not blocked
-                    //bbox_dict = JsonUtility.FromJson<DataFrame>(result);
-                    ThreadSafeLogger.Log($"Python script output: {result}");
-                    SendPythonProcessEvent(PythonWorkerEvent, false);
-                }
-        */
         public class ThreadWithState
         {
             // State information used in the task.
@@ -381,6 +314,72 @@ namespace CinAnnotator
 
             // Unity API is not thread safe, so cannot use it in worker thread. Use indirect variables to pass data
         }
+
+
+        private void Start()
+        {
+            if (userCamera == null)
+            {
+                userCamera = Camera.main;  // Use the main camera if no camera is assigned
+            }
+
+            // Ensure the Canvas is using World Space
+            Canvas canvas = GetComponent<Canvas>();
+            if (canvas.renderMode != RenderMode.WorldSpace)
+            {
+                canvas.renderMode = RenderMode.WorldSpace;
+            }
+
+            PositionCanvas();
+
+        }
+
+        void PositionCanvas()
+        {
+
+            // Setup anchors and pivots
+            RectTransform rectTransform = GetComponent<RectTransform>();
+
+            // Set anchor to the centre of the screen
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+
+            // Set pivot to the centre of the screen
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+            // Set local position to the centre of the screen at a distance of 10 units
+            rectTransform.localPosition = NonGOSripts.HelperFunctions.FacePlayer(raycast_distance);
+
+            // Set rotation of the Canvas to face the camera
+            transform.rotation = Quaternion.Euler(Vector3.zero);
+
+            // Set scale to 1
+            transform.localScale = new Vector3(1, 1, 1);
+
+
+        }
+
+
+
+
+
+        /*
+                private async Task PreprocessPatches(string inputfolder, string python_exe, string python_script = "read_df.py")
+                {
+                    // Call as lambda function
+                    // evt.previousValue is read-only and cannot be set. Remove this line.
+                    SendPythonProcessEvent(PythonWorkerEvent, true);
+                    var output = RunTask(() => Image2bbox_dict(python_exe, inputfolder, python_script)); // Wait for the task to complete
+                    await output;
+
+                    string result = output.Result.ToString();
+
+                    // We are awaiting beyond the await output statement but Main thread is not blocked
+                    //bbox_dict = JsonUtility.FromJson<DataFrame>(result);
+                    ThreadSafeLogger.Log($"Python script output: {result}");
+                    SendPythonProcessEvent(PythonWorkerEvent, false);
+                }
+        */
 
         private void read_csv_with_python(string data_dir)
         {
