@@ -21,11 +21,7 @@ namespace HomeScene
         void Start()
         {
             // Why do we need to load the GameManaging scriptable object here?
-            if (gameManaging == null)
-            {
-                // Load from path
-                gameManaging = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/SceneManager.prefab"))).GetComponent<GameManaging>();
-            }
+
 
             if (inputFields == null)
             {

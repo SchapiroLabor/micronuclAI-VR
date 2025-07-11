@@ -75,8 +75,8 @@ namespace CinAnnotator
             // Remove the call to WaitForWholeImage since it is not being used
             // Load the texture from the specified path
             // Get image size from the interactable image stack
-            int width_img = _interactableImageStack.bbox_dict.whole_slide_img_shape_X[0];
-            int height_img = _interactableImageStack.bbox_dict.whole_slide_img_shape_Y[0];
+            int width_img = _interactableImageStack.bbox_dict.whole_well_img_shape_X;
+            int height_img = _interactableImageStack.bbox_dict.whole_well_img_shape_Y;
 
             Texture2D whole_img_texture = LoadTexture(img_path, width_img, height_img);
 
@@ -129,8 +129,8 @@ namespace CinAnnotator
         {
 
 
-            width = _interactableImageStack.bbox_dict.whole_slide_img_shape_X[0];
-            height = _interactableImageStack.bbox_dict.whole_slide_img_shape_Y[0];
+            width = _interactableImageStack.bbox_dict.whole_well_img_shape_X;
+            height = _interactableImageStack.bbox_dict.whole_well_img_shape_Y;
             Debug.Log($"Size of img: {width} {height}");
 
             StartCoroutine(SetTextureOnWholeImage(ImgPath));

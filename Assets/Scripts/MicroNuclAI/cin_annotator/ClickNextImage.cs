@@ -199,7 +199,7 @@ namespace CinAnnotator
 
 
             // Load the image with absolute path
-            string path = bboxDict.Image_path[currentImgIndx];
+            string path = bboxDict.patch_path[currentImgIndx];
             img_names.Add(Path.GetFileNameWithoutExtension(path));
             byte[] fileData = File.ReadAllBytes(path);
             Texture2D tex = new Texture2D(_interactableImageStack.target_size, _interactableImageStack.target_size);

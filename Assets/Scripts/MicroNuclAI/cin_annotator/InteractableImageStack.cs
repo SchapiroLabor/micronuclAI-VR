@@ -19,6 +19,7 @@ using System.Collections;
 using UnityEngine.UI;
 using System.Diagnostics;
 using UnityEditor.Rendering;
+using UnityEngine.Rendering;
 
 namespace CinAnnotator
 {
@@ -128,19 +129,27 @@ namespace CinAnnotator
 
 
             // TODO: Add the following to the game manager
-            python_exe = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
+            python_exe = @"D:\OneDrive\Desktop\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
             PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
-            inputfolder = @"D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\";
+            inputfolder = @"D:\OneDrive\Desktop\Internship\UniKlinikum\Schapiro\data\data";
 
 
             ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
             ImgPNGPath = Path.Combine(inputfolder, "img.png");
             MaskPath = Path.Combine(inputfolder, "mask.tif");
-            PythonConfigPath = Path.Combine(inputfolder, "config.json");
+
+            string resultsfolder = Path.Combine(inputfolder, "results");
+
+            if (!Directory.Exists(resultsfolder))
+            {
+                Directory.CreateDirectory(resultsfolder);
+            }
+
+            PythonConfigPath = Path.Combine(resultsfolder, "config.yml");
 
 
 
-            ThreadWithState tws = new(python_exe, inputfolder, PythonScript, PythonConfigPath,
+            ThreadWithState tws = new(python_exe, resultsfolder, PythonScript, PythonConfigPath,
             MaskPath, ImgPath, this);
 
             StartCoroutine(PreprocessPatches(tws));
@@ -189,13 +198,13 @@ namespace CinAnnotator
             public List<int> X2;
             public List<int> Y1;
             public List<int> Y2;
-            public List<string> Image_path;
-            public List<int> whole_slide_img_ndim;
-            public List<int> whole_slide_img_shape_Y;
-            public List<int> whole_slide_img_shape_X;
-            public List<int> whole_slide_img_shape_C;
-            public List<int> whole_slide_img_shape_Z;
-            public List<int> whole_slide_img_shape_T;
+            public List<string> patch_path;
+            public int whole_well_img_ndim;
+            public int whole_well_img_shape_Y;
+            public int whole_well_img_shape_X;
+            public int whole_well_img_shape_C;
+            public int whole_well_img_shape_Z;
+            public int whole_well_img_shape_T;
 
             public List<int> X1_downsampled;
             public List<int> X2_downsampled;
@@ -267,7 +276,7 @@ namespace CinAnnotator
 
                 string cmd_args = $"--mask_path {_MaskPath} --img_path {_ImgPath} --save_dir {_inputfolder} " +
                                   $"--n {15} --target_a_ratio {1} " +
-                                  $"--write-out-my-config {_PythonConfigPath}";
+                                  $"-w {_PythonConfigPath}";
 
                 System.Diagnostics.Process process = PythonIPC.SetupPythonProcess(ScriptPath, _python_exe, cmd_args);
 

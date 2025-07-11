@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV 'D:\OneDrive\Desktop\Internship\VR_schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR'
+set -gx VIRTUAL_ENV 'D:\OneDrive\Desktop\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR'
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"Scripts $PATH

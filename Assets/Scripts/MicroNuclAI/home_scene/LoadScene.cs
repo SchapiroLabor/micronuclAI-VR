@@ -48,22 +48,10 @@ namespace HomeScene
             // Set plane distance at far clip plane
             GetComponent<Canvas>().planeDistance = camera.farClipPlane;
 
-            // Initialize lab logo
-            InitializeLabLogo();
-
             // Initialize game title
             InitializeGameTitle();
 
             return transform;
-        }
-
-        void InitializeLabLogo()
-        {
-
-
-            // Set image
-            labLogo.GetComponent<RawImage>().texture = Resources.Load<Texture>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("LabImage.jpg")));
-
         }
 
 

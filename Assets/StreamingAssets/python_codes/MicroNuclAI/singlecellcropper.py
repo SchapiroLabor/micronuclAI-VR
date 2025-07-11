@@ -1,6 +1,7 @@
 import os
+from typing import Any
 import numpy as np
-from mask2bbox import BBoxes
+from mask2bbox._bboxes import BBoxes
 import tifffile as tiff
 import sys
 import pandas as pd
@@ -9,14 +10,13 @@ import pandas as pd
 import numpy as np
 import os
 from PIL import Image
-import ast
 import argparse
 from helperfunctions import save2DFcolumn
 sys.path.append(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
 
-def main(save_dir: str,
+def main(results_dir: str,
          mask_path: str,
          img_path: str,
          n: int,
@@ -47,14 +47,14 @@ def main(save_dir: str,
         None
     """
 
-    csv_path = os.path.join(save_dir, "bbox.csv")
+    csv_path = os.path.join(results_dir, "bbox.csv")
 
-    if not os.path.exists(save_dir) or not [s for s in os.listdir(save_dir) if s.endswith(".png")] \
+    if not os.path.exists(results_dir) or not [s for s in os.listdir(results_dir) if s.endswith(".png")] \
             or not os.path.exists(csv_path):
 
-        os.makedirs(save_dir, exist_ok=True)
+        os.makedirs(results_dir, exist_ok=True)
 
-        logger.info(f"Directory created: {save_dir}")
+        logger.info(f"Directory created: {results_dir}")
 
         logger.info("Creating BBoxes object from mask and image.")
         all_boxes: BBoxes = BBoxes.from_mask(mask_path, img_path)
@@ -77,7 +77,7 @@ def main(save_dir: str,
 
         logger.info(f"Reading image from {img_path}.")
         all_boxes.image = tiff.imread(img_path)
-        img_path = os.path.join(save_dir, "img.png")
+        img_path = os.path.join(results_dir, "img.png")
         save_img(all_boxes.image, img_path, 'PNG')
 
         target_size: int = int(np.median(sides.flatten()))
@@ -85,7 +85,7 @@ def main(save_dir: str,
         resize_factors: np.ndarray = all_boxes.calculate_resizing_factor(
             desired_ratio=target_a_ratio, size=(target_size, target_size))
 
-        patch_dir: str = os.path.join(save_dir, "patches")
+        patch_dir: str = os.path.join(results_dir, "patches")
         if not os.path.exists(patch_dir):
             os.makedirs(patch_dir)
             logger.info(f"Patch directory created: {patch_dir}")
@@ -99,7 +99,7 @@ def main(save_dir: str,
                           output=crop_path, rescale_intensity=True)
         logger.info("Extraction and saving of patches completed.")
 
-        bbox_path: str = os.path.join(save_dir, "bbox.csv")
+        bbox_path: str = os.path.join(results_dir, "bbox.csv")
 
         logger.info(f"Saving bounding boxes to {bbox_path}.")
 
@@ -108,10 +108,11 @@ def main(save_dir: str,
 
         df = df.astype(int)
 
-        df["Image_path"] = df["label_ids"].apply(
+        df["patch_path"] = df["label_ids"].apply(
             lambda k: os.path.join(f"{crop_path}_{k}.png"))
 
-        df[f"whole_slide_img_ndim"] = all_boxes.image.ndim
+        df[f"whole_well_img_ndim"] = all_boxes.image.ndim
+        df["whole_well_img_path"] = img_path
 
         logger.info(
             f"Dims: {all_boxes.image.ndim} and shape: {all_boxes.image.shape}")
@@ -120,12 +121,12 @@ def main(save_dir: str,
 
         for dim in range(all_boxes.image.ndim):
             value = dim_dict[dim]
-            df[f"whole_slide_img_shape_{value}"] = all_boxes.image.shape[dim]
+            df[f"whole_well_img_shape_{value}"] = all_boxes.image.shape[dim]
 
         # Save to CSV
         df.to_csv(csv_path, index=False)
     else:
-        logger.info(f"Directory already exists: {save_dir}")
+        logger.info(f"Directory already exists: {results_dir}")
         # Read the existing CSV file
         df = pd.read_csv(csv_path)
     return df
@@ -145,7 +146,7 @@ def get_bbox_from_csv(data_dir) -> pd.DataFrame:
         raise FileNotFoundError(f"bbox not found in {file_path}")
 
     df = pd.read_csv(file_path, sep=",", names=[
-                     "label_ids", "X1", "X2", "Y1", "Y2", "whole_slide_img_shape"])
+                     "label_ids", "X1", "X2", "Y1", "Y2", "whole_well_img_shape"])
     # Set 'N' as the index if it exists
     df = df.set_index("N")
 
@@ -224,7 +225,7 @@ Strings, ints, floats, dicts, and nested lists all serialize cleanly."""
         raise FileNotFoundError(f"Directory {data_dir} does not exist")
 
 
-def get_args(arg_parser):
+def get_args(arg_parser: argparse.ArgumentParser) -> argparse.Namespace:
     # Add an argument to the parser
     arg_parser.add_argument("--mask_path", type=str,
                             help="Path to the mask image",
@@ -259,18 +260,40 @@ if __name__ == "__main__":
     setup_logging()
     logger = get_logger()
 
-    arg_parser = CustomArgumentParser.get_arg_parser()
-    # TODO: Save config is not working for some reason
+    arg_parsered: argparse.ArgumentParser = CustomArgumentParser.get_arg_parser()
 
     # # Parse the arguments
-    args = get_args(arg_parser)
-    logger.info(f"Arguments: {args}")
-    args = arg_parser.set_namespace_from_config(args,
-                                                os.path.join(args.save_dir, "python_config.yml"))
+    args: argparse.Namespace = get_args(arg_parsered)
 
-    logger.info(f"Arguments: {args}")
+    logger.info(f"Arguments 1: {args}")
 
-    df = main(**arg_parser.namespace2dict(args))
+    # TODO: Add accessible args string for wrtie out config
+    args: argparse.Namespace = arg_parsered.set_namespace_from_config(args,
+                                                                      args.write_out_my_config)
+
+    logger.info(f"Arguments 2: {args}")
+
+    config: dict[str, Any] = arg_parsered.namespace2dict(args)
+
+    df: pd.DataFrame = main(results_dir=args.save_dir, **config)
+
+    # Save to config python file
+    filtered_df = df.loc[:, [x for x in df.columns if x.startswith(
+        "whole_well_img")]].drop_duplicates()
+
+    df = df.loc[:, ~df.columns.isin(filtered_df.columns)]
+
+    config_df: dict[str, Any] = filtered_df.to_dict(orient="records")
+
+    [config.update(d) for d in config_df]
+
+    # Oversave config with the new values
+    args: argparse.Namespace = arg_parsered.set_namespace_from_dict(
+        args, config)
+
+    logger.info(f"Arguments 3: {args}")
+
+    arg_parsered.save_config(args, configargparse_filter=False)
 
     # df = pd.DataFrame({
     #     "id": [1, 2],
