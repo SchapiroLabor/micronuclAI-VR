@@ -20,6 +20,10 @@ using UnityEngine.UI;
 using System.Diagnostics;
 using UnityEditor.Rendering;
 using UnityEngine.Rendering;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+using System.Linq;
+
 
 namespace CinAnnotator
 {
@@ -82,7 +86,7 @@ namespace CinAnnotator
             //load_indicator.SetActive(false);
 
 
-            _wholeImage.Initialize(_gridMaker.transform, userCamera, ImgPNGPath);
+            _wholeImage.Initialize(_gridMaker.transform, userCamera);
 
 
             _clickNextImage.Initialize();
@@ -135,7 +139,6 @@ namespace CinAnnotator
 
 
             ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
-            ImgPNGPath = Path.Combine(inputfolder, "img.png");
             MaskPath = Path.Combine(inputfolder, "mask.tif");
 
             string resultsfolder = Path.Combine(inputfolder, "results");
@@ -205,6 +208,7 @@ namespace CinAnnotator
             public int whole_well_img_shape_C;
             public int whole_well_img_shape_Z;
             public int whole_well_img_shape_T;
+            public string whole_well_img_path;
 
             public List<int> X1_downsampled;
             public List<int> X2_downsampled;
@@ -214,7 +218,8 @@ namespace CinAnnotator
 
 
             public Rect GetBBOX(int df_index, bool downsampled = false, float canvasscalefactor = 1f)
-            {
+            {   
+                // Downsampling is too destrective for resolution to fit into FOV.
                 if (df_index < 0 || df_index >= label_ids.Count)
                     throw new ArgumentOutOfRangeException(nameof(df_index), "Index is out of range.");
 
@@ -238,6 +243,25 @@ namespace CinAnnotator
                 }
             }
 
+            /*
+                        public void merge_config(Deserializer deserializer)
+                        {
+                            // Merge the config with the dataframe
+                            // Read the config file and merge it with the dataframe
+
+                            var config_dict = deserializer;
+
+                            // Add the config to the dataframe
+                            foreach (var kvp in config_dict)
+                            {
+                                if (!this.GetType().GetProperty(kvp.Key).CanWrite)
+                                {
+                                    Debug.LogWarning($"Property {kvp.Key} is not writable.");
+                                    continue;
+                                }
+                                this.GetType().GetProperty(kvp.Key).SetValue(this, kvp.Value);
+                            }
+            */
         }
 
         public class ThreadWithState
@@ -287,6 +311,9 @@ namespace CinAnnotator
                     process.Start();
 
                     string json_bbox_dict = PythonIPC.GetStdOutputFromConsole(process);
+                    json_bbox_dict = json_bbox_dict.Split("\n", StringSplitOptions.None).Last<string>();
+
+                    Debug.Log($"Python script output: {json_bbox_dict}");
 
                     // We are awaiting beyond the await output statement but Main thread is not blocked
                     _InteractableImageStack.bbox_dict = JsonUtility.FromJson<DataFrame>(json_bbox_dict);
@@ -298,6 +325,8 @@ namespace CinAnnotator
                     else
                     {
                         Debug.Log($"Parsed DataFrame: {_InteractableImageStack.bbox_dict.label_ids.Count} entries found.");
+                        //Popolate dataframe with the python config!!!
+
                     }
                 }
                 catch (Exception e)

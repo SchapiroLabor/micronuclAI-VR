@@ -125,7 +125,7 @@ namespace CinAnnotator
 
 
         // Start is called before the first frame update
-        public void Initialize(Transform Panel, Camera userCamera, string ImgPath)
+        public void Initialize(Transform Panel, Camera userCamera)
         {
 
 
@@ -133,7 +133,7 @@ namespace CinAnnotator
             height = _interactableImageStack.bbox_dict.whole_well_img_shape_Y;
             Debug.Log($"Size of img: {width} {height}");
 
-            StartCoroutine(SetTextureOnWholeImage(ImgPath));
+            StartCoroutine(SetTextureOnWholeImage(_interactableImageStack.bbox_dict.whole_well_img_path));
             PositionWholeImage(Panel, userCamera);
 
 

@@ -191,7 +191,7 @@ def sanitize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         df.fillna(0, inplace=True)  # In memory replacement
 
 
-def json_serialize(df, data_dir):
+def json_serialize(df, config, data_dir):
 
     if os.path.exists(data_dir):
 
@@ -218,6 +218,9 @@ Lists are converted recursively and safely to JSON arrays.
 
 Strings, ints, floats, dicts, and nested lists all serialize cleanly."""
         bbox = df.to_dict(orient="list")
+        bbox.update(config)
+
+        logger.info(f"bbox: {bbox}")
         bbox = json.dumps(bbox)
 
         return bbox
@@ -300,6 +303,6 @@ if __name__ == "__main__":
     #     "tags": [[1, 2], [1, 2]]
     # })
 
-    json_data = json_serialize(df, args.save_dir)
-
-    sys.stdout.write(json_data)
+    json_data = json_serialize(
+        df, config, args.save_dir)
+    sys.stdout.write("\n" + json_data)
