@@ -15,7 +15,6 @@ namespace HomeScene
     {
         // Start is called before the first frame update
 
-        [SerializeField] private GameManaging gameManaging;
         [SerializeField] private InputFields inputFields;
 
         void Start()
@@ -54,8 +53,10 @@ namespace HomeScene
 
                 // Assign the input fields to the GameManager
                 // Get text provided in List<string> output
-                gameManaging.GetComponent<GameManaging>().InputFolder = output[0];
-                gameManaging.GetComponent<GameManaging>().PythonExecutable = output[1];
+                GameManaging.InputFolder = output[0];
+                GameManaging.python_exe = output[1];
+                GameManaging.ImgPath = inputFields.ImgPath;
+                GameManaging.MaskPath = inputFields.MaskPath;
 
                 // Load the next scene
                 UnityEngine.SceneManagement.SceneManager.LoadScene("CI-Annotator");

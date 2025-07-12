@@ -71,8 +71,8 @@ namespace HomeScene
         {
             // Windows appears to handle special characters in path names better than linux
             TMP_InputField PythonPath_text = PythonPath.GetComponent<TMP_InputField>();
-            string path = ConfirmExistence(PythonPath_text);
-            return path;
+            python_exe = ConfirmExistence(PythonPath_text);
+            return python_exe;
         }
 
         public string GetDataFolder()
@@ -80,46 +80,61 @@ namespace HomeScene
             // Windows appears to handle special characters in path names better than linux
             TMP_InputField ImagePath_text = ImagePath.GetComponent<TMP_InputField>();
             string path = ConfirmExistence(ImagePath_text);
-            string val_path = ConfirmContentsinDataFolder(path, ImagePath_text);
-            return val_path;
+            inputfolder = ConfirmContentsinDataFolder(path, ImagePath_text);
+            return inputfolder;
         }
+
+        [Header("Add to config file")]
+        public string MaskPath;
+        [Header("Add to config file")]
+        public string ImgPath;
+        [Header("Add to config file")]
+        private string python_exe; //gameManaging.PythonExecutable;
+        [Header("Add to config file")]
+        public string inputfolder;
+        [Header("Add to config file")]
+        private string ImgFileName = "img"; // Default image file name, please do not change this !!
+        [Header("Add to config file")]
+        private string MaskFileName = "mask"; // Default mask file name, please do not change this !!
         private string ConfirmContentsinDataFolder(string InputFolder, TMP_InputField inputfield)
         {
             string[] allfiles = Directory.GetFiles(InputFolder);
 
+            // 
+            foreach (string file in allfiles)
+            {
+                if (file.Contains(Path.Combine(InputFolder, ImgFileName)))
+                {
+                    ImgPath = file;
+                    continue;
+                }
+
+                else if (file.Contains(Path.Combine(InputFolder, MaskFileName)))
+                {
+                    MaskPath = file;
+                    continue;
+                }
+
+                else
+                {
+                    break;
+                }
+
+            }
+
+
             // Confrim if whole image, mask, patch folder and bbox file exists
-            if (!File.Exists(Path.Combine(InputFolder, "img.png")) ||
-            !File.Exists(Path.Combine(InputFolder, "mask.tif")) ||
-            !File.Exists(Path.Combine(InputFolder, "bbox.txt")))
+            if (ImgPath is not null & MaskPath is not null)
+            {
+                { return InputFolder; }
+            }
+            else
             {
                 inputfield.text = "";
                 inputfield.placeholder.GetComponent<TextMeshProUGUI>().text =
-                "Please try again, ensure img.png, mask, bbox.txt exist";
+                "Please try again, ensure whole well img and mask exist";
                 return null;
             }
-
-            if (!Directory.Exists(Path.Combine(InputFolder, "patches")) || Directory.GetFiles(Path.Combine(InputFolder, "patches")).Length == 0)
-            {
-                inputfield.text = "";
-                inputfield.placeholder.GetComponent<TextMeshProUGUI>().text = "Please ensure folder with patches exist or is not empty";
-                return null;
-            }
-
-            // Ensure that patches are of png format
-
-            string[] patchFiles = Directory.GetFiles(Path.Combine(InputFolder, "patches"));
-            bool hasNonPngPatch = patchFiles.Any(file => !file.EndsWith(".png"));
-
-            if (hasNonPngPatch)
-            {
-                inputfield.text = "";
-                inputfield.placeholder.GetComponent<TextMeshProUGUI>().text = "Please ensure patches are of png format";
-                return null;
-            }
-
-            else
-
-            { return InputFolder; }
 
 
 

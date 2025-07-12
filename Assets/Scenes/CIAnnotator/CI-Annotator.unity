@@ -1686,11 +1686,12 @@ MonoBehaviour:
   userCamera: {fileID: 1773221031}
   target_size: 250
   _gridMaker: {fileID: 1527052174}
-  _gameManaging: {fileID: 7892077242007335508, guid: 80fd0d7a4fdac8a57a5cd2743acaf352, type: 3}
+  _gameManaging: {fileID: 0}
   _wholeImage: {fileID: 5734393821542011230}
   _clickNextImage: {fileID: 1879355352}
   _trash: {fileID: 228217394}
   _buttons: {fileID: 492600020}
+  resultsfolder: 
   PythonWorkerEvent:
     m_PersistentCalls:
       m_Calls:
@@ -1714,20 +1715,18 @@ MonoBehaviour:
     X2: 
     Y1: 
     Y2: 
-    Image_path: []
-    whole_slide_img_ndim: 
-    whole_slide_img_shape_Y: 
-    whole_slide_img_shape_X: 
-    whole_slide_img_shape_C: 
-    whole_slide_img_shape_Z: 
-    whole_slide_img_shape_T: 
+    patch_path: []
+    whole_well_img_ndim: 0
+    whole_well_img_shape_Y: 0
+    whole_well_img_shape_X: 0
+    whole_well_img_shape_C: 0
+    whole_well_img_shape_Z: 0
+    whole_well_img_shape_T: 0
+    whole_well_img_path: 
     X1_downsampled: 
     X2_downsampled: 
     Y1_downsampled: 
     Y2_downsampled: 
-  inputfolder: 
-  ImgPath: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\s01c1.ome.tif
-  ImgPNGPath: D:\OneDrive\Desktop\Career\Internship\UniKlinikum\Schapiro\data\data\img.png
   raycast_distance: 10
 --- !u!114 &1646500095
 MonoBehaviour:

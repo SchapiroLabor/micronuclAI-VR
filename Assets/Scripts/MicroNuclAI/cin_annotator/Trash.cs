@@ -111,7 +111,11 @@ namespace CinAnnotator
 
             // Replace with loading and instantiating text object
             // Load a text object
-            GameObject textObject = Resources.Load<GameObject>(Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Text (TMP).prefab")));
+
+
+
+            GameObject textObject = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine("Assets", "Resources",
+                "Prefabs", "Text (TMP).prefab"));
 
             // Instantiate the text object
             GameObject textInstance = Instantiate(textObject, ImageCurrent.transform);
@@ -283,8 +287,11 @@ namespace CinAnnotator
                 // Load the trash prefab if not already loaded
                 if (trashPrefab == null)
                 {
-                    trashPrefab = Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
-                    Path.GetFileNameWithoutExtension("MicroNuclAI/trash_text.prefab")));
+
+
+
+                    trashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine("Assets", "Resources",
+                "Prefabs", "trash_text.prefab"));
                 }
 
                 for (int n = 0; n <= 3; n++)
@@ -353,7 +360,7 @@ namespace CinAnnotator
         void OnApplicationQuit()
         {
             // Save the trash data frame to a CSV file when the application quits
-            CollectTrash(_interactableImageStack.inputfolder);
+            CollectTrash(_interactableImageStack.resultsfolder);
 
         }
 

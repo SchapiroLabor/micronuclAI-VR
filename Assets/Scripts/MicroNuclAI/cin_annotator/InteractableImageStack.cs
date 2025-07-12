@@ -23,6 +23,7 @@ using UnityEngine.Rendering;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 using System.Linq;
+using UnityEditor;
 
 
 namespace CinAnnotator
@@ -36,11 +37,12 @@ namespace CinAnnotator
 
 
         [SerializeField] private GridMaker _gridMaker;
-        [SerializeField] private GameManaging _gameManaging;
         [SerializeField] private WholeImage _wholeImage;
         [SerializeField] private ClickNextImage _clickNextImage;
         [SerializeField] private Trash _trash;
         [SerializeField] private SetupButtons _buttons;
+
+        public string resultsfolder;
 
 
         [Serializable]
@@ -51,21 +53,15 @@ namespace CinAnnotator
         [SerializeField] public MyChangeEvent PythonWorkerEvent = new MyChangeEvent();
         [SerializeField] private GameObject load_indicator;
         public DataFrame bbox_dict;
+        [Header("Add to config file")]
 
-        [Header("Add to config file")]
-        private string python_exe; //gameManaging.PythonExecutable;
-        [Header("Add to config file")]
-        private string PythonScript;
-        [Header("Add to config file")]
-        public string inputfolder;
-        [Header("Add to config file")]
-        public string ImgPath;
-        [Header("Add to config file")]
-        public string ImgPNGPath;
-        [Header("Add to config file")]
-        private string MaskPath;
+
+        private string PythonScript = Path.Combine(Application.streamingAssetsPath, "python_codes", "MicroNuclAI", "singlecellcropper.py");
         [Header("Add to config file")]
         private string PythonConfigPath;
+
+
+
 
         public float raycast_distance = 10f; // Default distance to raycast from the camera, please do not change this !!
 
@@ -119,29 +115,25 @@ namespace CinAnnotator
         }
 
 
+
         void Awake()
         {
             // Is played before start and 
 
             // Load the Game Manager
             // Why do we need to load the GameManaging scriptable object here?
-            if (_gameManaging == null)
+/*
+            if (GameManaging == null)
             {
                 // Load from path
-                _gameManaging = Resources.Load<GameObject>("Assets/Scripts/MicroNuclAI/SceneManager.prefab").GetComponent<GameManaging>();
+                GameManaging = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine("Assets", "Resources",
+                "Prefabs", "SceneManager.prefab")).GetComponent<GameManaging>();
+
             }
+*/
 
 
-            // TODO: Add the following to the game manager
-            python_exe = @"D:\OneDrive\Desktop\Internship\UniKlinikum\Schapiro\repos\micronuclAI-VR\Assets\venv\MNAIVR\Scripts\python.exe"; //gameManaging.PythonExecutable;
-            PythonScript = "python_codes/MicroNuclAI/singlecellcropper.py";
-            inputfolder = @"D:\OneDrive\Desktop\Internship\UniKlinikum\Schapiro\data\data";
-
-
-            ImgPath = Path.Combine(inputfolder, "s01c1.ome.tif");
-            MaskPath = Path.Combine(inputfolder, "mask.tif");
-
-            string resultsfolder = Path.Combine(inputfolder, "results");
+            resultsfolder = Path.Combine(GameManaging.InputFolder, "results");
 
             if (!Directory.Exists(resultsfolder))
             {
@@ -150,12 +142,12 @@ namespace CinAnnotator
 
             PythonConfigPath = Path.Combine(resultsfolder, "config.yml");
 
-
-
-            ThreadWithState tws = new(python_exe, resultsfolder, PythonScript, PythonConfigPath,
-            MaskPath, ImgPath, this);
+            ThreadWithState tws = new(GameManaging.python_exe, resultsfolder, PythonScript, PythonConfigPath,
+            GameManaging.MaskPath, GameManaging.ImgPath, this);
 
             StartCoroutine(PreprocessPatches(tws));
+
+
 
 
 
@@ -218,7 +210,7 @@ namespace CinAnnotator
 
 
             public Rect GetBBOX(int df_index, bool downsampled = false, float canvasscalefactor = 1f)
-            {   
+            {
                 // Downsampling is too destrective for resolution to fit into FOV.
                 if (df_index < 0 || df_index >= label_ids.Count)
                     throw new ArgumentOutOfRangeException(nameof(df_index), "Index is out of range.");
@@ -430,7 +422,7 @@ namespace CinAnnotator
             // Setup the Python process
             PythonIPC.GetStdOutputFromPython(General.HelperFunctions.AddQuotesIfRequired(Path.Combine(Application.streamingAssetsPath,
             PythonScript)),
-             python_exe, General.HelperFunctions.AddQuotesIfRequired(csvFilePath));
+             GameManaging.python_exe, General.HelperFunctions.AddQuotesIfRequired(csvFilePath));
 
         }
 

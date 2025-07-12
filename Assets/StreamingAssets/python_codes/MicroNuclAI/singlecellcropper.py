@@ -229,7 +229,9 @@ Strings, ints, floats, dicts, and nested lists all serialize cleanly."""
 
 
 def get_args(arg_parser: argparse.ArgumentParser) -> argparse.Namespace:
+
     # Add an argument to the parser
+
     arg_parser.add_argument("--mask_path", type=str,
                             help="Path to the mask image",
                             default=r"D:\\OneDrive\\Desktop\\Career\\Internship\\UniKlinikum\\Schapiro\\data\\data\\mask.tif")
@@ -268,13 +270,9 @@ if __name__ == "__main__":
     # # Parse the arguments
     args: argparse.Namespace = get_args(arg_parsered)
 
-    logger.info(f"Arguments 1: {args}")
-
     # TODO: Add accessible args string for wrtie out config
     args: argparse.Namespace = arg_parsered.set_namespace_from_config(args,
                                                                       args.write_out_my_config)
-
-    logger.info(f"Arguments 2: {args}")
 
     config: dict[str, Any] = arg_parsered.namespace2dict(args)
 
@@ -293,8 +291,6 @@ if __name__ == "__main__":
     # Oversave config with the new values
     args: argparse.Namespace = arg_parsered.set_namespace_from_dict(
         args, config)
-
-    logger.info(f"Arguments 3: {args}")
 
     arg_parsered.save_config(args, configargparse_filter=False)
 

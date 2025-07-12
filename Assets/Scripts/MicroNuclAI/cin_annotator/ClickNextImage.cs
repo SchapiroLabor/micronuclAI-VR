@@ -39,8 +39,9 @@ namespace CinAnnotator
 
             if (gameObject == null)
             {
-                string prefabPath = Path.Combine("MicroNuclAI", Path.GetFileNameWithoutExtension("MicroNuclAI/Image.prefab"));
-                Instantiate(Resources.Load<GameObject>(prefabPath));
+                GameObject prefabPath = AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine("Assets", "Resources",
+                "Prefabs", "Image.prefab"));
+                Instantiate(prefabPath);
             }
 
             gameObject.name = "Image";
@@ -221,7 +222,7 @@ namespace CinAnnotator
 
             try
             {
-               
+
                 for (int Index = images.Count; Index < max_imgs_to_load; Index++)
                 {
                     if (Index < max_imgs_to_load && Index + current_img_indx < _interactableImageStack.bbox_dict.label_ids.Count)
@@ -295,8 +296,12 @@ namespace CinAnnotator
 
                 if (rawImagesubsequentGO == null)
                 {
-                    rawImagesubsequentGO = Instantiate(Resources.Load<GameObject>(Path.Combine("MicroNuclAI",
-                    Path.GetFileNameWithoutExtension("MicroNuclAI/SubsequentImage.prefab"))), transform.position,
+
+
+
+
+                    rawImagesubsequentGO = Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(Path.Combine("Assets", "Resources",
+                "Prefabs", "SubsequentImage.prefab")), transform.position,
                     transform.rotation);
                     rawImagesubsequentGO.GetComponent<RawImage>().SetNativeSize();
 
