@@ -1,19 +1,19 @@
-import os
-from typing import Any
-import numpy as np
-from mask2bbox._bboxes import BBoxes
-import tifffile as tiff
 import sys
-import pandas as pd
+import os
+micronuclai_path = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(micronuclai_path))
+sys.stderr = open(os.path.join(micronuclai_path, "stderr.log"), "w", encoding="utf-8")
+
+import argparse
+from PIL import Image
 import json
 import pandas as pd
+import tifffile as tiff
+from mask2bbox._bboxes import BBoxes
 import numpy as np
-import os
-from PIL import Image
-import argparse
-from helperfunctions import save2DFcolumn
-sys.path.append(os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__)))))
+from typing import Any
+
 
 
 def main(results_dir: str,
