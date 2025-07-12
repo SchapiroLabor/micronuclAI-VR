@@ -133,6 +133,12 @@ namespace CinAnnotator
             height = _interactableImageStack.bbox_dict.whole_well_img_shape_Y;
             Debug.Log($"Size of img: {width} {height}");
 
+            // Activate attached gameobject if not already
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
+
             StartCoroutine(SetTextureOnWholeImage(_interactableImageStack.bbox_dict.whole_well_img_path));
             PositionWholeImage(Panel, userCamera);
 
@@ -149,6 +155,9 @@ namespace CinAnnotator
             start_rotation = Camera.main.transform.rotation;
 
             initialposition = Camera.main.transform.position;
+
+
+
             //ReturnButton.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() => Teleport2Originalposition());
             //_setupButtons.standardiseButton(ReturnButton.gameObject);
 
@@ -480,7 +489,7 @@ namespace CinAnnotator
         {
             // Get the FOV at the panel height
             List<float> outputs = GetFOVatWD(WD, userCamera);
-            
+
             newHeight = outputs[0]; // Height
             float newWidth = outputs[1]; // Width
             Debug.Log($"FOV at WD adjusted {WD} is {newWidth} and {newHeight}");

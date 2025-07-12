@@ -48,6 +48,11 @@ namespace CinAnnotator
 
         public void Initialize()
         {
+            // Activate attached gameobject if not already
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
 
             Transform CurrentImage = _clickNextImage.transform;
             Vector3 image_position = CurrentImage.position;

@@ -498,7 +498,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8492587415078152464, guid: 5283215c6aded027293bf03e3332e4e6, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1686,7 +1686,6 @@ MonoBehaviour:
   userCamera: {fileID: 1773221031}
   target_size: 250
   _gridMaker: {fileID: 1527052174}
-  _gameManaging: {fileID: 0}
   _wholeImage: {fileID: 5734393821542011230}
   _clickNextImage: {fileID: 1879355352}
   _trash: {fileID: 228217394}
@@ -2000,6 +1999,10 @@ PrefabInstance:
     - target: {fileID: 3850445224076229947, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
       propertyPath: m_Name
       value: Image
+      objectReference: {fileID: 0}
+    - target: {fileID: 3850445224076229947, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4583532529595074592, guid: 532497be950ccdd4dbc496421ae6e77d, type: 3}
       propertyPath: m_Color.b
@@ -2734,7 +2737,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5808272798714704077, guid: c503e0e74f20f68af829cd51034a4d0a, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6326481566188679402, guid: c503e0e74f20f68af829cd51034a4d0a, type: 3}
       propertyPath: m_Pivot.x

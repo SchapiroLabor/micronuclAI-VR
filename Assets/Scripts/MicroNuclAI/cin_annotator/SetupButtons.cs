@@ -50,6 +50,11 @@ namespace CinAnnotator
         public void Initialize(Transform ImagePatch, UnityEngine.Quaternion rotation, Transform Trash)
         {
 
+            // Activate attached gameobject if not already
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
 
             // TODO: Call this function depending on the objects required to be setup
             fontSize = ImagePatch.GetComponent<RawImage>().uvRect.width * 0.3f;
@@ -68,6 +73,8 @@ namespace CinAnnotator
             setupReverseButton(Trash);
             setupAddBinButton(Trash);
             setupExitButton();
+
+
         }
 
 

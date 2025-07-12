@@ -70,6 +70,11 @@ namespace CinAnnotator
 
         public void Initialize()
         {
+            // Activate attached gameobject if not already
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+            }
 
             userCamera = Camera.main;
 
