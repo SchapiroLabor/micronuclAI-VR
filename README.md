@@ -2,9 +2,8 @@
 
 VR implementation of MicronuclAI labelling tool cited in *Ibarra-Arellano et al., 2025*.
 
-<video src="Assets\Images\gameplay_finalized.mp4" controls autoplay loop muted style="max-width: 100%; height: auto;">
-    Your browser does not support the video tag.
-</video>
+
+[![Watch the video](/images/gameplay_finalized.gif)](https://heibox.uni-heidelberg.de/f/90fae837afb94ded81a6/)
 
 
 ## Game logic
@@ -12,6 +11,6 @@ The immersive user interface of micronuclAI VR is populated with classification 
 
 During the process of bucketing, the user is reminded of their decision through green illumination of the bucket when the patch intersects with the bucket bounds (Figure A). It enables the user to confirm their decision before committing to it. Nevertheless, wrong classifications are inevitable, therefore we provided a reverse button that undoes the bucketing by reappearing the bucketed patch on the front of the patch stack and deleting its assigned MIN count from memory. 
 
-![MicronuclAI-VR Screenshot](Images/Figure_2.png)
+![MicronuclAI-VR Screenshot](images/Figure_2.png)
 
 
