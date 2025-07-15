@@ -11,6 +11,8 @@ The immersive user interface of micronuclAI VR is populated with classification 
 
 During the process of bucketing, the user is reminded of their decision through green illumination of the bucket when the patch intersects with the bucket bounds (Figure A). It enables the user to confirm their decision before committing to it. Nevertheless, wrong classifications are inevitable, therefore we provided a reverse button that undoes the bucketing by reappearing the bucketed patch on the front of the patch stack and deleting its assigned MIN count from memory. 
 
+![MicronuclAI-VR Screenshot](images/VR.png)
+
 ![MicronuclAI-VR Screenshot](images/Figure_2.png)
 
 
